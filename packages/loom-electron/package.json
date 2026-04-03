@@ -45,8 +45,6 @@
     "@loom/ui": "0.1.0",
     "@loom/hooks": "0.1.0",
     "@loom/memory": "0.1.0",
-    "@loom/specs": "0.1.0",
-    "@loom/powers": "0.1.0",
     "@loom/docs": "0.1.0"
   },
   "devDependencies": {

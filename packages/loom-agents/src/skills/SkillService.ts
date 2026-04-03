@@ -355,7 +355,7 @@ export class SkillService {
     return response.text()
   }
   
-  private async fetchGitHubContents(apiUrl: string): Promise<any[]> {
+  private async fetchGitHubContents(apiUrl: string): Promise<any> {
     const response = await fetch(apiUrl, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',

@@ -17,6 +17,13 @@ export abstract class LoomAgentBase implements Agent {
   abstract readonly thinkingBudget: number
   abstract readonly toolGroups: string[]
 
+  // Agent interface properties
+  readonly variables: any[] = []
+  readonly prompts: any[] = []
+  readonly languageModelRequirements: any[] = []
+  readonly agentSpecificVariables: any[] = []
+  readonly functions: any[] = []
+
   abstract getSystemPrompt(): string
 
   async execute(task: string, context?: any): Promise<any> {

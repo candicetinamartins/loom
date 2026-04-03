@@ -1,0 +1,19 @@
+#!/usr/bin/env node
+/**
+ * OpenCode CLI Entry Point
+ * 
+ * The opencode server provides:
+ * - Health endpoint for Loom IDE connection
+ * - Graph query proxy to Kuzu
+ * - File system operations
+ * - Agent execution endpoints
+ */
+
+import { createServer } from './cli'
+
+const port = parseInt(process.argv.find(arg => arg.startsWith('--port'))?.split('=')[1] || process.env.PORT || '57321', 10)
+
+createServer(port).catch((err) => {
+  console.error('Failed to start OpenCode server:', err)
+  process.exit(1)
+})

@@ -70,8 +70,16 @@
     ],
     "extraResources": [
       {
-        "from": "../loom-server/dist",
-        "to": "server"
+        "from": "../../packages/loom-server/lib",
+        "to": "server/lib"
+      },
+      {
+        "from": "../../packages/loom-server/bin",
+        "to": "server/bin"
+      },
+      {
+        "from": "../../packages/loom-server/package.json",
+        "to": "server/package.json"
       }
     ],
     "asar": true,

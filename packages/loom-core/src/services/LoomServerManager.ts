@@ -110,9 +110,31 @@ export class LoomServerManager {
   }
 
   private async findServerExecutable(): Promise<string> {
+    const { app } = require('electron')
+    const isPackaged = app?.isPackaged ?? false
+    
+    // When packaged in Electron, look in resources
+    if (isPackaged && process.resourcesPath) {
+      const bundledPaths = [
+        path.join(process.resourcesPath, 'server', 'bin', 'opencode'),
+        path.join(process.resourcesPath, 'server', 'bin', 'opencode.exe'),
+      ]
+      
+      for (const p of bundledPaths) {
+        try {
+          await fs.access(p)
+          return p
+        } catch {
+          // Continue to next path
+        }
+      }
+    }
+    
+    // Development paths
     const possiblePaths = [
       path.join(process.cwd(), 'node_modules', '.bin', 'opencode'),
-      path.join(process.cwd(), 'node_modules', '@loom', 'cli', 'bin', 'opencode'),
+      path.join(process.cwd(), 'node_modules', '@loom', 'server', 'bin', 'opencode'),
+      path.join(__dirname, '..', '..', '..', 'loom-server', 'bin', 'opencode'),
       'opencode',
     ]
 
@@ -125,7 +147,7 @@ export class LoomServerManager {
       }
     }
 
-    throw new Error('Could not find OpenCode server executable')
+    throw new Error('Could not find OpenCode server executable. Please ensure Loom is properly installed.')
   }
 
   private async waitForServerReady(port: number, timeout: number = 10000): Promise<void> {

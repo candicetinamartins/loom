@@ -1,0 +1,27 @@
+{
+  "name": "@loom/server",
+  "version": "1.0.0",
+  "description": "Loom OpenCode Server - Local HTTP server for Loom IDE backend",
+  "main": "./lib/index.js",
+  "bin": {
+    "opencode": "./bin/opencode"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node ./lib/cli.js"
+  },
+  "dependencies": {
+    "@loom/graph": "workspace:*",
+    "@loom/core": "workspace:*",
+    "inversify": "^6.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "18.17.0",
+    "typescript": "~5.3.0"
+  },
+  "files": [
+    "lib/**/*",
+    "bin/**/*"
+  ]
+}

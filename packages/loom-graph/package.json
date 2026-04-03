@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "dependencies": {
+    "@vela-engineering/kuzu": "file:../../kuzu/tools/nodejs_api",
     "web-tree-sitter": "^0.22.6",
     "simple-git": "^3.22.0",
     "drizzle-orm": "^0.29.3",

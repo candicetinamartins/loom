@@ -36,6 +36,7 @@
     "@theia/task": "1.48.0",
     "@theia/terminal": "1.48.0",
     "@theia/timeline": "1.48.0",
+    "@vela-engineering/kuzu": "file:../../kuzu/tools/nodejs_api",
     "@loom/core": "0.1.0",
     "@loom/tools": "0.1.0",
     "@loom/graph": "0.1.0",

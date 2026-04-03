@@ -26,14 +26,14 @@
     "@theia/ai-chat": "latest",
     "@theia/debug": "latest",
     "@theia/notebook": "latest",
-    "@loom/core": "workspace:*",
-    "@loom/tools": "workspace:*",
-    "@loom/graph": "workspace:*",
-    "@loom/agents": "workspace:*",
-    "@loom/ui": "workspace:*",
-    "@loom/hooks": "workspace:*",
-    "@loom/memory": "workspace:*",
-    "@loom/docs": "workspace:*"
+    "@loom/core": "0.1.0",
+    "@loom/tools": "0.1.0",
+    "@loom/graph": "0.1.0",
+    "@loom/agents": "0.1.0",
+    "@loom/ui": "0.1.0",
+    "@loom/hooks": "0.1.0",
+    "@loom/memory": "0.1.0",
+    "@loom/docs": "0.1.0"
   },
   "devDependencies": {
     "@theia/cli": "latest"

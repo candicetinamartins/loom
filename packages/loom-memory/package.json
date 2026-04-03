@@ -5,8 +5,8 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "dependencies": {
-    "@loom/core": "workspace:*",
-    "@loom/graph": "workspace:*",
+    "@loom/core": "0.1.0",
+    "@loom/graph": "0.1.0",
     "drizzle-orm": "^0.29.3",
     "better-sqlite3": "^9.4.3",
     "inversify": "^6.0.1"

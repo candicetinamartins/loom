@@ -1,0 +1,101 @@
+# Loom Indexing Ignore Patterns
+# Copy to .loomignore in workspace root
+
+# Dependencies
+node_modules/
+.pnpm-store/
+.yarn/
+
+# Build outputs
+dist/
+build/
+out/
+lib/
+*.min.js
+*.bundle.js
+
+# Lock files (usually not useful for context)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Large generated files
+*.map
+*.d.ts
+!types/*.d.ts
+
+# Test fixtures (often large binary files)
+**/__snapshots__/
+**/fixtures/**
+**/testdata/**
+
+# Media (not code)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.mp4
+*.webm
+*.woff
+*.woff2
+*.ttf
+*.eot
+
+# Documentation (use @docs mention instead)
+CHANGELOG.md
+LICENSE
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+
+# CI/CD configs (rarely need context)
+.github/workflows/*.yml
+!/.github/workflows/  # keep directory for structure
+
+# IDE configs
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+.tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Binary/compiled
+*.exe
+*.dll
+*.so
+*.dylib
+*.wasm
+*.o
+*.a
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Secrets (never index)
+.env
+.env.*
+*.pem
+*.key
+secrets/
+
+# Loom internal (prevent recursion)
+.[loom]/
+.loom/
+checkpoints/

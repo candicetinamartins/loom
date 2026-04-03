@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "dependencies": {
-    "@loom/core": "workspace:*",
+    "@loom/core": "0.1.0",
     "smol-toml": "^1.2.0",
     "inversify": "^6.0.1"
   },

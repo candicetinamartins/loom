@@ -32,9 +32,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: |
-          npm config set legacy-peer-deps true
-          npm install
+        run: npm install
 
       - name: Build packages
         run: npm run build --workspaces
@@ -64,9 +62,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: |
-          npm config set legacy-peer-deps true
-          npm install
+        run: npm install
 
       - name: Build packages
         run: npm run build --workspaces
@@ -101,9 +97,7 @@ jobs:
           sudo apt-get install -y icnsutils graphicsmagick
 
       - name: Install dependencies
-        run: |
-          npm config set legacy-peer-deps true
-          npm install
+        run: npm install
 
       - name: Build packages
         run: npm run build --workspaces

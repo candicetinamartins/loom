@@ -1,0 +1,41 @@
+---
+name = "test-generation"
+title = "Generate Unit Tests"
+description = "Generate comprehensive unit tests for code"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["test", "unit test", "test coverage", "write test"]
+agents = ["qa", "engineer"]
+
+tags = ["testing", "quality"]
+category = "testing"
+---
+
+## Level 1: Basic Test Generation
+**Description:** Generate unit tests for simple functions
+**When to use:** When you need quick test coverage for new code
+
+Identify the function to test. Determine input parameters and return type.
+Write a test for the happy path. Add edge case tests (null, empty, max values).
+Include error case tests. Use descriptive test names.
+Follow AAA pattern: Arrange, Act, Assert.
+
+## Level 2: Comprehensive Coverage
+**Description:** Generate tests with high coverage including mocks
+**When to use:** For critical code that needs thorough testing
+
+Analyze function dependencies. Determine what needs mocking.
+Write tests for all branches (100% branch coverage). Test boundary conditions.
+Add integration test scenarios. Test async behavior with proper awaits.
+Verify error messages are clear. Ensure tests are deterministic.
+
+## Level 3: Test Architecture
+**Description:** Design test suites and test infrastructure
+**When to use:** When setting up testing for a new module or component
+
+Design test suite structure. Set up test fixtures and factories.
+Create helper functions for common test patterns. Implement setup and teardown.
+Configure test database or mocks. Add test data builders.
+Set up coverage reporting. Design E2E test scenarios.

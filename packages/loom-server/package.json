@@ -12,8 +12,8 @@
     "start": "node ./lib/cli.js"
   },
   "dependencies": {
-    "@loom/graph": "workspace:*",
-    "@loom/core": "workspace:*",
+    "@loom/graph": "0.1.0",
+    "@loom/core": "0.1.0",
     "inversify": "^6.0.2"
   },
   "devDependencies": {

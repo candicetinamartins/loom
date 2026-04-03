@@ -36,7 +36,6 @@
     "@theia/task": "1.48.0",
     "@theia/terminal": "1.48.0",
     "@theia/timeline": "1.48.0",
-    "@theia/keytar": "1.48.0",
     "@vela-engineering/kuzu": "^0.4.0",
     "@loom/core": "0.1.0",
     "@loom/tools": "0.1.0",

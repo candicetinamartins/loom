@@ -29,6 +29,8 @@
       "@loom/hooks/*": ["./packages/loom-hooks/src/*"],
       "@loom/memory": ["./packages/loom-memory/src"],
       "@loom/memory/*": ["./packages/loom-memory/src/*"],
+      "@loom/tools": ["./packages/loom-tools/src"],
+      "@loom/tools/*": ["./packages/loom-tools/src/*"],
       "@loom/docs": ["./packages/loom-docs/src"],
       "@loom/docs/*": ["./packages/loom-docs/src/*"]
     },
@@ -38,6 +40,7 @@
   "exclude": ["node_modules", "lib", "**/*.spec.ts"],
   "references": [
     { "path": "./packages/loom-core" },
+    { "path": "./packages/loom-tools" },
     { "path": "./packages/loom-ui" },
     { "path": "./packages/loom-agents" },
     { "path": "./packages/loom-app" },

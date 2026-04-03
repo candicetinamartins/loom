@@ -75,31 +75,32 @@ export function registerBuiltinGroups(registry: ToolGroupRegistry): void {
   registry.registerGroup({
     name: ToolGroups.FILE_OPS,
     tools: [
-      { name: 'file_read', description: 'Read file contents', group: ToolGroups.FILE_OPS, estimatedTokens: 500 },
-      { name: 'file_write', description: 'Write file contents', group: ToolGroups.FILE_OPS, estimatedTokens: 800 },
-      { name: 'file_edit', description: 'Edit file with string replacement', group: ToolGroups.FILE_OPS, estimatedTokens: 600 },
-      { name: 'file_delete', description: 'Delete a file', group: ToolGroups.FILE_OPS, estimatedTokens: 300 },
-      { name: 'dir_list', description: 'List directory contents', group: ToolGroups.FILE_OPS, estimatedTokens: 400 },
+      { name: 'read_file', description: 'Read file contents', group: ToolGroups.FILE_OPS, estimatedTokens: 500 },
+      { name: 'write_file', description: 'Write file contents', group: ToolGroups.FILE_OPS, estimatedTokens: 800 },
+      { name: 'edit_file', description: 'Edit file with string replacement', group: ToolGroups.FILE_OPS, estimatedTokens: 600 },
+      { name: 'list_dir', description: 'List directory contents', group: ToolGroups.FILE_OPS, estimatedTokens: 400 },
+      { name: 'find_files', description: 'Find files matching pattern', group: ToolGroups.FILE_OPS, estimatedTokens: 500 },
     ],
-    totalEstimatedTokens: 2600,
+    totalEstimatedTokens: 2800,
   })
 
   registry.registerGroup({
     name: ToolGroups.CODE_SEARCH,
     tools: [
+      { name: 'search_code', description: 'Search code using ripgrep', group: ToolGroups.CODE_SEARCH, estimatedTokens: 500 },
       { name: 'grep', description: 'Search text in files', group: ToolGroups.CODE_SEARCH, estimatedTokens: 500 },
-      { name: 'lsp_diagnostics', description: 'Get LSP diagnostics', group: ToolGroups.CODE_SEARCH, estimatedTokens: 400 },
     ],
-    totalEstimatedTokens: 900,
+    totalEstimatedTokens: 1000,
   })
 
   registry.registerGroup({
     name: ToolGroups.GIT,
     tools: [
+      { name: 'git_status', description: 'Get git status', group: ToolGroups.GIT, estimatedTokens: 400 },
       { name: 'git_diff', description: 'Get git diff', group: ToolGroups.GIT, estimatedTokens: 500 },
       { name: 'git_log', description: 'Get git log', group: ToolGroups.GIT, estimatedTokens: 400 },
     ],
-    totalEstimatedTokens: 900,
+    totalEstimatedTokens: 1300,
   })
 
   registry.registerGroup({
@@ -114,8 +115,9 @@ export function registerBuiltinGroups(registry: ToolGroupRegistry): void {
     name: ToolGroups.WEB,
     tools: [
       { name: 'web_fetch', description: 'Fetch web content', group: ToolGroups.WEB, estimatedTokens: 800 },
+      { name: 'json_query', description: 'Fetch and query JSON from URL', group: ToolGroups.WEB, estimatedTokens: 600 },
     ],
-    totalEstimatedTokens: 800,
+    totalEstimatedTokens: 1400,
   })
 
   registry.registerGroup({

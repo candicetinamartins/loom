@@ -1,0 +1,24 @@
+{
+  "name": "@loom/tools",
+  "version": "0.1.0",
+  "description": "Loom in-process tools - replaces OpenCode HTTP tools",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@theia/ai-core": "1.48.0",
+    "inversify": "^6.0.2",
+    "simple-git": "^3.22.0",
+    "glob": "^10.3.10"
+  },
+  "devDependencies": {
+    "@types/node": "18.17.0",
+    "typescript": "~5.3.0"
+  },
+  "files": [
+    "lib/**/*"
+  ]
+}

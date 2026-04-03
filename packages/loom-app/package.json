@@ -27,6 +27,7 @@
     "@theia/debug": "latest",
     "@theia/notebook": "latest",
     "@loom/core": "workspace:*",
+    "@loom/tools": "workspace:*",
     "@loom/graph": "workspace:*",
     "@loom/agents": "workspace:*",
     "@loom/ui": "workspace:*",

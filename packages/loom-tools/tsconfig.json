@@ -12,6 +12,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "composite": true,
     "resolveJsonModule": true,
     "moduleResolution": "node"
   },

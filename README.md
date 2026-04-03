@@ -1,6 +1,6 @@
 # Loom — Multi-Agent AI IDE
 
-Loom weaves together parallel AI agents, spec-driven development, a unified knowledge graph, flow awareness, and the world's largest open skill ecosystem into a single MIT-licensed IDE. Built on Eclipse Theia + OpenCode. No account required. No Docker required. No telemetry by default. Install like VS Code. Works offline.
+Loom weaves together parallel AI agents, spec-driven development, a unified knowledge graph, flow awareness, and the world's largest open skill ecosystem into a single MIT-licensed IDE. Built on Eclipse Theia with in-process tools. No account required. No Docker required. No telemetry by default. Install like VS Code. Works offline.
 
 ## What Loom Is
 
@@ -59,6 +59,7 @@ packages/
 ├── loom-app/          Theia application manifest
 ├── loom-core/         Core orchestration services
 ├── loom-agents/       12 Fleet agents
+├── loom-tools/        In-process tool providers
 ├── loom-graph/        Knowledge graph service
 ├── loom-ui/           Lumino widgets
 ├── loom-hooks/        Agent hooks system
@@ -78,8 +79,7 @@ Loom uses TOML for all configuration files (35% fewer tokens than JSON):
 ├── steering/      *.md — always-on context files
 ├── powers/        *.toml — installed power manifests
 ├── mcp.toml       MCP server configuration
-├── settings.toml  concurrency, context budget limits
-└── server.lock    running OpenCode server port + PID
+└── settings.toml  concurrency, context budget limits
 ```
 
 ## License

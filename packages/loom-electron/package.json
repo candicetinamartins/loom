@@ -40,6 +40,7 @@
     "@theia/keytar": "1.48.0",
     "@vela-engineering/kuzu": "^0.4.0",
     "@loom/core": "workspace:*",
+    "@loom/tools": "workspace:*",
     "@loom/graph": "workspace:*",
     "@loom/agents": "workspace:*",
     "@loom/ui": "workspace:*",
@@ -70,16 +71,12 @@
     ],
     "extraResources": [
       {
-        "from": "../../packages/loom-server/lib",
-        "to": "server/lib"
+        "from": "../../packages/loom-tools/lib",
+        "to": "tools/lib"
       },
       {
-        "from": "../../packages/loom-server/bin",
-        "to": "server/bin"
-      },
-      {
-        "from": "../../packages/loom-server/package.json",
-        "to": "server/package.json"
+        "from": "../../packages/loom-tools/package.json",
+        "to": "tools/package.json"
       }
     ],
     "asar": true,

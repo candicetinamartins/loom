@@ -58,7 +58,7 @@ export class AgentCardWidget extends BaseWidget {
           <span class="metric">files: ${filesModified.length}</span>
         </div>
       </div>
-      ${state === 'quarantined ? '<div class="agent-quarantine">⚠ result flagged — safe default used</div>' : ''}
+      ${state === 'quarantined' ? '<div class="agent-quarantine">⚠ result flagged — safe default used</div>' : ''}
     `
 
     this.node.className = `loom-agent-card ${state}`

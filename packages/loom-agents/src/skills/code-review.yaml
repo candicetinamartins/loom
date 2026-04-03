@@ -1,0 +1,41 @@
+---
+name = "code-review"
+title = "Code Review Assistant"
+description = "Review code for quality, bugs, and best practices"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["code review", "review code", "CR", "PR review", "pull request"]
+agents = ["reviewer", "engineer"]
+
+tags = ["review", "quality"]
+category = "quality"
+---
+
+## Level 1: Quick Review
+**Description:** Fast code review for obvious issues
+**When to use:** For small changes or hotfixes
+
+Check for obvious bugs. Verify function signatures.
+Look for missing error handling. Check for console.logs.
+Verify naming conventions. Look for magic numbers.
+Check test coverage for new code.
+
+## Level 2: Thorough Review
+**Description:** Comprehensive code review
+**When to use:** For significant features or refactors
+
+Review architecture and design patterns. Check for security issues.
+Verify edge case handling. Review test quality and coverage.
+Check for performance issues. Verify documentation updates.
+Review for maintainability. Check for code duplication.
+
+## Level 3: Architectural Review
+**Description:** High-level design and system review
+**When to use:** For major changes or new modules
+
+Evaluate system design. Check API contracts.
+Review database schema changes. Verify scalability considerations.
+Check backward compatibility. Review integration points.
+Evaluate tech debt impact. Check migration strategy.

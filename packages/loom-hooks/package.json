@@ -1,0 +1,21 @@
+{
+  "name": "@loom/hooks",
+  "version": "0.1.0",
+  "description": "Loom agent hooks system",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "dependencies": {
+    "@loom/core": "workspace:*",
+    "smol-toml": "^1.2.0",
+    "inversify": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf lib"
+  }
+}

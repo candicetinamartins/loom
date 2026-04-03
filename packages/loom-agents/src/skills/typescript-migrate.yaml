@@ -1,0 +1,38 @@
+---
+name = "typescript-migrate"
+title = "Migrate to TypeScript"
+description = "Gradually migrate JavaScript projects to TypeScript"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["typescript", "migrate", "JS to TS", "type safety", "convert"]
+agents = ["engineer", "architect"]
+
+tags = ["typescript", "migration"]
+category = "migration"
+---
+
+## Level 1: File Conversion
+**Description:** Convert individual JS files to TypeScript
+**When to use:** For gradual migration of specific modules
+
+Rename .js to .ts. Add basic type annotations.
+Fix immediate type errors. Add interfaces for data structures.
+Update imports/exports. Add tsconfig if not present.
+
+## Level 2: Type Safety
+**Description:** Add comprehensive typing
+**When to use:** After initial conversion for better type safety
+
+Add strict TypeScript configuration. Create shared type definitions.
+Add generics for reusable code. Type all function parameters.
+Add return type annotations. Handle null/undefined properly.
+
+## Level 3: Migration Strategy
+**Description:** Full project migration planning
+**When to use:** For large codebase migrations
+
+Assess migration scope and effort. Set up allowJs for gradual transition.
+Create type definition files for dependencies. Set up strict mode incrementally.
+Configure build pipeline for TypeScript. Train team on TypeScript patterns.

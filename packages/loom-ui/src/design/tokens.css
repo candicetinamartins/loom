@@ -1,0 +1,97 @@
+/* Loom Design System Tokens */
+
+:root {
+  /* Base Surfaces */
+  --loom-bg: #1e1e1e;
+  --loom-panel: #252526;
+  --loom-panel-raised: #2d2d2d;
+  --loom-panel-header: #2c2c2c;
+  --loom-statusbar-bg: #16162a;
+
+  /* Borders */
+  --loom-border-dim: #303030;
+  --loom-border: #3c3c3c;
+  --loom-border-em: #4a4a4a;
+
+  /* Text Hierarchy */
+  --loom-text: #d4d4d4;
+  --loom-text-secondary: #a0a0a0;
+  --loom-text-muted: #6b6b6b;
+  --loom-text-dim: #464646;
+
+  /* Accent — Loom's Signature */
+  --loom-accent: #7c86f0;
+  --loom-accent-dim: rgba(124, 134, 240, 0.12);
+
+  /* Semantic Status Colors */
+  --loom-green: #4ec9b0;
+  --loom-green-dim: rgba(78, 201, 176, 0.12);
+  --loom-red: #f48771;
+  --loom-red-dim: rgba(244, 135, 113, 0.10);
+  --loom-amber: #e2c08d;
+  --loom-blue: #569cd6;
+
+  /* Agent States */
+  --agent-running: #4db6ac;
+  --agent-done: #66bb6a;
+  --agent-waiting: #5a5a5a;
+  --agent-error: #f48771;
+  --agent-verified: #66bb6a;
+  --agent-quarantined: #e2c08d;
+
+  /* Metrics */
+  --metric-cost: #a6da95;
+  --metric-tokens: #89b4fa;
+
+  /* Typography */
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --font-sans: -apple-system, 'Segoe UI', 'Inter', system-ui, sans-serif;
+
+  --text-xs: 10px;
+  --text-sm: 11px;
+  --text-base: 12px;
+  --text-md: 13px;
+  --text-lg: 14px;
+  --text-xl: 16px;
+
+  --leading-code: 18px;
+  --leading-ui: 1.4;
+  --leading-chat: 1.6;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  /* Animation */
+  --transition-fast: 100ms ease;
+  --transition-std: 200ms ease;
+}
+
+/* Agent Pulse Animation */
+@keyframes agent-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.agent-running .agent-dot {
+  animation: agent-pulse 2s ease-in-out infinite;
+}
+
+/* Progress Bar Animation */
+.progress-bar {
+  transition: width 500ms ease;
+}

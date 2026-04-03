@@ -1,0 +1,38 @@
+---
+name = "accessibility-audit"
+title = "Accessibility (a11y) Audit"
+description = "Check and fix web accessibility issues"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["accessibility", "a11y", "ARIA", "screen reader", "WCAG"]
+agents = ["reviewer", "engineer"]
+
+tags = ["accessibility", "a11y"]
+category = "quality"
+---
+
+## Level 1: Basic Checks
+**Description:** Essential accessibility fixes
+**When to use:** For any web UI work
+
+Add alt text to images. Ensure proper heading hierarchy.
+Check color contrast ratios. Add labels to form inputs.
+Ensure keyboard navigation works. Add focus indicators.
+
+## Level 2: Screen Reader Support
+**Description:** Full screen reader compatibility
+**When to use:** For public-facing applications
+
+Add ARIA labels and roles. Implement live regions for dynamic content.
+Test with actual screen readers. Ensure meaningful link text.
+Add skip navigation links. Handle modal/dialog accessibility.
+
+## Level 3: WCAG Compliance
+**Description:** Full WCAG 2.1 AA compliance
+**When to use:** For regulated or enterprise applications
+
+Audit against all WCAG guidelines. Test with assistive technologies.
+Implement accessible animations. Ensure responsive accessibility.
+Add accessibility documentation. Set up automated a11y testing.

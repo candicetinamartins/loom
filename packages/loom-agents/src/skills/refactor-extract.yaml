@@ -1,0 +1,39 @@
+---
+name = "refactor-extract"
+title = "Extract Function Refactoring"
+description = "Extract code blocks into reusable functions"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["extract", "refactor function", "pull out"]
+agents = ["engineer"]
+
+tags = ["refactoring", "code-quality"]
+category = "code-organization"
+---
+
+## Level 1: Basic Extraction
+**Description:** Extract a simple code block into a function
+**When to use:** When you see duplicated code or a long function that can be split
+
+Identify the code block to extract. Create a new function with a descriptive name.
+Move the code block into the new function. Replace the original code with a function call.
+Ensure parameters are properly passed. Return the result if needed.
+
+## Level 2: Advanced Extraction
+**Description:** Complex extraction with multiple parameters and error handling
+**When to use:** When extracting code with external dependencies and potential failure modes
+
+Analyze dependencies of the code block. Identify which variables are inputs vs outputs.
+Create function signature with appropriate parameters. Add JSDoc comments for the function.
+Handle edge cases and null checks. Add appropriate error handling.
+Ensure the extracted function is testable in isolation.
+
+## Level 3: Class Method Extraction
+**Description:** Extract code into class methods with proper encapsulation
+**When to use:** When working with OOP code that needs better method organization
+
+Identify the responsibility of the code block. Determine if it should be public or private.
+Extract as a class method with proper access modifiers. Update `this` references.
+Ensure the method follows single responsibility principle. Consider if it should be static.

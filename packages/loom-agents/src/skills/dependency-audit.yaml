@@ -1,0 +1,40 @@
+---
+name = "dependency-audit"
+title = "Audit Dependencies"
+description = "Check for vulnerable or outdated dependencies"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["dependency", "npm audit", "outdated", "vulnerability", "CVE", "security scan"]
+agents = ["security", "devops"]
+
+tags = ["security", "dependencies"]
+category = "security"
+---
+
+## Level 1: Quick Audit
+**Description:** Run basic dependency checks
+**When to use:** Before releases or periodically
+
+Run npm audit or equivalent. Check for high/critical vulnerabilities.
+Review outdated dependencies. Check for deprecated packages.
+Verify license compatibility. Look for maintenance status.
+
+## Level 2: Deep Analysis
+**Description:** Comprehensive dependency review
+**When to use:** For production deployments or security reviews
+
+Analyze transitive dependencies. Check for known CVEs in all packages.
+Review package source code for suspicious patterns. Verify package signatures.
+Check for typosquatting attacks. Review package update history.
+Consider dependency alternatives. Analyze bundle size impact.
+
+## Level 3: Supply Chain Security
+**Description:** Enterprise-level supply chain protection
+**When to use:** For mission-critical applications
+
+Implement lockfile verification. Set up private registry.
+Configure dependency pinning. Add automated security scanning.
+Implement SBOM generation. Set up license compliance checks.
+Monitor for new vulnerabilities continuously.

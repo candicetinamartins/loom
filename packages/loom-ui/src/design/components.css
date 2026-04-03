@@ -1,0 +1,439 @@
+/* Loom Design System Components */
+
+/* Agent Card */
+.loom-agent-card {
+  background: var(--loom-panel);
+  border: 1px solid var(--loom-border-dim);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin-bottom: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--loom-text);
+  transition: border-color var(--transition-std);
+}
+
+.loom-agent-card:hover {
+  border-color: var(--loom-border-em);
+}
+
+.loom-agent-card.running {
+  border-left: 3px solid var(--agent-running);
+}
+
+.loom-agent-card.done {
+  border-left: 3px solid var(--agent-done);
+}
+
+.loom-agent-card.waiting {
+  border-left: 3px solid var(--agent-waiting);
+}
+
+.loom-agent-card.quarantined {
+  border-left: 3px solid var(--agent-quarantined);
+}
+
+.agent-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.agent-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+.agent-dot.running {
+  background: var(--agent-running);
+}
+
+.agent-dot.done {
+  background: var(--agent-done);
+}
+
+.agent-dot.waiting {
+  background: var(--agent-waiting);
+}
+
+.agent-dot.quarantined {
+  background: var(--agent-quarantined);
+}
+
+.agent-name {
+  font-weight: 600;
+  color: var(--loom-text);
+}
+
+.agent-state {
+  margin-left: auto;
+  color: var(--loom-text-muted);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+}
+
+.agent-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.agent-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.step-count {
+  font-size: var(--text-xs);
+  color: var(--loom-text-secondary);
+  min-width: 40px;
+}
+
+.progress-bar-container {
+  flex: 1;
+  height: 4px;
+  background: var(--loom-border-dim);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--loom-accent);
+  border-radius: var(--radius-full);
+  transition: width 500ms ease;
+}
+
+.agent-metrics {
+  display: flex;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--loom-text-secondary);
+}
+
+.metric.cost {
+  color: var(--metric-cost);
+}
+
+.metric.tokens {
+  color: var(--metric-tokens);
+}
+
+.agent-quarantine {
+  margin-top: var(--space-2);
+  padding: var(--space-2);
+  background: var(--loom-red-dim);
+  border-left: 2px solid var(--loom-red);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  color: var(--loom-red);
+}
+
+/* Flow Timeline */
+.loom-flow-timeline {
+  background: var(--loom-panel-raised);
+  border-top: 1px solid var(--loom-border-dim);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--loom-text);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.flow-label {
+  color: var(--loom-text-muted);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.flow-events {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.event-pill {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  background: var(--loom-panel);
+  border: 1px solid var(--loom-border-dim);
+  color: var(--loom-text-secondary);
+}
+
+.event-pill.edit {
+  background: var(--loom-accent-dim);
+  border-color: var(--loom-accent);
+  color: var(--loom-accent);
+}
+
+.event-pill.test-fail {
+  background: var(--loom-red-dim);
+  border-color: var(--loom-red);
+  color: var(--loom-red);
+}
+
+.event-pill.terminal {
+  background: var(--loom-green-dim);
+  border-color: var(--loom-green);
+  color: var(--loom-green);
+}
+
+.event-pill.saved {
+  background: var(--loom-blue-dim);
+  border-color: var(--loom-blue);
+  color: var(--loom-blue);
+}
+
+.flow-intent {
+  color: var(--loom-text-muted);
+  font-size: var(--text-xs);
+  flex-shrink: 0;
+}
+
+/* Status Bar */
+.loom-status-bar {
+  background: var(--loom-statusbar-bg);
+  border-top: 1px solid var(--loom-border-dim);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--loom-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.status-bar-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.status-item.loom-brand {
+  color: var(--loom-accent);
+  font-weight: 600;
+}
+
+.status-item.branch {
+  color: var(--loom-blue);
+}
+
+.status-item.agents {
+  color: var(--agent-running);
+}
+
+.status-item.graph {
+  color: var(--loom-accent);
+}
+
+.status-item.cost {
+  color: var(--metric-cost);
+}
+
+.status-item.model {
+  color: var(--loom-text-muted);
+}
+
+.status-item.hunks {
+  color: var(--loom-amber);
+}
+
+.status-item.mode {
+  margin-left: auto;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--loom-panel);
+  font-weight: 600;
+}
+
+.status-item.mode.CODE {
+  color: var(--loom-green);
+}
+
+.status-item.mode.ASK {
+  color: var(--loom-accent);
+}
+
+/* Graph Stats Bar */
+.loom-graph-stats-bar {
+  background: var(--loom-panel);
+  border-bottom: 1px solid var(--loom-border-dim);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  color: var(--loom-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.graph-stats-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.stat-item.doc-coverage {
+  color: var(--loom-green);
+}
+
+.stat-item.churn {
+  color: var(--loom-amber);
+}
+
+.stat-item.docs.indexed {
+  color: var(--loom-green);
+}
+
+.stat-item.protocol {
+  font-weight: 600;
+}
+
+.stat-item.protocol.good {
+  color: var(--loom-green);
+}
+
+.stat-item.protocol.warning {
+  color: var(--loom-amber);
+}
+
+.stat-item.protocol.bad {
+  color: var(--loom-red);
+}
+
+/* Verifier Status Bar */
+.loom-verifier-status-bar {
+  background: var(--loom-panel);
+  border-top: 1px solid var(--loom-border-dim);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--loom-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.verifier-status-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.verifier-label {
+  font-weight: 600;
+  color: var(--loom-text-muted);
+}
+
+.verifier-count {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.verifier-count.passed {
+  color: var(--loom-green);
+}
+
+.verifier-count.quarantined {
+  color: var(--loom-amber);
+}
+
+.verifier-count.retried {
+  color: var(--loom-blue);
+}
+
+/* Ghost Text */
+.loom-ghost-text {
+  position: absolute;
+  background: var(--loom-panel-raised);
+  border: 1px solid var(--loom-border-dim);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--loom-text-secondary);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.ghost-text-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ghost-prefix {
+  color: var(--loom-accent);
+  font-weight: 600;
+}
+
+.ghost-text {
+  color: var(--loom-text-muted);
+}
+
+/* Agent Panel */
+.loom-agent-panel {
+  background: var(--loom-panel);
+  border-right: 1px solid var(--loom-border-dim);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.agent-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--loom-border-dim);
+  background: var(--loom-panel-header);
+}
+
+.panel-title {
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--loom-text);
+}
+
+.agent-count {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  color: var(--loom-text-muted);
+  background: var(--loom-accent-dim);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  color: var(--loom-accent);
+}
+
+.agent-cards-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+}

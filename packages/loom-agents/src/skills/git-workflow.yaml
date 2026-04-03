@@ -1,0 +1,39 @@
+---
+name = "git-workflow"
+title = "Git Workflow Optimization"
+description = "Optimize git workflows and resolve conflicts"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["git", "merge conflict", "rebase", "branch", "workflow", "commit"]
+agents = ["devops", "engineer"]
+
+tags = ["git", "workflow"]
+category = "devops"
+---
+
+## Level 1: Conflict Resolution
+**Description:** Resolve merge conflicts
+**When to use:** When you have merge conflicts
+
+Identify conflicting files. Understand both versions.
+Choose correct changes or merge manually. Test after resolution.
+Commit the merge. Verify no regressions.
+
+## Level 2: Workflow Design
+**Description:** Design effective branching strategies
+**When to use:** For team workflow setup
+
+Choose branching model (GitFlow, trunk-based, etc.). Set up branch protection.
+Configure CI/CD triggers. Design commit message conventions.
+Set up code review requirements. Configure automated checks.
+
+## Level 3: Advanced Git
+**Description:** Complex git operations and history management
+**When to use:** For repository maintenance or complex changes
+
+Interactive rebase for clean history. Split large commits.
+Cherry-pick specific changes. Use git bisect for debugging.
+Filter-branch for history rewriting. Subtree or submodule management.
+Signed commits and verification.

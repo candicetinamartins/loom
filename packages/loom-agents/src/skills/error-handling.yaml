@@ -1,0 +1,38 @@
+---
+name = "error-handling"
+title = "Error Handling Patterns"
+description = "Implement robust error handling and logging"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["error handling", "exception", "try catch", "logging", "monitor"]
+agents = ["engineer", "debugger"]
+
+tags = ["error-handling", "reliability"]
+category = "reliability"
+---
+
+## Level 1: Basic Error Handling
+**Description:** Add try-catch and error logging
+**When to use:** When code lacks proper error handling
+
+Wrap risky operations in try-catch. Log errors with context.
+Return meaningful error messages. Avoid swallowing errors silently.
+Handle async/await errors properly. Clean up resources in finally blocks.
+
+## Level 2: Structured Error Handling
+**Description:** Custom error classes and error boundaries
+**When to use:** For applications needing differentiated error handling
+
+Create custom error classes. Add error codes and categories.
+Implement error boundaries (React/Vue). Set up global error handlers.
+Add retry logic for transient errors. Implement circuit breakers.
+
+## Level 3: Observability
+**Description:** Full error tracking and monitoring
+**When to use:** For production applications
+
+Integrate error tracking (Sentry, etc.). Correlate errors with user sessions.
+Set up alerting for critical errors. Add distributed tracing.
+Implement health checks. Create runbooks for common errors.

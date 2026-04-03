@@ -1,0 +1,49 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "outDir": "./lib",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "paths": {
+      "@loom/core": ["./packages/loom-core/src"],
+      "@loom/core/*": ["./packages/loom-core/src/*"],
+      "@loom/ui": ["./packages/loom-ui/src"],
+      "@loom/ui/*": ["./packages/loom-ui/src/*"],
+      "@loom/agents": ["./packages/loom-agents/src"],
+      "@loom/agents/*": ["./packages/loom-agents/src/*"],
+      "@loom/app": ["./packages/loom-app/src"],
+      "@loom/app/*": ["./packages/loom-app/src/*"],
+      "@loom/graph": ["./packages/loom-graph/src"],
+      "@loom/graph/*": ["./packages/loom-graph/src/*"],
+      "@loom/hooks": ["./packages/loom-hooks/src"],
+      "@loom/hooks/*": ["./packages/loom-hooks/src/*"],
+      "@loom/memory": ["./packages/loom-memory/src"],
+      "@loom/memory/*": ["./packages/loom-memory/src/*"],
+      "@loom/docs": ["./packages/loom-docs/src"],
+      "@loom/docs/*": ["./packages/loom-docs/src/*"]
+    },
+    "baseUrl": "."
+  },
+  "include": ["packages/*/src/**/*"],
+  "exclude": ["node_modules", "lib", "**/*.spec.ts"],
+  "references": [
+    { "path": "./packages/loom-core" },
+    { "path": "./packages/loom-ui" },
+    { "path": "./packages/loom-agents" },
+    { "path": "./packages/loom-app" },
+    { "path": "./packages/loom-graph" },
+    { "path": "./packages/loom-hooks" },
+    { "path": "./packages/loom-memory" },
+    { "path": "./packages/loom-docs" }
+  ]
+}

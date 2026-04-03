@@ -1,0 +1,21 @@
+{
+  "name": "@loom/ui",
+  "version": "0.1.0",
+  "description": "Loom UI components using Lumino widgets",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "dependencies": {
+    "@lumino/widgets": "^2.4.0",
+    "@lumino/coreutils": "^2.1.0",
+    "@theia/core": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf lib"
+  }
+}

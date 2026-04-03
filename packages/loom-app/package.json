@@ -1,0 +1,44 @@
+{
+  "name": "@loom/app",
+  "version": "0.1.0",
+  "description": "Loom IDE — Eclipse Theia application",
+  "theia": {
+    "target": "electron",
+    "frontend": {
+      "config": {
+        "applicationName": "Loom",
+        "defaultTheme": "loom-dark"
+      }
+    }
+  },
+  "dependencies": {
+    "@theia/core": "latest",
+    "@theia/editor": "latest",
+    "@theia/filesystem": "latest",
+    "@theia/git": "latest",
+    "@theia/terminal": "latest",
+    "@theia/monaco": "latest",
+    "@theia/ai-core": "latest",
+    "@theia/ai-ide": "latest",
+    "@theia/ai-anthropic": "latest",
+    "@theia/ai-openai": "latest",
+    "@theia/ai-ollama": "latest",
+    "@theia/ai-chat": "latest",
+    "@theia/debug": "latest",
+    "@theia/notebook": "latest",
+    "@loom/core": "workspace:*",
+    "@loom/graph": "workspace:*",
+    "@loom/agents": "workspace:*",
+    "@loom/ui": "workspace:*",
+    "@loom/hooks": "workspace:*",
+    "@loom/memory": "workspace:*",
+    "@loom/docs": "workspace:*"
+  },
+  "devDependencies": {
+    "@theia/cli": "latest"
+  },
+  "scripts": {
+    "build": "theia build",
+    "start": "theia start"
+  }
+}

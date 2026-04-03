@@ -1,0 +1,40 @@
+---
+name = "docker-setup"
+title = "Docker Containerization"
+description = "Create and optimize Docker configurations"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["docker", "container", "Dockerfile", "compose", "containerize"]
+agents = ["devops", "engineer"]
+
+tags = ["docker", "devops"]
+category = "devops"
+---
+
+## Level 1: Basic Dockerfile
+**Description:** Create a simple Dockerfile
+**When to use:** When containerizing an app for the first time
+
+Choose appropriate base image. Copy application files.
+Install dependencies. Set environment variables.
+Expose necessary ports. Set entrypoint or CMD.
+
+## Level 2: Optimized Build
+**Description:** Multi-stage builds and optimizations
+**When to use:** For production Docker images
+
+Use multi-stage builds to reduce size. Optimize layer caching.
+Use specific image tags (not latest). Minimize image layers.
+Handle secrets securely. Add health checks.
+Configure proper user permissions.
+
+## Level 3: Full Stack Setup
+**Description:** Docker Compose and orchestration
+**When to use:** For multi-service applications
+
+Create docker-compose.yml. Configure service networking.
+Set up volumes for persistence. Configure environment-specific settings.
+Add init scripts and migrations. Set up log aggregation.
+Configure restart policies.

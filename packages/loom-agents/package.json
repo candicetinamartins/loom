@@ -1,0 +1,21 @@
+{
+  "name": "@loom/agents",
+  "version": "0.1.0",
+  "description": "Loom Fleet agents registered into Theia AI",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "dependencies": {
+    "@theia/ai-core": "latest",
+    "@loom/core": "workspace:*",
+    "inversify": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf lib"
+  }
+}

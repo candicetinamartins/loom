@@ -1,0 +1,39 @@
+---
+name = "database-design"
+title = "Database Schema Design"
+description = "Design efficient database schemas and queries"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["database", "schema", "table", "SQL", "migration", "index"]
+agents = ["architect", "data", "engineer"]
+
+tags = ["database", "schema"]
+category = "data"
+---
+
+## Level 1: Table Design
+**Description:** Design individual database tables
+**When to use:** When creating new tables or entities
+
+Define primary keys. Choose appropriate data types.
+Add necessary columns with constraints. Handle nullable vs required fields.
+Add timestamps (created_at, updated_at). Consider soft deletes.
+
+## Level 2: Relationships and Indexes
+**Description:** Model relationships and optimize queries
+**When to use:** For multi-table schemas
+
+Design foreign key relationships. Choose between 1:1, 1:N, N:M relationships.
+Create junction tables for many-to-many. Add indexes for query optimization.
+Handle cascading deletes/updates. Consider normalization vs denormalization.
+
+## Level 3: Advanced Database Design
+**Description:** Complex schemas with partitioning and optimization
+**When to use:** For high-scale applications
+
+Implement table partitioning. Design materialized views.
+Handle sharding strategy. Optimize for read vs write workloads.
+Design migration strategies. Handle data archival.
+Implement audit logging and triggers.

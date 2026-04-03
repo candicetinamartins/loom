@@ -1,0 +1,77 @@
+name = "test-generation"
+title = "Test Generation"
+description = "Generate comprehensive tests for code"
+category = "testing"
+tags = ["test", "jest", "vitest", "coverage"]
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["test", "testing", "jest", "vitest", "coverage", "unit test", "integration test"]
+agents = ["qa", "engineer"]
+
+[[levels]]
+level = 1
+title = "Basic Test Generation"
+description = "Generate standard unit tests for a function"
+when_to_use = "Simple functions with clear inputs/outputs"
+prompt = """
+Write unit tests for the provided function/module.
+
+Requirements:
+- Test happy path with typical inputs
+- Test edge cases (null, empty, boundary values)
+- Test error cases (invalid inputs, exceptions)
+- Use descriptive test names
+- Follow Arrange-Act-Assert pattern
+
+Output:
+- Test file with complete test suite
+- Test coverage report estimate
+"""
+
+[[levels]]
+level = 2
+title = "Comprehensive Coverage"
+description = "Generate tests with mocking and coverage goals"
+when_to_use = "Complex modules with dependencies, requires mocking"
+prompt = """
+Write comprehensive tests with mocking and coverage goals.
+
+Requirements:
+- Mock external dependencies (API calls, database, file system)
+- Test all branches and error paths (aim for 80%+ coverage)
+- Include integration tests for module interactions
+- Use test factories for complex test data
+- Add setup/teardown for shared fixtures
+
+Output:
+- Unit tests with mocks
+- Integration tests
+- Coverage configuration
+- Test data factories
+"""
+
+[[levels]]
+level = 3
+title = "Test Architecture"
+description = "Design test strategy and testable architecture"
+when_to_use = "Large features, test refactoring, establishing patterns"
+prompt = """
+Design test strategy and establish testing patterns for the codebase.
+
+Requirements:
+- Define testing pyramid (unit/integration/e2e balance)
+- Create shared test utilities and helpers
+- Establish mocking patterns and conventions
+- Design test data management strategy
+- Set up test automation in CI/CD
+- Document testing guidelines for the team
+
+Deliverables:
+- Test architecture document
+- Shared test utilities module
+- Testing guidelines (TESTING.md)
+- CI test configuration
+- Example tests for each layer
+"""

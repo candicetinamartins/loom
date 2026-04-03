@@ -1,0 +1,38 @@
+---
+name = "code-cleanup"
+title = "Legacy Code Cleanup"
+description = "Modernize and clean up legacy or messy code"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["cleanup", "legacy", "refactor", "modernize", "tech debt", "old code"]
+agents = ["engineer", "architect"]
+
+tags = ["refactoring", "modernization"]
+category = "maintenance"
+---
+
+## Level 1: Basic Cleanup
+**Description:** Remove dead code and modernize syntax
+**When to use:** For quick improvements to messy files
+
+Remove unused imports and variables. Delete commented-out code.
+Update to modern syntax (optional chaining, nullish coalescing).
+Convert var to const/let. Replace old-style functions with arrow functions.
+
+## Level 2: Structural Improvements
+**Description:** Refactor code structure and patterns
+**When to use:** When code has architectural issues
+
+Extract magic numbers to constants. Break up long functions.
+Consolidate duplicate code. Simplify complex conditionals.
+Replace callbacks with async/await. Add proper error handling.
+
+## Level 3: Full Modernization
+**Description:** Complete legacy codebase modernization
+**When to use:** For major legacy migrations
+
+Create migration plan. Set up feature flags for gradual rollout.
+Update build tools and dependencies. Migrate to TypeScript.
+Add comprehensive tests before changes. Document breaking changes.

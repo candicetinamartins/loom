@@ -1,0 +1,40 @@
+---
+name = "ui-component"
+title = "UI Component Design"
+description = "Create reusable UI components with best practices"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["component", "UI", "React", "Vue", "design system", "reusable"]
+agents = ["engineer", "architect"]
+
+tags = ["UI", "components"]
+category = "frontend"
+---
+
+## Level 1: Basic Component
+**Description:** Create simple, focused components
+**When to use:** For new UI elements
+
+Follow single responsibility principle. Accept props for configuration.
+Use proper naming conventions. Add basic styling.
+Handle loading and empty states. Add PropTypes or TypeScript types.
+
+## Level 2: Reusable Component
+**Description:** Design for reusability and composition
+**When to use:** For shared component library
+
+Use composition over configuration. Add slot/children support.
+Implement variant system. Add accessibility attributes.
+Create Storybook stories. Add unit tests.
+Document props and usage examples.
+
+## Level 3: Design System
+**Description:** Full design system architecture
+**When to use:** For enterprise component libraries
+
+Create token-based theming. Implement design tokens (colors, spacing).
+Add responsive behavior patterns. Implement animation guidelines.
+Create compound component patterns. Add comprehensive documentation.
+Set up visual regression testing.

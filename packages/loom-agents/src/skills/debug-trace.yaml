@@ -1,0 +1,39 @@
+---
+name = "debug-trace"
+title = "Debug Stack Trace Analysis"
+description = "Analyze stack traces and error logs to find root causes"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["debug", "stack trace", "error", "exception", "crash", "traceback"]
+agents = ["debugger", "engineer"]
+
+tags = ["debugging", "troubleshooting"]
+category = "debugging"
+---
+
+## Level 1: Basic Error Analysis
+**Description:** Identify the immediate cause of an error
+**When to use:** When you see an error message or stack trace
+
+Read the error message carefully. Identify the error type and message.
+Locate the file and line number. Check the stack trace for the origin.
+Look for null references or undefined values. Verify function parameters.
+
+## Level 2: Stack Trace Deep Dive
+**Description:** Analyze complex stack traces with multiple frames
+**When to use:** For nested errors or framework-related exceptions
+
+Trace the call stack from top to bottom. Identify framework vs application code.
+Look for async/await issues. Check for event loop problems.
+Identify resource leaks or connection issues. Check timing-related bugs.
+
+## Level 3: Root Cause Analysis
+**Description:** Systematic debugging methodology
+**When to use:** For recurring issues or production bugs
+
+Reproduce the issue consistently. Isolate the minimal test case.
+Use logging to trace execution flow. Check state at each step.
+Identify race conditions or timing issues. Verify environment differences.
+Create a fix and regression test.

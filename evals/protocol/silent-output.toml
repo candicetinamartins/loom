@@ -1,0 +1,38 @@
+name = "silent-output-protocol"
+description = "Protocol compliance eval — agents must not emit narration between tool calls"
+
+[setup]
+# Create a simple TypeScript file to implement
+create_files = [
+  { path = "src/utils/debounce.ts", content = "// Implement debounce here\n" }
+]
+
+[task]
+prompt = "Implement a debounce function in src/utils/debounce.ts with a 300ms default delay. The function should work with TypeScript generics."
+agent = "engineer"
+
+[expected]
+behaviors = [
+  "emits no narration text between tool calls",
+  "emits exactly one [RESULT] block",
+  "[RESULT] block contains valid status field",
+  "summary field is under 200 characters",
+  "files_modified includes src/utils/debounce.ts",
+]
+
+[scoring]
+# Protocol compliance is binary — each behavior must pass
+# 95% threshold = 19/20 behaviors must pass
+# This is stricter than normal 80% because protocol violations burn tokens
+pass_threshold = 0.95
+
+[[metrics]]
+# Track these metrics during eval
+name = "output_token_ratio"
+description = "Output tokens with protocol vs without should show ~78% reduction"
+expected = "< 0.25"
+
+[[metrics]]
+name = "protocol_violations"
+description = "Number of turns with narration before [RESULT]"
+expected = "0"

@@ -1,0 +1,40 @@
+---
+name = "state-management"
+title = "State Management Design"
+description = "Design and implement application state management"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["state management", "redux", "store", "context", "reactivity"]
+agents = ["architect", "engineer"]
+
+tags = ["state", "architecture"]
+category = "architecture"
+---
+
+## Level 1: Local State
+**Description:** Component-level state management
+**When to use:** For simple UI state
+
+Use useState or equivalent. Lift state when needed.
+Pass data via props. Use callbacks for child-to-parent communication.
+Avoid prop drilling with composition. Keep state minimal.
+
+## Level 2: Global State
+**Description:** Application-wide state management
+**When to use:** When multiple components share state
+
+Choose state library (Redux, Zustand, Pinia, etc.).
+Design store structure and actions. Implement selectors.
+Handle async operations. Add devtools integration.
+Consider persistence strategies.
+
+## Level 3: Complex State Architecture
+**Description:** Advanced patterns for complex applications
+**When to use:** For large applications with complex state
+
+Implement normalized state structure. Use state machines where appropriate.
+Add optimistic updates. Handle race conditions.
+Implement undo/redo functionality. Add state hydration/dehydration.
+Consider micro-frontend state isolation.

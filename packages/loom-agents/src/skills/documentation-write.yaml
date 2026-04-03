@@ -1,0 +1,40 @@
+---
+name = "documentation-write"
+title = "Write Technical Documentation"
+description = "Create clear README files and API documentation"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["document", "README", "docs", "write documentation", "explain"]
+agents = ["documentarian", "engineer"]
+
+tags = ["documentation", "writing"]
+category = "documentation"
+---
+
+## Level 1: README Essentials
+**Description:** Write a basic README for a project
+**When to use:** For new projects or when README is missing
+
+Add project title and description. Include installation instructions.
+Provide usage examples. List key features. Add license information.
+Include contribution guidelines if open source.
+
+## Level 2: Comprehensive Documentation
+**Description:** Full technical documentation with examples
+**When to use:** For public libraries or complex projects
+
+Write API documentation with examples. Add architecture diagrams.
+Include troubleshooting section. Document configuration options.
+Add changelog. Include deployment instructions.
+Write code of conduct and contributing guide.
+
+## Level 3: Professional Documentation Suite
+**Description:** Multi-format documentation with auto-generation
+**When to use:** For enterprise or widely-used projects
+
+Set up documentation site (Docusaurus, GitBook). Configure API doc generation.
+Add video tutorials and screenshots. Implement search functionality.
+Version documentation with releases. Add multi-language support.
+Include interactive examples.

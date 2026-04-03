@@ -1,0 +1,40 @@
+---
+name = "ci-cd-setup"
+title = "CI/CD Pipeline Setup"
+description = "Configure continuous integration and deployment pipelines"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["CI/CD", "github actions", "pipeline", "automation", "deploy"]
+agents = ["devops", "engineer"]
+
+tags = ["ci/cd", "automation"]
+category = "devops"
+---
+
+## Level 1: Basic CI
+**Description:** Set up basic continuous integration
+**When to use:** For new projects or adding CI to existing repos
+
+Create workflow file (GitHub Actions/GitLab CI). Configure trigger events.
+Set up test runner. Add lint and build steps.
+Configure artifact storage. Add basic notifications.
+
+## Level 2: Full Pipeline
+**Description:** Complete CI/CD with testing and deployment
+**When to use:** For production applications
+
+Add code quality checks (lint, format). Run unit and integration tests.
+Build and package artifacts. Deploy to staging environment.
+Run smoke tests. Deploy to production with approval.
+Add rollback mechanisms.
+
+## Level 3: Advanced DevOps
+**Description:** Multi-environment with security scanning
+**When to use:** For enterprise or regulated environments
+
+Implement matrix builds across platforms. Add security scanning.
+Configure secrets management. Set up infrastructure as code.
+Implement blue-green deployments. Add performance benchmarks.
+Configure monitoring and alerts.

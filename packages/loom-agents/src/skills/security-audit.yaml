@@ -1,0 +1,46 @@
+---
+name = "security-audit"
+title = "Security Code Audit"
+description = "Audit code for security vulnerabilities"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["security", "audit", "vulnerability", "security check"]
+agents = ["security", "reviewer"]
+
+tags = ["security", "audit"]
+category = "security"
+---
+
+## Level 1: Basic Security Check
+**Description:** Check for common security issues
+**When to use:** Before committing code or when reviewing user input handling
+
+Check for SQL injection vulnerabilities. Validate all user inputs are sanitized.
+Look for XSS vulnerabilities in output. Check for hardcoded secrets or credentials.
+Verify authentication checks are present. Check for insecure dependencies.
+
+## Level 2: OWASP Top 10
+**Description:** Comprehensive OWASP Top 10 audit
+**When to use:** For security reviews or before production deployments
+
+A01 - Broken Access Control: Check authorization logic
+A02 - Cryptographic Failures: Verify encryption usage
+A03 - Injection: SQL, NoSQL, OS command injection
+A04 - Insecure Design: Architecture security flaws
+A05 - Security Misconfiguration: Default configs, error messages
+A06 - Vulnerable Components: Dependency vulnerabilities
+A07 - Auth Failures: Session management, password policies
+A08 - Data Integrity: CSRF, SSRF protection
+A09 - Logging Failures: Security logging and monitoring
+A10 - Server-Side Request Forgery: SSRF protections
+
+## Level 3: Advanced Threat Modeling
+**Description:** Deep threat modeling and attack surface analysis
+**When to use:** For critical systems or high-risk changes
+
+Identify all trust boundaries. Map data flow through the system.
+Identify potential attack vectors. Check for business logic vulnerabilities.
+Review authentication flows. Analyze session management.
+Check for race conditions and TOCTOU issues.

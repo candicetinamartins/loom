@@ -1,0 +1,39 @@
+---
+name = "api-design"
+title = "API Design and Review"
+description = "Design RESTful or GraphQL APIs with best practices"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["API", "endpoint", "REST", "GraphQL", "design API", "API review"]
+agents = ["architect", "engineer"]
+
+tags = ["API", "design", "architecture"]
+category = "architecture"
+---
+
+## Level 1: Endpoint Design
+**Description:** Design individual API endpoints
+**When to use:** When creating new API routes
+
+Use appropriate HTTP methods (GET, POST, PUT, DELETE). Design clear URL paths.
+Return consistent status codes. Use proper content-type headers.
+Include error response formats. Version your API.
+
+## Level 2: Resource Modeling
+**Description:** Model API resources and relationships
+**When to use:** For complex domain modeling
+
+Identify resources and their relationships. Design nested resource paths.
+Implement proper HTTP verbs for each action. Handle pagination.
+Design filtering and sorting. Handle bulk operations.
+
+## Level 3: API Architecture
+**Description:** Full API architecture with security and scaling
+**When to use:** For public APIs or microservices
+
+Design authentication and authorization. Implement rate limiting.
+Add API documentation (OpenAPI/Swagger). Handle versioning strategy.
+Design for backward compatibility. Consider caching strategies.
+Implement monitoring and logging.

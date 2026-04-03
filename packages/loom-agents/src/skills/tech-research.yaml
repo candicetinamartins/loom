@@ -1,0 +1,41 @@
+---
+name = "tech-research"
+title = "Research Technology Options"
+description = "Research and compare libraries, frameworks, and tools"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["research", "compare", "library", "framework", "tool", "evaluate", "which"]
+agents = ["researcher", "architect"]
+
+tags = ["research", "evaluation"]
+category = "research"
+---
+
+## Level 1: Quick Comparison
+**Description:** Compare 2-3 options based on basic criteria
+**When to use:** When choosing between similar tools
+
+Identify key requirements. List candidate options.
+Compare popularity (GitHub stars, downloads). Check maintenance status.
+Compare feature sets. Look at community support.
+Check documentation quality. Consider learning curve.
+
+## Level 2: Deep Dive
+**Description:** Comprehensive technology evaluation
+**When to use:** For foundational technology decisions
+
+Analyze architecture fit. Test performance benchmarks.
+Review security track record. Check enterprise adoption.
+Evaluate ecosystem maturity. Test integration complexity.
+Consider long-term maintenance. Review migration paths.
+
+## Level 3: Proof of Concept
+**Description:** Build PoC with top 2-3 options
+**When to use:** When unsure between competing technologies
+
+Build minimal proof of concept with each option.
+Measure actual performance metrics. Test edge cases.
+Evaluate developer experience. Document pros and cons.
+Get team feedback. Make final recommendation.

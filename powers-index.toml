@@ -1,0 +1,117 @@
+# Loom Powers Marketplace Index
+# This is the community marketplace for Loom Powers
+# Hosted at: https://github.com/loom/powers-index.toml
+
+[marketplace]
+name = "Loom Official Powers"
+url = "https://github.com/loom/powers"
+description = "Official community powers for the Loom IDE"
+last_updated = "2026-04-03"
+
+[[powers]]
+name = "deepwiki"
+version = "1.0.0"
+description = "AI-generated wiki for architectural depth"
+author = "DeepWiki Team"
+source = "https://github.com/deepwiki/mcp-server"
+type = "mcp"
+keywords = ["architecture", "design", "patterns", "wiki", "documentation"]
+install_count = 15420
+rating = 4.8
+
+[[powers]]
+name = "context7"
+version = "1.0.0"
+description = "Structured documentation for libraries and frameworks"
+author = "Context7"
+source = "https://github.com/context7/mcp-server"
+type = "mcp"
+keywords = ["library", "framework", "api", "reference", "docs"]
+api_key_required = true
+install_count = 8930
+rating = 4.6
+
+[[powers]]
+name = "github"
+version = "2.1.0"
+description = "GitHub integration for PR reviews and issue management"
+author = "Loom Team"
+source = "https://github.com/loom/power-github"
+type = "http"
+keywords = ["github", "git", "pr", "review", "issues"]
+api_key_required = true
+install_count = 23100
+rating = 4.9
+
+[[powers]]
+name = "perplexity"
+version = "1.5.0"
+description = "Perplexity AI search for research tasks"
+author = "Perplexity"
+source = "https://github.com/perplexity/mcp-server"
+type = "mcp"
+keywords = ["research", "search", "web", "ai", "answers"]
+api_key_required = true
+install_count = 18700
+rating = 4.7
+
+[[powers]]
+name = "stripe"
+version = "1.2.0"
+description = "Stripe API documentation and helper tools"
+author = "Stripe"
+source = "https://github.com/stripe/mcp-server"
+type = "mcp"
+keywords = ["stripe", "payments", "api", "billing", "saas"]
+api_key_required = true
+install_count = 5400
+rating = 4.5
+
+[[powers]]
+name = "aws"
+version = "3.0.1"
+description = "AWS service documentation and CLI helper"
+author = "AWS Labs"
+source = "https://github.com/aws/mcp-server"
+type = "cli"
+keywords = ["aws", "cloud", "infrastructure", "devops", "serverless"]
+install_count = 12800
+rating = 4.4
+
+[[powers]]
+name = "postgres"
+version = "1.0.5"
+description = "PostgreSQL schema introspection and query helper"
+author = "Loom Community"
+source = "https://github.com/loom-community/power-postgres"
+type = "local"
+keywords = ["postgres", "sql", "database", "schema", "query"]
+install_count = 7200
+rating = 4.6
+
+[[powers]]
+name = "docker"
+version = "2.0.0"
+description = "Docker container management and debugging"
+author = "Docker Community"
+source = "https://github.com/docker/mcp-server"
+type = "cli"
+keywords = ["docker", "containers", "devops", "kubernetes", "k8s"]
+install_count = 15600
+rating = 4.7
+
+[registry]
+# How to submit a new power:
+# 1. Fork https://github.com/loom/powers
+# 2. Add your power to the index.toml
+# 3. Submit a PR
+# 4. After review, your power will be available via `loom install power <name>`
+
+submission_guidelines = """
+Powers must:
+- Have a clear, focused use case
+- Include proper error handling
+- Not duplicate existing powers
+- Be actively maintained
+- Have an open source license (MIT/Apache-2.0 preferred)
+"""

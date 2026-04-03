@@ -1,0 +1,160 @@
+{
+  "name": "loom-electron",
+  "version": "1.0.0",
+  "description": "Loom AI IDE - Eclipse Theia + Electron",
+  "main": "./lib/backend/electron-main.js",
+  "author": "Loom Team",
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn build:backend && yarn build:frontend",
+    "build:backend": "tsc -p tsconfig.backend.json",
+    "build:frontend": "theia build --mode production",
+    "package": "yarn build && electron-builder",
+    "package:dir": "yarn build && electron-builder --dir",
+    "start": "yarn build && electron .",
+    "dev": "electron . --inspect",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@theia/core": "1.48.0",
+    "@theia/electron": "1.48.0",
+    "@theia/filesystem": "1.48.0",
+    "@theia/workspace": "1.48.0",
+    "@theia/editor": "1.48.0",
+    "@theia/markers": "1.48.0",
+    "@theia/messages": "1.48.0",
+    "@theia/monaco": "1.48.0",
+    "@theia/navigator": "1.48.0",
+    "@theia/outline-view": "1.48.0",
+    "@theia/output": "1.48.0",
+    "@theia/plugin-ext": "1.48.0",
+    "@theia/plugin-ext-vscode": "1.48.0",
+    "@theia/preferences": "1.48.0",
+    "@theia/process": "1.48.0",
+    "@theia/scm": "1.48.0",
+    "@theia/search-in-workspace": "1.48.0",
+    "@theia/task": "1.48.0",
+    "@theia/terminal": "1.48.0",
+    "@theia/timeline": "1.48.0",
+    "@theia/workspace": "1.48.0",
+    "@theia/keytar": "1.48.0",
+    "@vela-engineering/kuzu": "^0.4.0",
+    "@loom/core": "workspace:*",
+    "@loom/graph": "workspace:*",
+    "@loom/agents": "workspace:*",
+    "@loom/ui": "workspace:*",
+    "@loom/hooks": "workspace:*",
+    "@loom/memory": "workspace:*",
+    "@loom/specs": "workspace:*",
+    "@loom/powers": "workspace:*",
+    "@loom/docs": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "18.17.0",
+    "electron": "28.0.0",
+    "electron-builder": "24.9.1",
+    "electron-rebuild": "3.2.9",
+    "typescript": "~5.3.0"
+  },
+  "build": {
+    "appId": "dev.loom.ide",
+    "productName": "Loom",
+    "copyright": "Copyright © 2026 Loom Team",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "lib/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../loom-server/dist",
+        "to": "server"
+      }
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/@vela-engineering/kuzu/**/*",
+      "node_modules/keytar/**/*",
+      "node_modules/@theia/keytar/**/*"
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "category": "public.app-category.developer-tools",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "msi",
+          "arch": ["x64"]
+        }
+      ],
+      "publisherName": "Loom Team"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        },
+        {
+          "target": "rpm",
+          "arch": ["x64"]
+        },
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Development",
+      "maintainer": "Loom Team",
+      "vendor": "Loom Team",
+      "synopsis": "AI-powered IDE with multi-agent orchestration",
+      "description": "Loom weaves together parallel AI agents, spec-driven development, and a unified knowledge graph into a single MIT-licensed IDE."
+    },
+    "dmg": {
+      "sign": false,
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "resources/icon.ico",
+      "uninstallerIcon": "resources/icon.ico",
+      "installerHeaderIcon": "resources/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

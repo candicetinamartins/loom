@@ -1,0 +1,39 @@
+---
+name = "performance-optimize"
+title = "Performance Optimization"
+description = "Identify and fix performance bottlenecks"
+version = "1.0.0"
+author = "Loom"
+
+[activation]
+keywords = ["performance", "optimize", "slow", "bottleneck", "speed", "fast"]
+agents = ["engineer", "debugger"]
+
+tags = ["performance", "optimization"]
+category = "performance"
+---
+
+## Level 1: Quick Wins
+**Description:** Easy performance improvements
+**When to use:** When code is noticeably slow
+
+Identify unnecessary loops or iterations. Remove unused imports and dependencies.
+Cache repeated calculations. Use efficient data structures.
+Avoid nested loops where possible. Minimize DOM manipulations.
+
+## Level 2: Algorithm Analysis
+**Description:** Analyze and improve algorithmic complexity
+**When to use:** For data processing or large dataset operations
+
+Profile the code to identify hotspots. Check Big O complexity.
+Optimize from O(n²) to O(n log n) or better. Use appropriate sorting algorithms.
+Implement memoization for recursive functions. Consider lazy evaluation.
+
+## Level 3: System-Level Optimization
+**Description:** Database, network, and architectural optimization
+**When to use:** For system-wide performance issues
+
+Analyze database query performance. Add indexes where appropriate.
+Implement connection pooling. Use caching strategies (Redis, in-memory).
+Optimize bundle size and loading. Consider pagination for large datasets.
+Implement async processing where possible.

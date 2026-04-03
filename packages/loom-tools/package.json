@@ -9,7 +9,7 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "@theia/ai-core": "1.48.0",
+    "@theia/ai-core": "latest",
     "inversify": "^6.0.2",
     "simple-git": "^3.22.0",
     "glob": "^10.3.10"

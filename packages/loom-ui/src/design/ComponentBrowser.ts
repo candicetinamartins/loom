@@ -6,7 +6,7 @@ import { StatusBarWidget, StatusBarData } from './StatusBar'
 import { GraphStatsBarWidget, GraphStatsData } from './GraphStatsBar'
 import { VerifierStatusBarWidget, VerifierStatusData } from './VerifierStatusBar'
 import { GhostTextWidget, GhostTextData } from './GhostText'
-import { AgentCardData } from './AgentCard'
+import { AgentCardData, AgentCardWidget, AgentState } from './AgentCard'
 
 export class ComponentBrowserWidget extends Widget {
   private _activeTab: string = 'agent-card'
@@ -60,7 +60,7 @@ export class ComponentBrowserWidget extends Widget {
   }
 
   private renderActiveTab(): void {
-    const content = this.node.querySelector('.browser-content')
+    const content = this.node.querySelector('.browser-content') as HTMLElement | null
     if (!content) return
 
     switch (this._activeTab) {

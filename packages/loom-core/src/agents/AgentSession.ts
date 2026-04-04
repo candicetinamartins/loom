@@ -274,7 +274,7 @@ Return ONLY valid JSON matching this structure. No markdown, no explanation.`
       throw new Error(`LLM API error: ${response.status}`)
     }
     
-    const data = await response.json()
+    const data = await response.json() as { content?: Array<{ text?: string }> }
     return data.content?.[0]?.text || '{}'
   }
 

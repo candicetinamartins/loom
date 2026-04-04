@@ -113,7 +113,7 @@ export class MemoryService {
       LoomMsgHub.msg(Channel.MEMORY_STORED, {
         memoryId: memory.id,
         key: memory.key,
-        tier: memory.tier,
+        tier: String(memory.tier),
       })
     )
 

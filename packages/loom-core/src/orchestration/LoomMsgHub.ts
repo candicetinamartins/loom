@@ -104,6 +104,10 @@ export interface LoomMsg<T = unknown> {
   terminalActive?: boolean
   recentDiagnostics?: string[]
   content?: string
+  mode?: string
+  completedCount?: number
+  monthlyUsed?: number
+  monthlyLimit?: number
 }
 
 export type Handler<T> = (msg: LoomMsg<T>) => void | Promise<void>
@@ -123,14 +127,16 @@ export class LoomMsgHub extends EventEmitter {
     return () => this.off(channel, handler)
   }
 
-  // Override EventEmitter.once to maintain compatibility
-  override once<T>(channel: ChannelName, handler?: Handler<T>): this | Promise<LoomMsg<T>> {
-    if (handler) {
-      super.once(channel, handler)
-      return this
-    }
+  // Override EventEmitter.once - always returns this for compatibility
+  override once<T>(channel: ChannelName, handler: Handler<T>): this {
+    super.once(channel, handler)
+    return this
+  }
+
+  // Async version that returns Promise - use this for awaiting messages
+  onceAsync<T>(channel: ChannelName): Promise<LoomMsg<T>> {
     return new Promise((resolve) => {
-      super.once(channel, resolve)
+      super.once(channel, resolve as any)
     })
   }
 

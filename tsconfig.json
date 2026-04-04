@@ -42,7 +42,6 @@
     { "path": "./packages/loom-agents" },
     { "path": "./packages/loom-app" },
     { "path": "./packages/loom-graph" },
-    { "path": "./packages/loom-memory" },
-    { "path": "./packages/loom-docs" }
+    { "path": "./packages/loom-memory" }
   ]
 }

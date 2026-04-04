@@ -88,7 +88,7 @@ jobs:
       - name: Install Windows SDK
         uses: fbactions/setup-winsdk@v2
         with:
-          winsdk-build-version: '10.0.22621.0'
+          winsdk-build-version: '10.0.22621.755'
 
       - name: Setup Visual Studio C++ build tools
         uses: ilammy/msvc-dev-cmd@v1

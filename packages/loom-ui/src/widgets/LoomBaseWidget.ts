@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import { Widget } from '@lumino/widgets'
+import { Widget, ResizeMessage } from '@lumino/widgets'
 import { Message } from '@lumino/messaging'
 import { Disposable } from '@theia/core'
 
@@ -48,7 +48,7 @@ export abstract class LoomBaseWidget extends Widget {
   /**
    * Called when widget is resized
    */
-  protected onResize(msg: Message): void {
+  protected onResize(msg: ResizeMessage): void {
     super.onResize(msg)
     this.updateContent()
   }

@@ -4,8 +4,8 @@ import simpleGit from 'simple-git'
 
 @injectable()
 export class GitStatusTool implements ToolProvider {
-  getTools(): ToolRequest[] {
-    return [{
+  getTool(): ToolRequest {
+    return {
       id: 'loom_git_status',
       name: 'git_status',
       description: 'Get the current git status: staged, unstaged, and untracked files.',
@@ -21,6 +21,6 @@ export class GitStatusTool implements ToolProvider {
         ].filter(Boolean)
         return lines.length ? lines.join('\n') : 'Nothing to commit, working tree clean'
       },
-    }]
+    }
   }
 }

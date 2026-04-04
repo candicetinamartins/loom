@@ -5,8 +5,8 @@ import * as path from 'node:path'
 
 @injectable()
 export class ReadFileTool implements ToolProvider {
-  getTools(): ToolRequest[] {
-    return [{
+  getTool(): ToolRequest {
+    return {
       id: 'loom_read_file',
       name: 'read_file',
       description: 'Read a file from the workspace. Returns file content as text.',
@@ -30,6 +30,6 @@ export class ReadFileTool implements ToolProvider {
         }
         return content
       },
-    }]
+    }
   }
 }

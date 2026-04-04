@@ -4,8 +4,8 @@ import simpleGit from 'simple-git'
 
 @injectable()
 export class GitDiffTool implements ToolProvider {
-  getTools(): ToolRequest[] {
-    return [{
+  getTool(): ToolRequest {
+    return {
       id: 'loom_git_diff',
       name: 'git_diff',
       description: 'Show git diff for staged changes or specific file.',
@@ -33,6 +33,6 @@ export class GitDiffTool implements ToolProvider {
         const diff = await git.diff()
         return diff || '(no changes)'
       },
-    }]
+    }
   }
 }

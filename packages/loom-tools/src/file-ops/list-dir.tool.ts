@@ -5,8 +5,8 @@ import * as path from 'node:path'
 
 @injectable()
 export class ListDirTool implements ToolProvider {
-  getTools(): ToolRequest[] {
-    return [{
+  getTool(): ToolRequest {
+    return {
       id: 'loom_list_dir',
       name: 'list_dir',
       description: 'List directory contents with file sizes and types.',
@@ -44,6 +44,6 @@ export class ListDirTool implements ToolProvider {
         const lines = await listDir(fullPath)
         return lines.join('\n') || '(empty directory)'
       },
-    }]
+    }
   }
 }

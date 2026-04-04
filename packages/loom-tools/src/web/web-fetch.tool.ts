@@ -3,8 +3,8 @@ import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
 
 @injectable()
 export class WebFetchTool implements ToolProvider {
-  getTools(): ToolRequest[] {
-    return [{
+  getTool(): ToolRequest {
+    return {
       id: 'loom_web_fetch',
       name: 'web_fetch',
       description: 'Fetch content from a URL. Returns text content (HTML stripped).',
@@ -38,6 +38,6 @@ export class WebFetchTool implements ToolProvider {
           return `Error fetching ${args.url}: ${error instanceof Error ? error.message : 'unknown error'}`
         }
       },
-    }]
+    }
   }
 }

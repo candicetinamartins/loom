@@ -5,8 +5,8 @@ import * as path from 'node:path'
 
 @injectable()
 export class GrepTool implements ToolProvider {
-  getTools(): ToolRequest[] {
-    return [{
+  getTool(): ToolRequest {
+    return {
       id: 'loom_grep',
       name: 'grep',
       description: 'Simple grep search. Use search_code for faster regex searches.',
@@ -35,6 +35,6 @@ export class GrepTool implements ToolProvider {
           proc.on('close', () => resolve(output.trim() || '(no matches)'))
         })
       },
-    }]
+    }
   }
 }

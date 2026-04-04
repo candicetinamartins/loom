@@ -4,8 +4,8 @@ import simpleGit from 'simple-git'
 
 @injectable()
 export class GitLogTool implements ToolProvider {
-  getTools(): ToolRequest[] {
-    return [{
+  getTool(): ToolRequest {
+    return {
       id: 'loom_git_log',
       name: 'git_log',
       description: 'Show recent git commit history.',
@@ -28,6 +28,6 @@ export class GitLogTool implements ToolProvider {
           `${commit.hash.substring(0, 7)} ${commit.date} ${commit.message}`
         ).join('\n') || '(no commits)'
       },
-    }]
+    }
   }
 }

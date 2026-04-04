@@ -11,8 +11,8 @@ const BLOCKED_PATTERNS = [
 
 @injectable()
 export class BashTool implements ToolProvider {
-  getTools(): ToolRequest[] {
-    return [{
+  getTool(): ToolRequest {
+    return {
       id: 'loom_bash',
       name: 'bash',
       description: 'Execute a shell command in the workspace directory.',
@@ -58,6 +58,6 @@ export class BashTool implements ToolProvider {
           })
         })
       },
-    }]
+    }
   }
 }

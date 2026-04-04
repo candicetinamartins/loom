@@ -5,8 +5,8 @@ import * as path from 'node:path'
 
 @injectable()
 export class FindFilesTool implements ToolProvider {
-  getTools(): ToolRequest[] {
-    return [{
+  getTool(): ToolRequest {
+    return {
       id: 'loom_find_files',
       name: 'find_files',
       description: 'Find files matching a glob pattern.',
@@ -23,6 +23,6 @@ export class FindFilesTool implements ToolProvider {
         const files = await glob(args.pattern, { cwd, nodir: true })
         return files.join('\n') || '(no files found)'
       },
-    }]
+    }
   }
 }

@@ -5,8 +5,8 @@ import * as path from 'node:path'
 
 @injectable()
 export class EditFileTool implements ToolProvider {
-  getTools(): ToolRequest[] {
-    return [{
+  getTool(): ToolRequest {
+    return {
       id: 'loom_edit_file',
       name: 'edit_file',
       description: 'Edit a file by replacing old_string with new_string. Throws if old_string not found or not unique.',
@@ -35,6 +35,6 @@ export class EditFileTool implements ToolProvider {
         await fs.writeFile(fullPath, newContent, 'utf-8')
         return `File edited: ${args.path}`
       },
-    }]
+    }
   }
 }

@@ -5,8 +5,8 @@ import * as path from 'node:path'
 
 @injectable()
 export class WriteFileTool implements ToolProvider {
-  getTools(): ToolRequest[] {
-    return [{
+  getTool(): ToolRequest {
+    return {
       id: 'loom_write_file',
       name: 'write_file',
       description: 'Write content to a file. Creates directories if needed.',
@@ -24,6 +24,6 @@ export class WriteFileTool implements ToolProvider {
         await fs.writeFile(fullPath, args.content, 'utf-8')
         return `File written: ${args.path}`
       },
-    }]
+    }
   }
 }

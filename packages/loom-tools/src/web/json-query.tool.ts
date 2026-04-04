@@ -3,8 +3,8 @@ import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
 
 @injectable()
 export class JsonQueryTool implements ToolProvider {
-  getTools(): ToolRequest[] {
-    return [{
+  getTool(): ToolRequest {
+    return {
       id: 'loom_json_query',
       name: 'json_query',
       description: 'Fetch JSON from URL and query with dot notation path.',
@@ -43,6 +43,6 @@ export class JsonQueryTool implements ToolProvider {
           return `Error: ${error instanceof Error ? error.message : 'unknown error'}`
         }
       },
-    }]
+    }
   }
 }

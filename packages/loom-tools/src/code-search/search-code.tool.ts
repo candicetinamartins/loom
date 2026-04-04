@@ -5,8 +5,8 @@ import * as path from 'node:path'
 
 @injectable()
 export class SearchCodeTool implements ToolProvider {
-  getTools(): ToolRequest[] {
-    return [{
+  getTool(): ToolRequest {
+    return {
       id: 'loom_search_code',
       name: 'search_code',
       description: 'Search code using ripgrep (rg) with fallback to grep. Fast regex search across codebase.',
@@ -46,6 +46,6 @@ export class SearchCodeTool implements ToolProvider {
           })
         })
       },
-    }]
+    }
   }
 }

@@ -1,5 +1,11 @@
 import { injectable, inject } from 'inversify'
-import { GraphService } from '@loom/graph'
+
+// Avoid circular dependency with @loom/graph
+interface GraphService {
+  query(cypher: string): Promise<any[]>
+  getFunctionNeighborhood(nodeId: string): Promise<{ nodes: any[]; relationships: any[] }>
+  findFunctionByName(name: string): Promise<any[]>
+}
 
 /**
  * Phase 7 — Inline Completion Integration
@@ -30,7 +36,7 @@ export interface InlineCompletion {
 @injectable()
 export class InlineCompletionService {
   constructor(
-    @inject(GraphService) private readonly graphService: GraphService,
+    @inject('GraphService') private readonly graphService: GraphService,
   ) {}
 
   /**

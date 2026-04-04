@@ -55,6 +55,12 @@ export const Channel = {
 
 export type ChannelName = typeof Channel[keyof typeof Channel]
 
+// Base ChannelMap interface - extended by other modules via global augmentation
+export interface ChannelMap {
+  MEMORY_STORED: { memoryId: string; key: string; tier: string }
+  MEMORY_DELETED: { key: string }
+}
+
 export interface LoomMsg<T = unknown> {
   channel: ChannelName
   timestamp: number

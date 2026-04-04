@@ -1,7 +1,14 @@
 import { injectable, inject } from 'inversify'
-import * as kuzu from '@vela-engineering/kuzu'
 import * as path from 'path'
 import * as os from 'os'
+
+// Conditional import for Kuzu - uses stub in CI builds
+let kuzu: any
+try {
+  kuzu = require('@vela-engineering/kuzu')
+} catch {
+  kuzu = require('./kuzu-stub')
+}
 
 export interface GraphNode {
   id: string

@@ -123,7 +123,7 @@ export class LoomDocsService {
     // Format documentation for context
     const sections = doc.sections
       .slice(0, 5) // Limit to first 5 sections
-      .map(s => `## ${s.heading}\n${s.content.slice(0, 500)}`)
+      .map((s: { heading: string; content: string }) => `## ${s.heading}\n${s.content.slice(0, 500)}`)
       .join('\n\n')
 
     return `# ${doc.title}\n\n${sections}`

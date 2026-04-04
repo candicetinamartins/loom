@@ -15,7 +15,8 @@
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "typeRoots": ["../../node_modules/@types", "../loom-core/src/typings"]
   },
   "include": ["src/backend/**/*"],
   "exclude": ["node_modules", "lib"]

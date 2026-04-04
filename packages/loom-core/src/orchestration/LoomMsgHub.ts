@@ -120,6 +120,8 @@ export interface LoomMsg<T = unknown> {
   hook?: string
   step?: string
   error?: string
+  value?: any
+  source?: any
 }
 
 export type Handler<T> = (msg: LoomMsg<T>) => void | Promise<void>

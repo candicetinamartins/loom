@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
+import { ToolProvider, ToolRequest, ToolInvocationContext, ToolCallResult } from '@theia/ai-core/lib/common'
 import simpleGit from 'simple-git'
 
 @injectable()
@@ -17,16 +17,18 @@ export class GitLogTool implements ToolProvider {
         },
         required: [],
       },
-      handler: async (args: { maxCount?: number; file?: string }) => {
+      handler: async (arg_string: string, ctx?: ToolInvocationContext): Promise<ToolCallResult> => {
+        const args = JSON.parse(arg_string) as { maxCount?: number; file?: string }
         const git = simpleGit(process.cwd())
         const log = await git.log({ 
           maxCount: args.maxCount ?? 10,
           file: args.file,
         })
         
-        return log.all.map(commit => 
+        const result = log.all.map(commit => 
           `${commit.hash.substring(0, 7)} ${commit.date} ${commit.message}`
         ).join('\n') || '(no commits)'
+        return { result }
       },
     }
   }

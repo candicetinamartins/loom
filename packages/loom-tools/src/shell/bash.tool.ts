@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
+import { ToolProvider, ToolRequest, ToolInvocationContext, ToolCallResult } from '@theia/ai-core/lib/common'
 import { spawn } from 'node:child_process'
 import * as path from 'node:path'
 
@@ -25,15 +25,16 @@ export class BashTool implements ToolProvider {
         },
         required: ['command'],
       },
-      handler: async (args: { command: string; timeout?: number; workdir?: string }) => {
+      handler: async (arg_string: string, ctx?: ToolInvocationContext): Promise<ToolCallResult> => {
+        const args = JSON.parse(arg_string) as { command: string; timeout?: number; workdir?: string }
         // Safety check
         for (const pattern of BLOCKED_PATTERNS) {
           if (pattern.test(args.command)) {
-            return `Error: command blocked by Loom safety policy: ${args.command}` 
+            return { result: `Error: command blocked by Loom safety policy: ${args.command}` }
           }
         }
 
-        return new Promise((resolve) => {
+        const result = await new Promise<string>((resolve) => {
           const timeout = args.timeout ?? 30_000
           let output = ''
           let timedOut = false
@@ -57,6 +58,7 @@ export class BashTool implements ToolProvider {
             resolve(output.trim() || `(exit code: ${code})`)
           })
         })
+        return { result }
       },
     }
   }

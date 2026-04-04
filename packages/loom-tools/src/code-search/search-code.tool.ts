@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
+import { ToolProvider, ToolRequest, ToolInvocationContext, ToolCallResult } from '@theia/ai-core/lib/common'
 import { spawn } from 'node:child_process'
 import * as path from 'node:path'
 
@@ -20,10 +20,11 @@ export class SearchCodeTool implements ToolProvider {
         },
         required: ['pattern'],
       },
-      handler: async (args: { pattern: string; path?: string; include?: string; exclude?: string }) => {
+      handler: async (arg_string: string, ctx?: ToolInvocationContext): Promise<ToolCallResult> => {
+        const args = JSON.parse(arg_string) as { pattern: string; path?: string; include?: string; exclude?: string }
         const cwd = args.path ? path.resolve(args.path) : process.cwd()
         
-        return new Promise((resolve) => {
+        const result = await new Promise<string>((resolve) => {
           const rgArgs = [args.pattern, '--line-number', '--color=never']
           if (args.include) rgArgs.push('--glob', args.include)
           if (args.exclude) rgArgs.push('--glob', `!${args.exclude}`)
@@ -45,6 +46,7 @@ export class SearchCodeTool implements ToolProvider {
             }
           })
         })
+        return { result }
       },
     }
   }

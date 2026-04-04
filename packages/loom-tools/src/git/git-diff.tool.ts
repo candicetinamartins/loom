@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
+import { ToolProvider, ToolRequest, ToolInvocationContext, ToolCallResult } from '@theia/ai-core/lib/common'
 import simpleGit from 'simple-git'
 
 @injectable()
@@ -17,21 +17,22 @@ export class GitDiffTool implements ToolProvider {
         },
         required: [],
       },
-      handler: async (args: { file?: string; staged?: boolean }) => {
+      handler: async (arg_string: string, ctx?: ToolInvocationContext): Promise<ToolCallResult> => {
+        const args = JSON.parse(arg_string) as { file?: string; staged?: boolean }
         const git = simpleGit(process.cwd())
         
+        let result: string
         if (args.file) {
           const diff = await git.diff([args.file])
-          return diff || '(no changes)'
-        }
-        
-        if (args.staged) {
+          result = diff || '(no changes)'
+        } else if (args.staged) {
           const diff = await git.diff(['--staged'])
-          return diff || '(no staged changes)'
+          result = diff || '(no staged changes)'
+        } else {
+          const diff = await git.diff()
+          result = diff || '(no changes)'
         }
-        
-        const diff = await git.diff()
-        return diff || '(no changes)'
+        return { result }
       },
     }
   }

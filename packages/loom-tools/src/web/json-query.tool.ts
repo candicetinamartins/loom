@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
+import { ToolProvider, ToolRequest, ToolInvocationContext, ToolCallResult } from '@theia/ai-core/lib/common'
 
 @injectable()
 export class JsonQueryTool implements ToolProvider {
@@ -16,31 +16,32 @@ export class JsonQueryTool implements ToolProvider {
         },
         required: ['url'],
       },
-      handler: async (args: { url: string; path?: string }) => {
+      handler: async (arg_string: string, ctx?: ToolInvocationContext): Promise<ToolCallResult> => {
+        const args = JSON.parse(arg_string) as { url: string; path?: string }
         try {
           const response = await fetch(args.url)
           if (!response.ok) {
-            return `Error: HTTP ${response.status}`
+            return { result: `Error: HTTP ${response.status}` }
           }
           
           const json = await response.json()
           
           if (!args.path) {
-            return JSON.stringify(json, null, 2)
+            return { result: JSON.stringify(json, null, 2) }
           }
           
           // Navigate path
-          let result: any = json
+          let result: unknown = json
           for (const key of args.path.split('.')) {
             if (result === null || result === undefined) {
-              return `Error: path "${args.path}" not found`
+              return { result: `Error: path "${args.path}" not found` }
             }
-            result = result[key]
+            result = (result as Record<string, unknown>)[key]
           }
           
-          return typeof result === 'string' ? result : JSON.stringify(result, null, 2)
+          return { result: typeof result === 'string' ? result : JSON.stringify(result, null, 2) }
         } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : 'unknown error'}`
+          return { result: `Error: ${error instanceof Error ? error.message : 'unknown error'}` }
         }
       },
     }

@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
+import { ToolProvider, ToolRequest, ToolInvocationContext, ToolCallResult } from '@theia/ai-core/lib/common'
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 
@@ -18,7 +18,8 @@ export class ListDirTool implements ToolProvider {
         },
         required: ['path'],
       },
-      handler: async (args: { path: string; recursive?: boolean }) => {
+      handler: async (arg_string: string, ctx?: ToolInvocationContext): Promise<ToolCallResult> => {
+        const args = JSON.parse(arg_string) as { path: string; recursive?: boolean }
         const fullPath = path.resolve(args.path)
         
         async function listDir(dirPath: string, prefix = ''): Promise<string[]> {
@@ -42,7 +43,7 @@ export class ListDirTool implements ToolProvider {
         }
         
         const lines = await listDir(fullPath)
-        return lines.join('\n') || '(empty directory)'
+        return { result: lines.join('\n') || '(empty directory)' }
       },
     }
   }

@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
+import { ToolProvider, ToolRequest, ToolInvocationContext, ToolCallResult } from '@theia/ai-core/lib/common'
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 
@@ -19,16 +19,20 @@ export class ReadFileTool implements ToolProvider {
         },
         required: ['path'],
       },
-      handler: async (args: { path: string; startLine?: number; endLine?: number }) => {
+      handler: async (arg_string: string, ctx?: ToolInvocationContext): Promise<ToolCallResult> => {
+        const args = JSON.parse(arg_string) as { path: string; startLine?: number; endLine?: number }
         const fullPath = path.resolve(args.path)
         const content = await fs.readFile(fullPath, 'utf-8')
+        let result: string
         if (args.startLine || args.endLine) {
           const lines = content.split('\n')
           const start = (args.startLine ?? 1) - 1
           const end = args.endLine ?? lines.length
-          return lines.slice(start, end).join('\n')
+          result = lines.slice(start, end).join('\n')
+        } else {
+          result = content
         }
-        return content
+        return { result }
       },
     }
   }

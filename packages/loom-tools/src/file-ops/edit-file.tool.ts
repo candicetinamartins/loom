@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
+import { ToolProvider, ToolRequest, ToolInvocationContext, ToolCallResult } from '@theia/ai-core/lib/common'
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 
@@ -19,7 +19,8 @@ export class EditFileTool implements ToolProvider {
         },
         required: ['path', 'old_string', 'new_string'],
       },
-      handler: async (args: { path: string; old_string: string; new_string: string }) => {
+      handler: async (arg_string: string, ctx?: ToolInvocationContext): Promise<ToolCallResult> => {
+        const args = JSON.parse(arg_string) as { path: string; old_string: string; new_string: string }
         const fullPath = path.resolve(args.path)
         const content = await fs.readFile(fullPath, 'utf-8')
         
@@ -33,7 +34,7 @@ export class EditFileTool implements ToolProvider {
         
         const newContent = content.replace(args.old_string, args.new_string)
         await fs.writeFile(fullPath, newContent, 'utf-8')
-        return `File edited: ${args.path}`
+        return { result: `File edited: ${args.path}` }
       },
     }
   }

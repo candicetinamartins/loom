@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
+import { ToolProvider, ToolRequest, ToolInvocationContext, ToolCallResult } from '@theia/ai-core/lib/common'
 import { spawn } from 'node:child_process'
 import * as path from 'node:path'
 
@@ -19,10 +19,11 @@ export class GrepTool implements ToolProvider {
         },
         required: ['pattern'],
       },
-      handler: async (args: { pattern: string; path?: string; include?: string }) => {
+      handler: async (arg_string: string, ctx?: ToolInvocationContext): Promise<ToolCallResult> => {
+        const args = JSON.parse(arg_string) as { pattern: string; path?: string; include?: string }
         const cwd = args.path ? path.resolve(args.path) : process.cwd()
         
-        return new Promise((resolve) => {
+        const result = await new Promise<string>((resolve) => {
           const grepArgs = ['-r', '-n', args.pattern]
           if (args.include) grepArgs.push('--include', args.include)
           grepArgs.push('.')
@@ -34,6 +35,7 @@ export class GrepTool implements ToolProvider {
           proc.stderr.on('data', () => { /* ignore */ })
           proc.on('close', () => resolve(output.trim() || '(no matches)'))
         })
+        return { result }
       },
     }
   }

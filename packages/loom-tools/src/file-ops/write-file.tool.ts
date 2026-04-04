@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
+import { ToolProvider, ToolRequest, ToolInvocationContext, ToolCallResult } from '@theia/ai-core/lib/common'
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 
@@ -18,11 +18,12 @@ export class WriteFileTool implements ToolProvider {
         },
         required: ['path', 'content'],
       },
-      handler: async (args: { path: string; content: string }) => {
+      handler: async (arg_string: string, ctx?: ToolInvocationContext): Promise<ToolCallResult> => {
+        const args = JSON.parse(arg_string) as { path: string; content: string }
         const fullPath = path.resolve(args.path)
         await fs.mkdir(path.dirname(fullPath), { recursive: true })
         await fs.writeFile(fullPath, args.content, 'utf-8')
-        return `File written: ${args.path}`
+        return { result: `File written: ${args.path}` }
       },
     }
   }

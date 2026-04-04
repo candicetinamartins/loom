@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
+import { ToolProvider, ToolRequest, ToolInvocationContext, ToolCallResult } from '@theia/ai-core/lib/common'
 
 @injectable()
 export class WebFetchTool implements ToolProvider {
@@ -16,11 +16,12 @@ export class WebFetchTool implements ToolProvider {
         },
         required: ['url'],
       },
-      handler: async (args: { url: string; maxLength?: number }) => {
+      handler: async (arg_string: string, ctx?: ToolInvocationContext): Promise<ToolCallResult> => {
+        const args = JSON.parse(arg_string) as { url: string; maxLength?: number }
         try {
           const response = await fetch(args.url)
           if (!response.ok) {
-            return `Error: HTTP ${response.status} ${response.statusText}`
+            return { result: `Error: HTTP ${response.status} ${response.statusText}` }
           }
           
           const content = await response.text()
@@ -33,9 +34,9 @@ export class WebFetchTool implements ToolProvider {
             .trim()
           
           const maxLen = args.maxLength ?? 10_000
-          return text.length > maxLen ? text.substring(0, maxLen) + '\n... (truncated)' : text
+          return { result: text.length > maxLen ? text.substring(0, maxLen) + '\n... (truncated)' : text }
         } catch (error) {
-          return `Error fetching ${args.url}: ${error instanceof Error ? error.message : 'unknown error'}`
+          return { result: `Error fetching ${args.url}: ${error instanceof Error ? error.message : 'unknown error'}` }
         }
       },
     }

@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
+import { ToolProvider, ToolRequest, ToolInvocationContext, ToolCallResult } from '@theia/ai-core/lib/common'
 import { glob } from 'glob'
 import * as path from 'node:path'
 
@@ -18,10 +18,11 @@ export class FindFilesTool implements ToolProvider {
         },
         required: ['pattern'],
       },
-      handler: async (args: { pattern: string; cwd?: string }) => {
+      handler: async (arg_string: string, ctx?: ToolInvocationContext): Promise<ToolCallResult> => {
+        const args = JSON.parse(arg_string) as { pattern: string; cwd?: string }
         const cwd = args.cwd ? path.resolve(args.cwd) : process.cwd()
         const files = await glob(args.pattern, { cwd, nodir: true })
-        return files.join('\n') || '(no files found)'
+        return { result: files.join('\n') || '(no files found)' }
       },
     }
   }

@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { ToolProvider, ToolRequest } from '@theia/ai-core/lib/common'
+import { ToolProvider, ToolRequest, ToolInvocationContext, ToolCallResult } from '@theia/ai-core/lib/common'
 import simpleGit from 'simple-git'
 
 @injectable()
@@ -10,7 +10,8 @@ export class GitStatusTool implements ToolProvider {
       name: 'git_status',
       description: 'Get the current git status: staged, unstaged, and untracked files.',
       parameters: { type: 'object', properties: {}, required: [] },
-      handler: async () => {
+      handler: async (arg_string: string, ctx?: ToolInvocationContext): Promise<ToolCallResult> => {
+        const args = JSON.parse(arg_string) as {}
         const git = simpleGit(process.cwd())
         const status = await git.status()
         const lines = [
@@ -19,7 +20,7 @@ export class GitStatusTool implements ToolProvider {
           status.not_added.length ? `Untracked: ${status.not_added.join(', ')}` : '',
           status.deleted.length ? `Deleted:   ${status.deleted.join(', ')}` : '',
         ].filter(Boolean)
-        return lines.length ? lines.join('\n') : 'Nothing to commit, working tree clean'
+        return { result: lines.length ? lines.join('\n') : 'Nothing to commit, working tree clean' }
       },
     }
   }

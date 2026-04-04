@@ -35,18 +35,30 @@ export class GraphSearchSemanticTool {
       signature?: string
     }>
   }> {
-    const embedding = await this.embeddingService.generateEmbedding(input.query)
-    const nodes = await this.graphService.semanticSearch(input.query, embedding, input.limit || 10)
-    
-    return {
-      results: nodes.map(n => ({
+    const queryEmbedding = await this.embeddingService.generateEmbedding(input.query)
+    const nodes = await this.graphService.semanticSearch(input.query, queryEmbedding, input.limit || 10)
+
+    // Compute cosine similarity between query and each node's text representation
+    const results = await Promise.all(nodes.map(async (n) => {
+      const nodeText = [
+        n.properties.name as string,
+        n.properties.signature as string,
+        n.properties.docstring as string,
+      ].filter(Boolean).join(' ')
+      const nodeEmbedding = await this.embeddingService.generateEmbedding(nodeText)
+      const similarity = this.embeddingService.cosineSimilarity(queryEmbedding, nodeEmbedding)
+      return {
         id: n.id,
         name: n.properties.name as string,
         type: n.labels[0],
-        similarity: 0.85, // Placeholder
+        similarity: Math.max(0, Math.min(1, similarity)),
         signature: n.properties.signature as string,
-      })),
-    }
+      }
+    }))
+
+    // Sort by descending similarity
+    results.sort((a, b) => b.similarity - a.similarity)
+    return { results }
   }
 }
 
@@ -144,10 +156,31 @@ export class GraphFindPathTool {
     }>
     relationships: string[]
   } | null> {
-    // Would use shortest path algorithm in graph
-    // Placeholder implementation
-    
-    return null
+    const maxDepth = input.maxDepth ?? 6
+    try {
+      // Kuzu shortest path: variable-length relationship traversal with SHORTEST keyword
+      const rows = await this.graphService.query(`
+        MATCH p = (a)-[:CALLS* SHORTEST 1 MAX ${maxDepth}]->(b)
+        WHERE a.id = '${input.fromId}' AND b.id = '${input.toId}'
+        RETURN nodes(p) AS nodes, rels(p) AS rels
+        LIMIT 1
+      `)
+      if (!rows || rows.length === 0) return null
+
+      const row = rows[0] as { nodes?: any[]; rels?: any[] }
+      const pathNodes: Array<{ id: string; name: string; type: string }> =
+        (row.nodes ?? []).map((n: any) => ({
+          id: n.id ?? n._id ?? String(n),
+          name: n.name ?? n.id ?? String(n),
+          type: n._label ?? 'Node',
+        }))
+      const relationships: string[] =
+        (row.rels ?? []).map((r: any) => r._label ?? r.type ?? 'RELATED')
+
+      return { path: pathNodes, relationships }
+    } catch {
+      return null
+    }
   }
 }
 

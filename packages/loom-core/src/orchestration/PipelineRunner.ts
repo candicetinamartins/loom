@@ -337,12 +337,20 @@ export class PipelineRunner {
 
     previousResults.forEach((waveResult) => {
       waveResult.agentResults.forEach((result, agentName) => {
-        const placeholder = `{${agentName}.key_findings}`
-        if (interpolated.includes(placeholder)) {
-          interpolated = interpolated.replace(
-            placeholder,
-            JSON.stringify(result.key_findings ?? []),
-          )
+        const fields: Record<string, string> = {
+          summary: result.summary ?? '',
+          key_findings: JSON.stringify(result.key_findings ?? []),
+          files_created: JSON.stringify(result.files_created ?? []),
+          files_modified: JSON.stringify(result.files_modified ?? []),
+          next_actions: JSON.stringify(result.next_actions ?? []),
+          status: result.status ?? '',
+        }
+
+        for (const [field, value] of Object.entries(fields)) {
+          const placeholder = `{${agentName}.${field}}`
+          if (interpolated.includes(placeholder)) {
+            interpolated = interpolated.replaceAll(placeholder, value)
+          }
         }
       })
     })

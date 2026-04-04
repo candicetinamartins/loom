@@ -5,8 +5,15 @@ export interface TokenBucket {
   refillRate: number // tokens per second
 }
 
+export interface UsageRecord {
+  provider: string
+  tokens: number
+  timestamp: number
+}
+
 export class RateLimiter {
   private buckets: Map<string, TokenBucket> = new Map()
+  private usageHistory: UsageRecord[] = []
   private defaultCapacity = 100
   private defaultRefillRate = 10 // 10 tokens per second
 
@@ -67,9 +74,28 @@ export class RateLimiter {
     return bucket.tokens >= 1
   }
 
-  recordUsage(provider: string, tokens: number = 1): void {
+  async recordUsage(provider: string, tokens: number = 1): Promise<void> {
     const bucket = this.getBucket(provider)
     this.refill(bucket)
     bucket.tokens = Math.max(0, bucket.tokens - tokens)
+    this.usageHistory.push({ provider, tokens, timestamp: Date.now() })
+  }
+
+  getUsageHistory(provider?: string): UsageRecord[] {
+    if (provider) {
+      return this.usageHistory.filter(r => r.provider === provider)
+    }
+    return [...this.usageHistory]
+  }
+
+  getUsageSince(sinceMs: number, provider?: string): { tokens: number; requests: number } {
+    const cutoff = Date.now() - sinceMs
+    const records = this.usageHistory.filter(
+      r => r.timestamp >= cutoff && (!provider || r.provider === provider)
+    )
+    return {
+      tokens: records.reduce((sum, r) => sum + r.tokens, 0),
+      requests: records.length,
+    }
   }
 }

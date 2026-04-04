@@ -141,18 +141,29 @@ export class LoomLLMService {
       parameters: unknown
     }>
   }): Promise<LLMResponse> {
-    // This integrates with Theia AI's actual API
-    // For now, return a placeholder that matches the interface
-    // Real implementation would call this.chatAgentService or this.agentService
-    
+    const agentId = request.model || 'claude-sonnet-4-5'
+
+    // Combine messages into a single prompt string for ChatAgentService
+    const prompt = request.messages
+      .filter(m => m.role !== 'system')
+      .map(m => m.content)
+      .join('\n')
+
+    const responseText = await this.chatAgentService.sendMessage(agentId, prompt)
+
+    // Estimate token usage from character counts (~4 chars per token)
+    const inputChars = request.messages.reduce((sum, m) => sum + m.content.length, 0)
+    const inputTokens = Math.ceil(inputChars / 4)
+    const outputTokens = Math.ceil((responseText as string).length / 4)
+
     return {
-      content: 'Response from Theia AI',
+      content: responseText as string,
       tokenUsage: {
-        input: 100,
-        output: 50,
-        total: 150
+        input: inputTokens,
+        output: outputTokens,
+        total: inputTokens + outputTokens,
       },
-      model: request.model || 'claude-sonnet-4-5'
+      model: agentId,
     }
   }
 

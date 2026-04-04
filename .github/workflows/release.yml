@@ -65,6 +65,20 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
+          sdk: 10.0.22621.0
+
+      - name: Install Windows SDK
+        shell: powershell
+        run: |
+          $sdkUrl = "https://go.microsoft.com/fwlink/?linkid=2164367"
+          $sdkInstaller = "$env:TEMP\winsdk.exe"
+          Invoke-WebRequest -Uri $sdkUrl -OutFile $sdkInstaller
+          Start-Process -FilePath $sdkInstaller -ArgumentList "/quiet /norestart" -Wait
+
+      - name: Setup npm to use Visual Studio 2022
+        run: |
+          npm config set msvs_version 2022
+          npm config set python python3
 
       - name: Install dependencies
         run: npm install

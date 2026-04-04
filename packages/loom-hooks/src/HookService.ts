@@ -5,7 +5,7 @@ import { TOMLParser } from '@loom/core'
 import { FileService } from '@theia/filesystem/lib/browser/file-service'
 import { TerminalService } from '@theia/terminal/lib/browser/terminal-service'
 import { AgentSession } from '@loom/core'
-import { LoomMsgHub, Channel } from './LoomMsgHub'
+import { LoomMsgHub, Channel } from '@loom/core'
 
 /**
  * Phase 4 — Agent Hooks
@@ -119,7 +119,7 @@ export class HookService {
    */
   private async loadHook(filePath: string): Promise<HookManifest> {
     const content = await fs.readFile(filePath, 'utf-8')
-    const parsed = this.parser.parseSync(content)
+    const parsed = TOMLParser.parse(content)
 
     return {
       name: parsed.name || path.basename(filePath, '.toml'),

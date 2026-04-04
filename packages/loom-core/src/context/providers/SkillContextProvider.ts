@@ -21,7 +21,7 @@ export class SkillContextProvider implements ContextProvider {
       if (!skill) {
         // List available skills
         const allSkills = await this.skillService.getAllSkills()
-        const available = allSkills.slice(0, 10).map(s => `- ${s.name}`).join('\n')
+        const available = allSkills.slice(0, 10).map((s: { name: string }) => `- ${s.name}`).join('\n')
         
         return {
           type: this.type,

@@ -29,7 +29,7 @@ export class MemoryContextProvider implements ContextProvider {
           }
         }
 
-        const content = `[MEMORIES matching "${key}"]\n${relevant.map(r => `- ${r.memory.key}: ${r.memory.content.slice(0, 100)}`).join('\n')}`
+        const content = `[MEMORIES matching "${key}"]\n${relevant.map((r: { memory: { key: string; content: string } }) => `- ${r.memory.key}: ${r.memory.content.slice(0, 100)}`).join('\n')}`
         return {
           type: this.type,
           content,

@@ -21,7 +21,7 @@
     "disableSourceOfProjectReferenceRedirect": true,
     "typeRoots": ["../../node_modules/@types", "../loom-core/src/typings"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../loom-core/src/typings/theia-stubs.d.ts"],
   "exclude": ["node_modules", "lib"],
   "references": [
     { "path": "../loom-graph" }

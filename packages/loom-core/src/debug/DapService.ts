@@ -105,7 +105,7 @@ export class DapService {
     cwd?: string
     runtime?: 'node' | 'python' | 'java'
   }): Promise<{ success: boolean; sessionId: string | null; requiresApproval: boolean }> {
-    const { program, args = [], cwd, runtime = 'node' } = args
+    const { program, args: programArgs = [], cwd, runtime = 'node' } = args
 
     // Check if approval is needed
     if (!this.sessionApproval) {
@@ -131,7 +131,7 @@ export class DapService {
         type: runtime,
         request: 'launch',
         program,
-        args,
+        args: programArgs,
         cwd,
       })
 

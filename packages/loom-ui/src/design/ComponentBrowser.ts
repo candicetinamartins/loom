@@ -27,7 +27,7 @@ export class ComponentBrowserWidget extends Widget {
     this.update()
   }
 
-  protected update(): void {
+  update(): void {
     this.node.innerHTML = `
       <div class="browser-header">
         <h1>Loom Design System - Component Browser</h1>

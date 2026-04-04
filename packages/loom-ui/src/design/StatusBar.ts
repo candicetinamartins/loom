@@ -30,7 +30,7 @@ export class StatusBarWidget extends Widget {
     this.update()
   }
 
-  protected update(): void {
+  update(): void {
     const { agentCount, graphNodes, cost, model, hunks, mode, branch } = this._data
 
     this.node.innerHTML = `

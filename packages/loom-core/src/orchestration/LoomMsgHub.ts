@@ -51,7 +51,7 @@ export type ChannelName = typeof Channel[keyof typeof Channel]
 export interface LoomMsg<T = unknown> {
   channel: ChannelName
   timestamp: number
-  data: T
+  data?: T
   // Common metadata fields used across the system
   sessionId?: string
   breakpointId?: string
@@ -75,8 +75,13 @@ export interface LoomMsg<T = unknown> {
   files_modified?: string[]
   key_findings?: string[]
   next_actions?: string[]
-  stepCount?: number
-  tokenUsage?: number
+  // Additional common fields used in debug and orchestration
+  args?: string[]
+  runtime?: string
+  line?: number
+  file?: string
+  result?: string
+  type?: string
 }
 
 export type Handler<T> = (msg: LoomMsg<T>) => void | Promise<void>

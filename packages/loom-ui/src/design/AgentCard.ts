@@ -36,7 +36,7 @@ export class AgentCardWidget extends Widget {
     this.update()
   }
 
-  protected update(): void {
+  update(): void {
     const { agentName, state, stepCount, maxSteps, tokenUsage, cost, filesModified } = this._data
 
     this.node.innerHTML = `

@@ -66,8 +66,6 @@ jobs:
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup Visual Studio C++ build tools
         uses: ilammy/msvc-dev-cmd@v1

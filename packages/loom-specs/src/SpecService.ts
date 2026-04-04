@@ -2,7 +2,17 @@ import { injectable, inject } from 'inversify'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { TOMLParser } from '@loom/core'
-import { GraphService, EmbeddingService } from '@loom/graph'
+
+// Avoid circular dependency with @loom/graph
+interface GraphService {
+  query(cypher: string): Promise<any[]>
+  findModuleForNode(nodeId: string): Promise<any | null>
+  semanticSearch(label: string, embedding: number[], limit: number): Promise<any[]>
+}
+
+interface EmbeddingService {
+  generateEmbedding(text: string): Promise<number[]>
+}
 
 /**
  * Spec format: TOML + 3 markdown files
@@ -80,8 +90,8 @@ export class SpecService {
 
   constructor(
     @inject(TOMLParser) private tomlParser: TOMLParser,
-    @inject(GraphService) private graphService: GraphService,
-    @inject(EmbeddingService) private embeddingService: EmbeddingService
+    @inject('GraphService') private graphService: GraphService,
+    @inject('EmbeddingService') private embeddingService: EmbeddingService
   ) {
     this.parser = tomlParser
   }

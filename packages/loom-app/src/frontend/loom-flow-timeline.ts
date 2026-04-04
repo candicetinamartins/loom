@@ -1,8 +1,23 @@
 import { injectable, inject } from 'inversify'
 import { FrontendApplicationContribution, WidgetManager } from '@theia/core/lib/browser'
 import { EditorManager } from '@theia/editor/lib/browser/editor-manager'
-import { FlowTimelineWidget } from '@loom/ui'
-import { FlowTrackingService } from '@loom/core'
+
+// Avoid circular dependency with @loom/ui and @loom/core
+interface FlowTimelineWidget {
+  id: string
+  title: { label: string }
+  node: HTMLElement
+  addEvent(event: any): void
+  setIntent(intent: string, confidence: number): void
+}
+
+interface FlowTrackingService {
+  subscribe(callback: (event: any) => void): void
+  inferIntent(): { intent: string; confidence: number }
+}
+
+// Constructor workaround for interface
+const FlowTimelineWidget = function() {} as unknown as { new (): FlowTimelineWidget }
 
 @injectable()
 export class LoomFlowTimelineContribution implements FrontendApplicationContribution {

@@ -1,6 +1,10 @@
 import { injectable, inject } from 'inversify'
-import { GraphService } from '@loom/graph'
 import { LoomMsgHub, Channel } from '@loom/core'
+
+// Avoid circular dependency with @loom/graph
+interface GraphService {
+  query(cypher: string): Promise<any[]>
+}
 
 /**
  * Phase 6 — Three-Tier Memory System
@@ -45,7 +49,7 @@ export class MemoryService {
   private tier2Ready = false
 
   constructor(
-    @inject(GraphService) private readonly graphService: GraphService,
+    @inject('GraphService') private readonly graphService: GraphService,
     @inject(LoomMsgHub) private hub: LoomMsgHub,
   ) {}
 

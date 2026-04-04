@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify'
-import { GraphService, GraphNode } from '../GraphService'
-import { EmbeddingService } from '../EmbeddingService'
+import { GraphService, GraphNode } from '@loom/graph'
+import { EmbeddingService } from '@loom/graph'
 
 /**
  * Graph Tools - 9 tools for knowledge graph queries
@@ -81,8 +81,8 @@ export class GraphSearchBM25Tool {
 }
 
 @injectable()
-export class GraphQueryTool {
-  readonly name = 'graph_query'
+export class GraphCypherTool {
+  readonly name = 'graph_cypher'
   readonly description = 'Execute a custom Cypher query on the knowledge graph'
 
   constructor(@inject(GraphService) private graphService: GraphService) {}
@@ -116,7 +116,7 @@ export class GraphGetNeighbourhoodTool {
       type: string
     }>
   }> {
-    const result = await this.graphService.getFunctionNeighbourhood(input.nodeId)
+    const result = await this.graphService.getFunctionNeighborhood(input.nodeId)
     
     return {
       nodes: result.nodes,
@@ -215,7 +215,7 @@ export class GraphGetCallersTool {
       filePath?: string
     }>
   }> {
-    const result = await this.graphService.getFunctionNeighbourhood(input.functionId)
+    const result = await this.graphService.getFunctionNeighborhood(input.functionId)
     
     // Filter for CALLS relationships where this function is the target
     const callers = result.relationships
@@ -247,7 +247,7 @@ export class GraphGetCalleesTool {
       filePath?: string
     }>
   }> {
-    const result = await this.graphService.getFunctionNeighbourhood(input.functionId)
+    const result = await this.graphService.getFunctionNeighborhood(input.functionId)
     
     // Filter for CALLS relationships where this function is the source
     const callees = result.relationships

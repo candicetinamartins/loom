@@ -85,10 +85,19 @@ export class FlowTrackingService {
       .slice(0, limit)
   }
 
-  // Subscribe to events
+  // Subscribe to all events
   subscribe(callback: (event: FlowEvent) => void): () => void {
     this.subscribers.add(callback)
     return () => this.subscribers.delete(callback)
+  }
+
+  // Subscribe to events of a specific type
+  on(type: FlowEventType, callback: (data: Record<string, unknown>) => void): () => void {
+    return this.subscribe(event => {
+      if (event.type === type) {
+        callback(event.data)
+      }
+    })
   }
 
   // Intent inference

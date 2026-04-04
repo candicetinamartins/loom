@@ -165,6 +165,19 @@ Apply these skills as appropriate for the current task.`
   }
 
   /**
+   * Build a default system prompt string (no agent config needed)
+   */
+  buildPromptString(userContext?: string): string {
+    const parts: string[] = []
+    parts.push('You are a helpful AI assistant in the Loom IDE.')
+    parts.push(this.buildGraphProtocol())
+    if (userContext) {
+      parts.push(`## User Context\n\n${userContext}`)
+    }
+    return parts.join('\n\n')
+  }
+
+  /**
    * Tool group guidelines
    */
   private buildToolGuidelines(toolGroups: string[]): string {

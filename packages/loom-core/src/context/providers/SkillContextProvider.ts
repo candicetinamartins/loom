@@ -30,7 +30,8 @@ export class SkillContextProvider implements ContextProvider {
         }
       }
 
-      const content = `[SKILL: ${skill.name}]\n${skill.description || 'No description'}\n\n${skill.content ? skill.content.slice(0, 500) : ''}`
+      const skillContent = (skill as any).content as string | undefined
+      const content = `[SKILL: ${skill.name}]\n${skill.description || 'No description'}\n\n${skillContent ? skillContent.slice(0, 500) : ''}`
 
       return {
         type: this.type,

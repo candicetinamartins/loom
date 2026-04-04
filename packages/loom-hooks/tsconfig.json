@@ -15,7 +15,12 @@
     "resolveJsonModule": true,
     "types": ["node"],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "baseUrl": ".",
+    "paths": {
+      "@loom/core": ["../loom-core/src"],
+      "@loom/core/*": ["../loom-core/src/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "lib"]

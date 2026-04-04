@@ -88,7 +88,7 @@ export class LoomFlowContribution implements FrontendApplicationContribution {
       })
 
       // Clean up when terminal closes
-      terminal.onDidDispose(() => {
+      terminal.onDisposed(() => {
         onDataDisposable.dispose()
       })
     })
@@ -116,13 +116,13 @@ export class LoomFlowContribution implements FrontendApplicationContribution {
     if (!this.problemManager) return
 
     // Track diagnostic changes
-    this.problemManager.onDidChangeMarkers((event: { resource: any; owner: string }) => {
-      const markers = this.problemManager?.findMarkers({ uri: event.resource })
+    this.problemManager.onDidChangeMarkers((event: { uri: any; owner?: string }) => {
+      const markers = this.problemManager?.findMarkers({ uri: event.uri })
       const errorCount = markers?.filter(m => m.data?.severity === 1).length ?? 0
       const warningCount = markers?.filter(m => m.data?.severity === 2).length ?? 0
 
       this.flowService.trackEvent('diagnostic_change', {
-        uri: event.resource.toString(),
+        uri: event.uri.toString(),
         errorCount,
         warningCount,
         owner: event.owner,
@@ -150,7 +150,7 @@ export class LoomFlowContribution implements FrontendApplicationContribution {
     if (!this.testService) return
 
     // Track test run events
-    this.testService.onDidChangeTestState((event: { testId: string; state: string; duration: number }) => {
+    this.testService.onDidChangeTestState((event: { testId: string; state: string; duration?: number }) => {
       this.flowService.trackEvent('test_run', {
         testId: event.testId,
         state: event.state,

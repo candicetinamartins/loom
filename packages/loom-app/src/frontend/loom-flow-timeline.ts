@@ -16,7 +16,7 @@ export class LoomFlowTimelineContribution implements FrontendApplicationContribu
 
   async onStart(): Promise<void> {
     // Subscribe to flow events to update timeline
-    this.flowService.subscribe(event => {
+    this.flowService.subscribe((event: { id: string; type: string; timestamp: number; [key: string]: any }) => {
       if (this.timelineWidget) {
         const color = this.getEventColor(event.type)
         const label = this.formatEventLabel(event)

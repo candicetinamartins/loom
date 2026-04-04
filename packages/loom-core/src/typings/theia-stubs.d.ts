@@ -72,6 +72,8 @@ declare module '@theia/core/lib/browser/quick-input/quick-input-service' {
 // ----------------------------------------------------------------------------
 // @theia/core - Node (Backend)
 // ----------------------------------------------------------------------------
+// @theia/core/lib/node
+// ----------------------------------------------------------------------------
 
 declare module '@theia/core/lib/node' {
   export interface BackendApplicationContribution {

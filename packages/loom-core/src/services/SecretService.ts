@@ -11,6 +11,10 @@ export class SecretService {
     return await keytar.getPassword(this.serviceName, key)
   }
 
+  async get(key: string): Promise<string | null> {
+    return this.getSecret(key)
+  }
+
   async deleteSecret(key: string): Promise<boolean> {
     return await keytar.deletePassword(this.serviceName, key)
   }

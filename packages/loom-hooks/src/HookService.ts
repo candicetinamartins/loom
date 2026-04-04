@@ -1,11 +1,9 @@
 import { injectable, inject } from 'inversify'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { TOMLParser } from '@loom/core'
+import { TOMLParser, LoomMsgHub, Channel } from '@loom/core'
 import { FileService } from '@theia/filesystem/lib/browser/file-service'
 import { TerminalService } from '@theia/terminal/lib/browser/terminal-service'
-import { AgentSession } from '@loom/core'
-import { LoomMsgHub, Channel } from '@loom/core'
 
 /**
  * Phase 4 — Agent Hooks
@@ -119,7 +117,7 @@ export class HookService {
    */
   private async loadHook(filePath: string): Promise<HookManifest> {
     const content = await fs.readFile(filePath, 'utf-8')
-    const parsed = TOMLParser.parse(content)
+    const parsed = this.parser.parse<Record<string, any>>(content)
 
     return {
       name: parsed.name || path.basename(filePath, '.toml'),
@@ -374,9 +372,16 @@ export class HookService {
   ): Promise<string> {
     const { agent, prompt } = config
     const interpolated = this.interpolateTemplate(prompt, context)
-    
-    // Stub: AgentSession requires DI container - returning mock result
-    return JSON.stringify({ agent, prompt: interpolated, result: 'Hook agent execution stub' })
+
+
+    // Publish ask-agent request to hub for the pipeline to handle
+    await this.hub.publish(LoomMsgHub.msg(Channel.HOOK_TRIGGERED, {
+      action: 'askAgent',
+      agent,
+      prompt: interpolated,
+    }))
+
+    return JSON.stringify({ agent, prompt: interpolated, status: 'dispatched' })
   }
 
   /**

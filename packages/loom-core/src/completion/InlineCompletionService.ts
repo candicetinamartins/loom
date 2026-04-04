@@ -30,8 +30,7 @@ export interface InlineCompletion {
 @injectable()
 export class InlineCompletionService {
   constructor(
-    @inject(GraphService)
-    private readonly graphService: GraphService,
+    @inject(GraphService) private readonly graphService: GraphService,
   ) {}
 
   /**

@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { TOMLParser } from '@loom/core'
+import { TOMLParser } from '../config/TOMLParser'
 
 export interface ProjectContext {
   name: string
@@ -31,7 +31,7 @@ export class ProjectContextService {
     
     try {
       const content = await fs.readFile(contextPath, 'utf-8')
-      const parsed = await this.parser.parse(content)
+      const parsed = this.parser.parse<Record<string, any>>(content)
       this.context = this.validateAndNormalize(parsed)
       return this.context
     } catch {
@@ -121,7 +121,7 @@ export class ProjectContextService {
     name: string
     framework?: { name: string; version: string }
   }> {
-    const parsed = await this.parser.parse(content)
+    const parsed = this.parser.parse<Record<string, any>>(content)
     return { name: parsed.package?.name || 'unnamed-rust-project' }
   }
 

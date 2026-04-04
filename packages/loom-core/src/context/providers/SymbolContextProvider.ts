@@ -8,8 +8,7 @@ export class SymbolContextProvider implements ContextProvider {
   readonly prefix = 'symbol:'
 
   constructor(
-    @inject(GraphService)
-    private readonly graphService: GraphService,
+    @inject(GraphService) private readonly graphService: GraphService,
   ) {}
 
   async provideContext(mention: string): Promise<MentionContext> {

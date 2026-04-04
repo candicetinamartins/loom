@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify'
 import * as http from 'http'
 import * as crypto from 'crypto'
-import { LoomMsgHub, Channel } from '@loom/core'
+import { LoomMsgHub, Channel } from '../orchestration/LoomMsgHub'
 import { PipelineRunner } from '../orchestration/PipelineRunner'
 
 /**

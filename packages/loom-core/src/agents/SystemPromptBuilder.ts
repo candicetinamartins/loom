@@ -9,8 +9,8 @@
  * 5. Flow context (current intent)
  */
 
-import { GraphContextFormatter } from '@loom/graph'
-import { TokenUsageTracker, buildSystemPromptWithProtocol } from '../index'
+import { TokenUsageTracker } from './TokenUsageTracker'
+import { buildSystemPromptWithProtocol } from './AgentResultSchema'
 
 import { FlowContext } from '../services/FlowTrackingService'
 
@@ -35,7 +35,6 @@ export interface ActiveSkill {
 
 export class SystemPromptBuilder {
   constructor(
-    private graphFormatter: GraphContextFormatter,
     private tracker: TokenUsageTracker,
   ) {}
 
@@ -162,6 +161,19 @@ Align your approach with this intent.`
 ${lines.join('\n\n')}
 
 Apply these skills as appropriate for the current task.`
+  }
+
+  /**
+   * Build a default system prompt string (no agent config needed)
+   */
+  buildPromptString(userContext?: string): string {
+    const parts: string[] = []
+    parts.push('You are a helpful AI assistant in the Loom IDE.')
+    parts.push(this.buildGraphProtocol())
+    if (userContext) {
+      parts.push(`## User Context\n\n${userContext}`)
+    }
+    return parts.join('\n\n')
   }
 
   /**

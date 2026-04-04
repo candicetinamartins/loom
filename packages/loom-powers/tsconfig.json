@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "commonjs",
-    "lib": ["ES2022", "DOM"],
+    "lib": ["ES2022"],
     "outDir": "./lib",
     "rootDir": "./src",
     "strict": true,
@@ -23,6 +23,6 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules", "lib"],
   "references": [
-    { "path": "../loom-graph" }
+    { "path": "../loom-core" }
   ]
 }

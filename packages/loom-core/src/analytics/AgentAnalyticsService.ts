@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { LoomMsgHub, Channel } from '@loom/core'
+import { LoomMsgHub, Channel } from '../orchestration/LoomMsgHub'
 
 /**
  * Phase 8 — Agent Analytics & Cost Controls

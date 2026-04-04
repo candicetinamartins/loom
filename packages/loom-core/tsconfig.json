@@ -17,6 +17,7 @@
     "types": ["node"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "baseUrl": ".",
     "paths": {
       "@theia/ai-core/lib/browser/agent-service": ["./src/stubs/@theia/ai-core/lib/browser/agent-service"],
@@ -25,5 +26,8 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "lib"]
+  "exclude": ["node_modules", "lib"],
+  "references": [
+    { "path": "../loom-graph" }
+  ]
 }

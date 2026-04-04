@@ -126,7 +126,6 @@ export class MultiAgentCommand {
   }
 
   private async invokeAgent(agentConfig: WaveAgent, task: string): Promise<AgentCompletePayload> {
-    // Mock implementation for now
     await this.hub.publish(
       LoomMsgHub.msg(Channel.AGENT_STARTED, {
         agent: agentConfig.agent,
@@ -134,22 +133,45 @@ export class MultiAgentCommand {
       })
     )
 
-    // Simulate agent execution
-    await new Promise(resolve => setTimeout(resolve, 100))
+    const subtask = agentConfig.subtask || task
+    const startTime = Date.now()
+
+    let responseText: string
+    try {
+      responseText = await this.chatAgentService.sendMessage(
+        agentConfig.agent,
+        subtask,
+      ) as string
+    } catch (error) {
+      // Agent not found or unavailable — fall back to any registered agent
+      const agents = this.agentService.getAgents()
+      const fallback = agents[0]
+      if (!fallback) {
+        throw new Error(`No agents available to handle task: ${subtask}`)
+      }
+      responseText = await this.chatAgentService.sendMessage(
+        fallback.id,
+        `[Acting as ${agentConfig.agent}] ${subtask}`,
+      ) as string
+    }
+
+    const elapsed = Date.now() - startTime
+    const outputTokens = Math.ceil(responseText.length / 4)
+    const inputTokens = Math.ceil(subtask.length / 4)
 
     const result: AgentCompletePayload = {
       agentName: agentConfig.agent,
       status: 'complete',
-      summary: `Completed ${task} using ${agentConfig.agent} expertise`,
+      summary: responseText.slice(0, 500),
       files_created: [],
       files_modified: [],
-      key_findings: [`Analyzed by ${agentConfig.agent}`],
+      key_findings: [responseText.slice(0, 200)],
       next_actions: [],
       stepCount: 1,
       tokenUsage: {
-        input: 100,
-        output: 50,
-        total: 150,
+        input: inputTokens,
+        output: outputTokens,
+        total: inputTokens + outputTokens,
       },
     }
 
@@ -157,6 +179,7 @@ export class MultiAgentCommand {
       LoomMsgHub.msg(Channel.AGENT_COMPLETE, {
         agent: agentConfig.agent,
         status: 'complete',
+        elapsedMs: elapsed,
       })
     )
 

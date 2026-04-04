@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { TOMLParser } from '../utils/TOMLParser'
+import { TOMLParser } from '../config/TOMLParser'
 import { PipelineRunner, PipelinePlan, Wave } from './PipelineRunner'
 import { LoomMsgHub, Channel } from './LoomMsgHub'
 
@@ -116,7 +116,7 @@ export class OrchestrateCommand {
       : path.join(this.workspaceRoot, filePath)
     
     const content = await fs.readFile(fullPath, 'utf-8')
-    const parsed = TOMLParser.parse(content)
+    const parsed = new TOMLParser().parse<Record<string, any>>(content)
 
     // Convert parsed TOML to PipelinePlan format
     return this.convertTOMLToPlan(parsed)

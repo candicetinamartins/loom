@@ -10,6 +10,7 @@ import { TokenUsageTracker } from './agents/TokenUsageTracker'
 import { SecretService } from './services/SecretService'
 import { RateLimiter } from './services/RateLimiter'
 import { FlowTrackingService } from './services/FlowTrackingService'
+import { ConversationHistoryService } from './services/ConversationHistoryService'
 import { TOMLParser } from './config/TOMLParser'
 import { ConversationHistoryService } from './services/ConversationHistoryService'
 

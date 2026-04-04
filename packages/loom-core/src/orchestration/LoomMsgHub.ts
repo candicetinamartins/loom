@@ -126,57 +126,56 @@ export interface LoomMsg<T = unknown> {
 
 export type Handler<T> = (msg: LoomMsg<T>) => void | Promise<void>
 
-export class LoomMsgHub extends EventEmitter {
+export class LoomMsgHub {
+  private emitter = new EventEmitter()
   private history: Map<ChannelName, LoomMsg[]> = new Map()
 
-  // Override EventEmitter.on to return unsubscribe function
-  override on<T>(channel: ChannelName, handler: Handler<T>): this {
-    super.on(channel, handler)
-    return this
+  // Subscribe and return unsubscribe function
+  on<T>(channel: ChannelName, handler: Handler<T>): () => void {
+    this.emitter.on(channel, handler)
+    return () => this.emitter.off(channel, handler)
   }
 
-  // Custom subscribe that returns unsubscribe
+  // Custom subscribe that returns unsubscribe (alias for on)
   subscribe<T>(channel: ChannelName, handler: Handler<T>): () => void {
-    super.on(channel, handler)
-    return () => this.off(channel, handler)
+    return this.on(channel, handler)
   }
 
-  // Override EventEmitter.once - always returns this for compatibility
-  override once<T>(channel: ChannelName, handler: Handler<T>): this {
-    super.once(channel, handler)
-    return this
+  once<T>(channel: ChannelName, handler: Handler<T>): () => void {
+    this.emitter.once(channel, handler)
+    return () => this.emitter.off(channel, handler)
   }
 
   // Async version that returns Promise - use this for awaiting messages
   onceAsync<T>(channel: ChannelName): Promise<LoomMsg<T>> {
     return new Promise((resolve) => {
-      super.once(channel, resolve as any)
+      this.emitter.once(channel, resolve as any)
     })
   }
 
   // Custom waitFor that returns Promise
   waitFor<T>(channel: ChannelName): Promise<LoomMsg<T>> {
     return new Promise((resolve) => {
-      super.once(channel, resolve)
+      this.emitter.once(channel, resolve)
     })
   }
 
   async publish<T>(msg: LoomMsg<T>): Promise<void> {
     msg.timestamp = Date.now()
-    
+
     if (!this.history.has(msg.channel)) {
       this.history.set(msg.channel, [])
     }
     this.history.get(msg.channel)!.push(msg)
-    
-    this.emit(msg.channel, msg)
+
+    this.emitter.emit(msg.channel, msg)
   }
 
-  static msg<T>(channel: ChannelName, fields: Omit<LoomMsg<T>, 'channel' | 'timestamp'>): LoomMsg<T> {
+  static msg<T>(channel: ChannelName, data: T): LoomMsg<T> {
     return {
       channel,
       timestamp: Date.now(),
-      ...fields,
+      data,
     }
   }
 
@@ -186,6 +185,6 @@ export class LoomMsgHub extends EventEmitter {
 
   dispose(): void {
     this.history.clear()
-    this.removeAllListeners()
+    this.emitter.removeAllListeners()
   }
 }

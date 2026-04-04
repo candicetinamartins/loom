@@ -1,7 +1,11 @@
 import { injectable, inject } from 'inversify'
 import * as fs from 'fs/promises'
 import * as path from 'path'
+import { execFile } from 'child_process'
+import { promisify } from 'util'
 import { TOMLParser } from '@loom/core'
+
+const execFileAsync = promisify(execFile)
 
 /**
  * CommitService - Generate conventional commits with spec references
@@ -79,9 +83,7 @@ export class CommitService {
    * Execute commit with the generated message
    */
   async executeCommit(message: string): Promise<void> {
-    // This would execute git commit -m "message"
-    // For now, placeholder
-    console.log(`[CommitService] Executing commit:\n${message}`)
+    await execFileAsync('git', ['commit', '-m', message], { cwd: this.workspaceRoot })
   }
 
   /**
@@ -91,7 +93,7 @@ export class CommitService {
     try {
       const activeSpecPath = path.join(this.workspaceRoot, '.loom', 'active-spec.toml')
       const content = await fs.readFile(activeSpecPath, 'utf-8')
-      const parsed = this.parser.parseSync(content)
+      const parsed = this.parser.parse<{ spec?: string }>(content)
       return parsed.spec || null
     } catch {
       return null
@@ -116,13 +118,13 @@ set_at = "${new Date().toISOString()}"
   }
 
   private async getStagedDiff(): Promise<string> {
-    // Placeholder - would call git diff --staged
-    return ''
+    const { stdout } = await execFileAsync('git', ['diff', '--staged'], { cwd: this.workspaceRoot })
+    return stdout
   }
 
   private async getStagedFiles(): Promise<string[]> {
-    // Placeholder - would call git diff --staged --name-only
-    return []
+    const { stdout } = await execFileAsync('git', ['diff', '--staged', '--name-only'], { cwd: this.workspaceRoot })
+    return stdout.split('\n').map(f => f.trim()).filter(Boolean)
   }
 
   private detectCommitType(files: string[], diff: string): CommitSuggestion['type'] {
@@ -208,8 +210,11 @@ set_at = "${new Date().toISOString()}"
     }
     
     // Try to extract from branch name
-    // Placeholder - would call git branch --show-current
-    const branchName = ''
+    let branchName = ''
+    try {
+      const { stdout } = await execFileAsync('git', ['branch', '--show-current'], { cwd: this.workspaceRoot })
+      branchName = stdout.trim()
+    } catch { /* not a git repo or detached HEAD */ }
     const specMatch = branchName.match(/spec[/-]([a-z-]+)/)
     if (specMatch) {
       return specMatch[1]

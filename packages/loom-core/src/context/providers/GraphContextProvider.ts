@@ -8,8 +8,7 @@ export class GraphContextProvider implements ContextProvider {
   readonly prefix = 'graph:'
 
   constructor(
-    @inject(GraphService)
-    private readonly graphService: GraphService,
+    @inject(GraphService) private readonly graphService: GraphService,
   ) {}
 
   async provideContext(mention: string): Promise<MentionContext> {

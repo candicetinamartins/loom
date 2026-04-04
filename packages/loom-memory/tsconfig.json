@@ -17,8 +17,13 @@
     "resolveJsonModule": true,
     "types": ["node"],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "disableSourceOfProjectReferenceRedirect": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "lib"]
+  "exclude": ["node_modules", "lib"],
+  "references": [
+    { "path": "../loom-graph" },
+    { "path": "../loom-core" }
+  ]
 }

@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2020",
     "module": "commonjs",
-    "lib": ["ES2022", "DOM"],
+    "lib": ["ES2020"],
     "outDir": "./lib",
     "rootDir": "./src",
     "strict": true,
@@ -13,16 +13,11 @@
     "declarationMap": true,
     "sourceMap": true,
     "composite": true,
-    "moduleResolution": "node",
     "resolveJsonModule": true,
-    "types": ["node"],
+    "moduleResolution": "node",
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "disableSourceOfProjectReferenceRedirect": true
+    "emitDecoratorMetadata": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "lib"],
-  "references": [
-    { "path": "../loom-graph" }
-  ]
+  "exclude": ["node_modules", "lib"]
 }

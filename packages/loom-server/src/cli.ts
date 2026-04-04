@@ -5,9 +5,12 @@ interface ServerContext {
   graph: GraphService | null
 }
 
-export async function createServer(port: number): Promise<http.Server> {
+export async function createServer(port: number, dbPath?: string): Promise<http.Server> {
+  const graphService = new GraphService(dbPath || '.loom/graph.kuzu')
+  await graphService.initialize()
+
   const context: ServerContext = {
-    graph: null
+    graph: graphService
   }
 
   const server = http.createServer((req, res) => {
@@ -70,14 +73,29 @@ async function handleGraphQuery(
 
   req.on('end', async () => {
     try {
-      const { query, parameters } = JSON.parse(body)
-      
-      // Placeholder - real implementation would use KuzuGraphService
+      const { query } = JSON.parse(body)
+
+      if (!query) {
+        res.writeHead(400, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ success: false, error: 'Query is required' }))
+        return
+      }
+
+      if (!context.graph) {
+        res.writeHead(503, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ success: false, error: 'Graph not initialized' }))
+        return
+      }
+
+      const startTime = Date.now()
+      const data = await context.graph.query(query)
+      const executionTime = Date.now() - startTime
+
       res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(JSON.stringify({
         success: true,
-        data: [],
-        executionTime: 0
+        data,
+        executionTime
       }))
     } catch (error) {
       res.writeHead(400, { 'Content-Type': 'application/json' })
@@ -92,8 +110,9 @@ async function handleGraphQuery(
 // CLI entry point
 if (require.main === module) {
   const port = parseInt(process.argv.find(arg => arg.startsWith('--port'))?.split('=')[1] || '57321', 10)
-  
-  createServer(port).catch((err) => {
+  const dbPath = process.argv.find(arg => arg.startsWith('--db'))?.split('=')[1]
+
+  createServer(port, dbPath).catch((err) => {
     console.error('Failed to start server:', err)
     process.exit(1)
   })

@@ -1,6 +1,6 @@
 /**
  * ToolProvider - Provides tool definitions for LLM service
- * 
+ *
  * Wraps ToolGroupRegistry for LLM tool calls
  */
 
@@ -17,6 +17,13 @@ export interface Tool {
   name: string
   description: string
   handler: (args: any) => Promise<ToolCallResult>
+}
+
+export interface LoomTool {
+  name: string
+  description: string
+  parameters: unknown
+  execute: (args: Record<string, unknown>) => Promise<unknown>
 }
 
 @injectable()

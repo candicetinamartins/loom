@@ -30,11 +30,11 @@ export class SkillContextProvider implements ContextProvider {
         }
       }
 
-      const promptContent = skill.levels?.[0]?.prompt || 'No prompt content'
+      const promptContent = skill.levels?.[0]?.prompt || (skill as any).content || 'No prompt content'
       const content = `[SKILL: ${skill.name}]
 ${skill.description || 'No description'}
 
-${promptContent.slice(0, 500)}`
+${(promptContent as string).slice(0, 500)}`
 
       return {
         type: this.type,

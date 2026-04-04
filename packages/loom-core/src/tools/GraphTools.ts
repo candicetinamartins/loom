@@ -38,7 +38,7 @@ export class GraphSearchSemanticTool {
     const nodes = await this.graphService.semanticSearch(input.query, queryEmbedding, input.limit || 10)
 
     // Compute cosine similarity between query and each node's text representation
-    const results = await Promise.all(nodes.map(async (n) => {
+    const results = await Promise.all(nodes.map(async (n: GraphNode) => {
       const nodeText = [
         n.properties.name as string,
         n.properties.signature as string,
@@ -56,7 +56,7 @@ export class GraphSearchSemanticTool {
     }))
 
     // Sort by descending similarity
-    results.sort((a, b) => b.similarity - a.similarity)
+    results.sort((a: any, b: any) => b.similarity - a.similarity)
     return { results }
   }
 }
@@ -81,7 +81,7 @@ export class GraphSearchBM25Tool {
     const nodes = await this.graphService.findFunctionByName(input.query)
     
     return {
-      results: nodes.map(n => ({
+      results: nodes.map((n: GraphNode) => ({
         id: n.id,
         name: n.properties.name as string,
         type: n.labels[0],
@@ -131,7 +131,7 @@ export class GraphGetNeighbourhoodTool {
     
     return {
       nodes: result.nodes,
-      relationships: result.relationships.map(r => ({
+      relationships: result.relationships.map((r: { startNode: string; endNode: string; type: string }) => ({
         source: r.startNode,
         target: r.endNode,
         type: r.type,
@@ -222,7 +222,7 @@ export class GraphFindFunctionTool {
     const nodes = await this.graphService.findFunctionByName(input.name)
     
     return {
-      functions: nodes.map(n => ({
+      functions: nodes.map((n: { id: string; properties: { name: string; signature: string; filePath: string; line: number } }) => ({
         id: n.id,
         name: n.properties.name as string,
         signature: n.properties.signature as string,
@@ -251,12 +251,12 @@ export class GraphGetCallersTool {
     
     // Filter for CALLS relationships where this function is the target
     const callers = result.relationships
-      .filter(r => r.type === 'CALLS' && r.endNode === input.functionId)
-      .map(r => result.nodes.find(n => n.id === r.startNode))
+      .filter((r: any) => r.type === 'CALLS' && r.endNode === input.functionId)
+      .map((r: any) => result.nodes.find((n: any) => n.id === r.startNode))
       .filter(Boolean)
     
     return {
-      callers: callers.map(n => ({
+      callers: callers.map((n: any) => ({
         id: n!.id,
         name: n!.properties.name as string,
         filePath: n!.properties.filePath as string,
@@ -283,12 +283,12 @@ export class GraphGetCalleesTool {
     
     // Filter for CALLS relationships where this function is the source
     const callees = result.relationships
-      .filter(r => r.type === 'CALLS' && r.startNode === input.functionId)
-      .map(r => result.nodes.find(n => n.id === r.endNode))
+      .filter((r: any) => r.type === 'CALLS' && r.startNode === input.functionId)
+      .map((r: any) => result.nodes.find((n: any) => n.id === r.endNode))
       .filter(Boolean)
     
     return {
-      callees: callees.map(n => ({
+      callees: callees.map((n: any) => ({
         id: n!.id,
         name: n!.properties.name as string,
         filePath: n!.properties.filePath as string,

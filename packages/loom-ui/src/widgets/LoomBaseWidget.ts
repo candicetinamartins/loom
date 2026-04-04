@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify'
-import { Widget } from '@lumino/widgets'
-import { ResizeMessage, Message } from '@lumino/messaging'
+import { Widget, ResizeMessage } from '@lumino/widgets'
+import { Message } from '@lumino/messaging'
 import { Disposable } from '@theia/core'
 
 export interface LoomWidgetOptions {

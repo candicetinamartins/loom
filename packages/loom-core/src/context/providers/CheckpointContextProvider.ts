@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify'
 import { MentionContext, ContextProvider } from '../MentionContextProvider'
-import { CheckpointService } from '../checkpoints/CheckpointService'
+import { CheckpointService } from '../../checkpoints/CheckpointService'
 
 @injectable()
 export class CheckpointContextProvider implements ContextProvider {

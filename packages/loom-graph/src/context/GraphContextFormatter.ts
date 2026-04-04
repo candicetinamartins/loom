@@ -115,7 +115,7 @@ export class GraphContextFormatter {
       if (n.type === 'Package') return this.formatPackage(n as PackageNode)
       if (n.type === 'Module') return this.formatModule(n as ModuleNode)
       if (n.type === 'Memory') return this.formatMemory(n as MemoryNode)
-      return `${n.type.toLowerCase()}:${n.name || n.id}`
+      return `${n.type?.toLowerCase() || 'node'}:${n.name || n.id}`
     })
 
     const edgeLines = edges.map(e =>

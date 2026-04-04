@@ -90,12 +90,12 @@ export class SystemPromptBuilder {
 
   private formatFlowContext(context: FlowContext): string {
     return `Current Flow State:
-Intent: ${context.intent.type} (${Math.round(context.intent.confidence * 100)}% confidence)
+Intent: ${context.intent} (${Math.round(context.confidence * 100)}% confidence)
 Recent Events:
-${context.recentEvents.map(e => `- ${e.type}: ${e.description}`).join('\n')}
+${context.recentEvents.map(e => `- ${e.type}: ${e.data?.description || e.filePath || 'No details'}`).join('\n')}
 Active File: ${context.activeFile || 'None'}
 Terminal Active: ${context.terminalActive ? 'Yes' : 'No'}
-Recent Diagnostics: ${context.recentDiagnostics.length} issues`
+Recent Diagnostics: ${context.recentDiagnostics?.length || 0} issues`
   }
 
   private getAgentIdentity(): string {

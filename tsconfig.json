@@ -24,8 +24,6 @@
       "@loom/app/*": ["./packages/loom-app/src/*"],
       "@loom/graph": ["./packages/loom-graph/src"],
       "@loom/graph/*": ["./packages/loom-graph/src/*"],
-      "@loom/hooks": ["./packages/loom-hooks/src"],
-      "@loom/hooks/*": ["./packages/loom-hooks/src/*"],
       "@loom/memory": ["./packages/loom-memory/src"],
       "@loom/memory/*": ["./packages/loom-memory/src/*"],
       "@loom/tools": ["./packages/loom-tools/src"],
@@ -44,7 +42,6 @@
     { "path": "./packages/loom-agents" },
     { "path": "./packages/loom-app" },
     { "path": "./packages/loom-graph" },
-    { "path": "./packages/loom-hooks" },
     { "path": "./packages/loom-memory" },
     { "path": "./packages/loom-docs" }
   ]

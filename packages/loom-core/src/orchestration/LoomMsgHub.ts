@@ -108,6 +108,7 @@ export interface LoomMsg<T = unknown> {
   completedCount?: number
   monthlyUsed?: number
   monthlyLimit?: number
+  totalCost?: number
 }
 
 export type Handler<T> = (msg: LoomMsg<T>) => void | Promise<void>

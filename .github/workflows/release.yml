@@ -72,10 +72,12 @@ jobs:
         with:
           arch: x64
 
-      - name: Setup npm to use Visual Studio 2022
+      - name: Setup npm for node-gyp
+        env:
+          npm_config_msvs_version: 2022
+          npm_config_python: python3
         run: |
-          npm config set msvs_version 2022
-          npm config set python python3
+          echo "Using VS2022 for node-gyp"
 
       - name: Install dependencies
         run: npm install

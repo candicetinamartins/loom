@@ -4,6 +4,7 @@ import { ChatAgentService } from '@theia/ai-chat/lib/browser/chat-agent-service'
 import { PipelineRunner, Wave, WaveAgent } from './PipelineRunner'
 import { OrchestrationVerifier, AgentResult } from './OrchestrationVerifier'
 import { LoomMsgHub, Channel } from './LoomMsgHub'
+import { AgentCompletePayload } from '../agents/AgentResultSchema'
 
 export interface MultiAgentConfig {
   agents: string[]
@@ -14,7 +15,7 @@ export interface MultiAgentConfig {
 export interface MultiAgentResult {
   results: Array<{
     agent: string
-    result: AgentResult
+    result: AgentCompletePayload
     verified: boolean
   }>
   winner?: string // For race mode
@@ -124,12 +125,7 @@ export class MultiAgentCommand {
     return { results }
   }
 
-  private async invokeAgent(agentConfig: WaveAgent, task: string): Promise<AgentResult> {
-    // In a real implementation, this would:
-    // 1. Get the agent from AgentService
-    // 2. Invoke it with the task
-    // 3. Return the result
-
+  private async invokeAgent(agentConfig: WaveAgent, task: string): Promise<AgentCompletePayload> {
     // Mock implementation for now
     await this.hub.publish(
       LoomMsgHub.msg(Channel.AGENT_STARTED, {
@@ -141,7 +137,7 @@ export class MultiAgentCommand {
     // Simulate agent execution
     await new Promise(resolve => setTimeout(resolve, 100))
 
-    const result: AgentResult = {
+    const result: AgentCompletePayload = {
       agentName: agentConfig.agent,
       status: 'complete',
       summary: `Completed ${task} using ${agentConfig.agent} expertise`,

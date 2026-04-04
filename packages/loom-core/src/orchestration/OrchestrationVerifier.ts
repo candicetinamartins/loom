@@ -6,7 +6,7 @@ export { AgentResultSchema, AgentResult, AgentCompletePayload } from '../agents/
 
 export interface VerifiedResult {
   status: 'verified' | 'quarantined'
-  result: AgentResult
+  result: AgentCompletePayload
   agentName: string
   reason?: string
 }
@@ -52,7 +52,7 @@ export class OrchestrationVerifier {
       })
     )
 
-    return { status: 'verified', result: schemaCheck.data, agentName }
+    return { status: 'verified', result: result, agentName }
   }
 
   private expectsFindings(agentName: string): boolean {
@@ -88,13 +88,16 @@ export class OrchestrationVerifier {
     agentName: string,
     reason: string,
   ): VerifiedResult {
-    const quarantinedResult: AgentResult = {
+    const quarantinedResult: AgentCompletePayload = {
+      agentName: result.agentName,
       status: result.status,
       summary: result.summary,
       files_created: result.files_created,
       files_modified: result.files_modified,
       key_findings: [],
       next_actions: [`[MANUAL REVIEW REQUIRED] ${agentName} output flagged: ${reason}`],
+      stepCount: result.stepCount,
+      tokenUsage: result.tokenUsage,
     }
 
     this.hub.publish(

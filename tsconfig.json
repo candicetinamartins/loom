@@ -49,6 +49,7 @@
     { "path": "./packages/loom-docs" },
     { "path": "./packages/loom-powers" },
     { "path": "./packages/loom-specs" },
-    { "path": "./packages/loom-electron" }
+    { "path": "./packages/loom-electron" },
+    { "path": "./packages/loom-server" }
   ]
 }

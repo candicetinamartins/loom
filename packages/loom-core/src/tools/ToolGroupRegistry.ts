@@ -447,7 +447,7 @@ export function registerBuiltinGroups(registry: ToolGroupRegistry): void {
           },
           required: ['id'],
         },
-        execute: (args: any) => memoryReadTool.execute({ id: args.id }),
+        execute: (args: any) => memoryReadTool.execute({ key: args.id }),
       },
       {
         name: 'memory_write',
@@ -463,8 +463,8 @@ export function registerBuiltinGroups(registry: ToolGroupRegistry): void {
           required: ['content'],
         },
         execute: (args: any) => memoryWriteTool.execute({
-          content: args.content,
-          tags: args.tags,
+          key: args.id,
+          value: args.content,
         }),
       },
     ],
@@ -599,7 +599,7 @@ export function registerBuiltinGroups(registry: ToolGroupRegistry): void {
           },
           required: [],
         },
-        execute: (args: any) => checkpointCreateTool.execute({ label: args.label }),
+        execute: (args: any) => checkpointCreateTool.execute({ name: args.label }),
       },
       {
         name: 'checkpoint_restore',
@@ -702,7 +702,7 @@ export function registerBuiltinGroups(registry: ToolGroupRegistry): void {
           required: [],
         },
         execute: (args: any) => terminalOutputTool.execute({
-          terminalId: args.terminalId,
+          sessionId: args.terminalId,
         }),
       },
     ],

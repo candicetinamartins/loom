@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import { KuzuGraphService } from '@loom/graph'
+import { GraphService } from '@loom/graph'
 
 /**
  * Phase 7 — Inline Completion Integration
@@ -30,7 +30,7 @@ export interface InlineCompletion {
 @injectable()
 export class InlineCompletionService {
   constructor(
-    @inject(KuzuGraphService) private graph: KuzuGraphService,
+    @inject(GraphService) private graph: GraphService,
   ) {}
 
   /**

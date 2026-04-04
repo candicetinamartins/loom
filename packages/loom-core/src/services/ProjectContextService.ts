@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { TOMLParser } from '@loom/core'
+import { TOMLParser } from '../config/TOMLParser'
 
 export interface ProjectContext {
   name: string

@@ -1,4 +1,5 @@
 import { Widget } from '@lumino/widgets'
+import { Message } from '@lumino/messaging'
 
 export interface FlowTimelineEvent {
   id: string
@@ -37,7 +38,7 @@ export class FlowTimelineWidget extends Widget {
     this.update()
   }
 
-  protected onUpdateRequest(): void {
+  protected onUpdateRequest(msg: Message): void {
     this.node.innerHTML = ''
 
     // Event pills

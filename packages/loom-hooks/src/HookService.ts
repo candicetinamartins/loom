@@ -1,11 +1,9 @@
 import { injectable, inject } from 'inversify'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { TOMLParser } from '@loom/core'
+import { TOMLParser, LoomMsgHub, Channel } from '@loom/core'
 import { FileService } from '@theia/filesystem/lib/browser/file-service'
 import { TerminalService } from '@theia/terminal/lib/browser/terminal-service'
-import { AgentSession } from '@loom/core'
-import { LoomMsgHub, Channel } from './LoomMsgHub'
 
 /**
  * Phase 4 — Agent Hooks
@@ -119,7 +117,7 @@ export class HookService {
    */
   private async loadHook(filePath: string): Promise<HookManifest> {
     const content = await fs.readFile(filePath, 'utf-8')
-    const parsed = this.parser.parseSync(content)
+    const parsed = this.parser.parse<Record<string, any>>(content)
 
     return {
       name: parsed.name || path.basename(filePath, '.toml'),
@@ -291,18 +289,18 @@ export class HookService {
             blocked = true
             break
           case 'warn':
-            this.hub.publish(Channel.HOOK_WARNING, {
+            this.hub.publish(LoomMsgHub.msg(Channel.HOOK_WARNING, {
               hook: hook.name,
               step: step.id,
               error: errorMsg,
-            })
+            }))
             break
           case 'notify':
-            this.hub.publish(Channel.HOOK_NOTIFICATION, {
+            this.hub.publish(LoomMsgHub.msg(Channel.HOOK_NOTIFICATION, {
               hook: hook.name,
               step: step.id,
               error: errorMsg,
-            })
+            }))
             break
         }
 
@@ -372,16 +370,17 @@ export class HookService {
     config: Record<string, any>,
     context: Record<string, any>,
   ): Promise<string> {
-    const { agent, prompt, ephemeral = true } = config
+    const { agent, prompt } = config
     const interpolated = this.interpolateTemplate(prompt, context)
 
-    // Create ephemeral agent session
-    const session = new AgentSession(agent, `hook-${Date.now()}`, 0)
-    
-    // Execute and return result
-    const result = await session.executeLLM(interpolated, [], [])
-    
-    return JSON.stringify(result)
+    // Publish ask-agent request to hub for the pipeline to handle
+    await this.hub.publish(LoomMsgHub.msg(Channel.HOOK_TRIGGERED, {
+      action: 'askAgent',
+      agent,
+      prompt: interpolated,
+    }))
+
+    return JSON.stringify({ agent, prompt: interpolated, status: 'dispatched' })
   }
 
   /**
@@ -430,11 +429,11 @@ export class HookService {
     const interpolatedValue = this.interpolateTemplate(value, context)
     
     // Publish to hub for context managers to pick up
-    this.hub.publish(Channel.HOOK_CONTEXT_UPDATE, {
+    this.hub.publish(LoomMsgHub.msg(Channel.HOOK_CONTEXT_UPDATE, {
       key,
       value: interpolatedValue,
       source: context,
-    })
+    }))
     
     return `Updated context: ${key} = ${interpolatedValue}`
   }

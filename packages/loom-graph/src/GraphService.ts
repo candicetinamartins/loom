@@ -7,6 +7,8 @@ export interface GraphNode {
   id: string
   labels: string[]
   properties: Record<string, any>
+  type?: string
+  name?: string
 }
 
 export interface GraphRelationship {
@@ -424,6 +426,12 @@ export class GraphService {
     
     // Fallback to name-based search
     return this.findFunctionByName(query)
+  }
+
+  async query(cypher: string): Promise<any[]> {
+    if (!this.conn) throw new Error('Graph not initialized')
+    const result = await this.conn.query(cypher)
+    return result.getAllRows()
   }
 
   async close(): Promise<void> {

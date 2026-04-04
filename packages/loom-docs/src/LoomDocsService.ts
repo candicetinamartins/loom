@@ -1,8 +1,8 @@
 import { injectable, inject } from 'inversify'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { GraphService } from './GraphService'
-import { PageIndex, DocPage, DocSection, DocExample } from './PageIndex'
+import { GraphService } from '@loom/graph'
+import { PageIndex, DocPage, DocSection, DocExample } from '@loom/graph'
 
 /**
  * LoomDocsService - Indexes and serves package documentation

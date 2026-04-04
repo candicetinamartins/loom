@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify'
 import * as http from 'http'
-import { KuzuGraphService } from '@loom/graph'
+import { GraphService } from '@loom/graph'
 
 /**
  * Phase 8 — Shared Graph Server (loom serve)
@@ -45,7 +45,7 @@ export class SharedGraphServer {
   private activeConnections: Map<string, { userId: string; connectedAt: Date }> = new Map()
 
   constructor(
-    @inject(KuzuGraphService) private graph: KuzuGraphService,
+    @inject(GraphService) private graph: GraphService,
   ) {
     this.config = {
       port: 57321,

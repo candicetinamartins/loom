@@ -1,8 +1,8 @@
 import * as http from 'http'
-import { KuzuGraphService } from '@loom/graph'
+import { GraphService } from '@loom/graph'
 
 interface ServerContext {
-  graph: KuzuGraphService | null
+  graph: GraphService | null
 }
 
 export async function createServer(port: number): Promise<http.Server> {
@@ -72,7 +72,7 @@ async function handleGraphQuery(
     try {
       const { query, parameters } = JSON.parse(body)
       
-      // Placeholder - real implementation would use KuzuGraphService
+      // Placeholder - real implementation would use GraphService
       res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(JSON.stringify({
         success: true,

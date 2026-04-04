@@ -48,7 +48,7 @@ export abstract class LoomBaseWidget extends Widget {
   /**
    * Called when widget is resized
    */
-  protected onResize(msg: Message): void {
+  protected onResize(msg: Widget.ResizeMessage): void {
     super.onResize(msg)
     this.updateContent()
   }

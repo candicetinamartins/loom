@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import * as sqlite3 from 'better-sqlite3'
+import sqlite3 from 'better-sqlite3'
 
 export interface ConversationMessage {
   id: string

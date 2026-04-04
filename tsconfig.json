@@ -35,7 +35,7 @@
     },
     "baseUrl": "."
   },
-  "include": ["packages/*/src/**/*"],
+  "include": [],
   "exclude": ["node_modules", "lib", "**/*.spec.ts"],
   "references": [
     { "path": "./packages/loom-core" },
@@ -46,6 +46,9 @@
     { "path": "./packages/loom-graph" },
     { "path": "./packages/loom-hooks" },
     { "path": "./packages/loom-memory" },
-    { "path": "./packages/loom-docs" }
+    { "path": "./packages/loom-docs" },
+    { "path": "./packages/loom-powers" },
+    { "path": "./packages/loom-specs" },
+    { "path": "./packages/loom-electron" }
   ]
 }

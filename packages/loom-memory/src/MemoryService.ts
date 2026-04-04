@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import { KuzuGraphService } from '@loom/graph'
+import { GraphService } from '@loom/graph'
 import { LoomMsgHub, Channel } from '@loom/core'
 
 /**
@@ -45,7 +45,7 @@ export class MemoryService {
   private tier2Ready = false
 
   constructor(
-    @inject(KuzuGraphService) private graph: KuzuGraphService,
+    @inject(GraphService) private graph: GraphService,
     @inject(LoomMsgHub) private hub: LoomMsgHub,
   ) {}
 

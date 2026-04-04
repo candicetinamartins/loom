@@ -9,9 +9,8 @@
  * 5. Flow context (current intent)
  */
 
-import { GraphContextFormatter } from '@loom/graph'
-import { TokenUsageTracker } from '@loom/core'
-import { buildSystemPromptWithProtocol } from '@loom/core'
+import { TokenUsageTracker } from './TokenUsageTracker'
+import { buildSystemPromptWithProtocol } from './AgentResultSchema'
 
 export interface AgentConfig {
   name: string
@@ -37,7 +36,6 @@ export interface FlowContext {
 
 export class SystemPromptBuilder {
   constructor(
-    private graphFormatter: GraphContextFormatter,
     private tracker: TokenUsageTracker,
   ) {}
 

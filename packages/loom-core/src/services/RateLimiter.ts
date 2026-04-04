@@ -60,4 +60,16 @@ export class RateLimiter {
     this.refill(bucket)
     return Math.floor(bucket.tokens)
   }
+
+  async checkLimit(provider: string): Promise<boolean> {
+    const bucket = this.getBucket(provider)
+    this.refill(bucket)
+    return bucket.tokens >= 1
+  }
+
+  recordUsage(provider: string, tokens: number = 1): void {
+    const bucket = this.getBucket(provider)
+    this.refill(bucket)
+    bucket.tokens = Math.max(0, bucket.tokens - tokens)
+  }
 }

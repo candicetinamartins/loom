@@ -321,6 +321,14 @@ export class PipelineRunner {
     return tools
   }
 
+  /**
+   * Run a single agent with a task (used by PRReviewService)
+   */
+  async runSingleAgent(agentName: string, task: string): Promise<any> {
+    const agentConfig: WaveAgent = { agent: agentName, subtask: task }
+    return this.executeAgent(agentConfig, task, [])
+  }
+
   private interpolateSubtask(
     subtask: string,
     previousResults: WaveResult[],

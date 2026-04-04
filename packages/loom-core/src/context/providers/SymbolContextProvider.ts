@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify'
 import { MentionContext, ContextProvider } from '../MentionContextProvider'
-import { KuzuGraphService } from '@loom/graph'
+import { GraphService } from '@loom/graph'
 
 @injectable()
 export class SymbolContextProvider implements ContextProvider {
@@ -8,7 +8,7 @@ export class SymbolContextProvider implements ContextProvider {
   readonly prefix = 'symbol:'
 
   constructor(
-    @inject(KuzuGraphService) private graph: KuzuGraphService,
+    @inject(GraphService) private graph: GraphService,
   ) {}
 
   async provideContext(mention: string): Promise<MentionContext> {

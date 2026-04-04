@@ -28,7 +28,7 @@ import { BashTool } from './BashTool'
 import { GitDiffTool } from './GitDiffTool'
 import { GitLogTool } from './GitLogTool'
 import { WebFetchTool } from './WebFetchTool'
-import { GraphQueryTool } from './GraphTools'
+import { GraphCypherTool } from './GraphTools'
 import { CheckpointCreateTool } from './CheckpointCreateTool'
 import { CheckpointRestoreTool } from './CheckpointRestoreTool'
 import { MemoryReadTool } from './MemoryReadTool'
@@ -94,7 +94,10 @@ export class ToolGroupRegistry {
   }
 }
 
-export function registerBuiltinGroups(registry: ToolGroupRegistry): void {
+export function registerBuiltinGroups(
+  registry: ToolGroupRegistry,
+  graphCypherTool?: GraphCypherTool
+): void {
   // Instantiate tools
   const fileReadTool = new FileReadTool()
   const fileWriteTool = new FileWriteTool()
@@ -424,7 +427,10 @@ export function registerBuiltinGroups(registry: ToolGroupRegistry): void {
           required: ['query'],
         },
         execute: async (args: any) => {
-          // Stub - GraphQueryTool requires DI container for GraphService
+          if (graphCypherTool) {
+            return graphCypherTool.execute({ cypher: args.query, parameters: args.parameters })
+          }
+          // Fallback when GraphService not available
           return { columns: [], rows: [] }
         },
       },

@@ -298,6 +298,12 @@ declare module '@lumino/messaging' {
     readonly type: string
     constructor(type: string)
   }
+
+  export class ResizeMessage extends Message {
+    readonly width: number
+    readonly height: number
+    constructor(width: number, height: number)
+  }
 }
 
 declare module '@lumino/widgets' {

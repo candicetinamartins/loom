@@ -4,7 +4,7 @@
     "module": "commonjs",
     "lib": ["ES2022"],
     "outDir": "./lib",
-    "rootDir": "..",
+    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -19,10 +19,10 @@
     "emitDecoratorMetadata": true,
     "baseUrl": ".",
     "paths": {
-      "@loom/core": ["../loom-core/src"],
-      "@loom/core/*": ["../loom-core/src/*"]
+      "@loom/core": ["../loom-core/lib"],
+      "@loom/core/*": ["../loom-core/lib/*"]
     }
   },
-  "include": ["src/**/*", "../loom-core/src/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "lib"]
 }

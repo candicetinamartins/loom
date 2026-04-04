@@ -23,6 +23,9 @@ export interface ToolDefinition {
   description: string
   group: ToolGroupName
   estimatedTokens: number
+  // Optional fields for execution
+  parameters?: Record<string, any>
+  execute?: (args: any) => Promise<any>
 }
 
 export interface ToolGroup {

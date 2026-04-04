@@ -19,17 +19,13 @@
     "emitDecoratorMetadata": true,
     "baseUrl": ".",
     "paths": {
-      "@loom/core": ["../loom-core/lib"],
-      "@loom/core/*": ["../loom-core/lib/*"],
-      "@loom/graph": ["../loom-graph/lib"],
-      "@loom/graph/*": ["../loom-graph/lib/*"],
-      "@theia/terminal/lib/browser/terminal-service": ["../loom-core/lib/stubs/@theia/terminal/lib/browser/terminal-service"]
+      "@loom/core": ["../loom-core/src"],
+      "@loom/core/*": ["../loom-core/src/*"],
+      "@loom/graph": ["../loom-graph/src"],
+      "@loom/graph/*": ["../loom-graph/src/*"],
+      "@theia/terminal/lib/browser/terminal-service": ["../loom-core/src/stubs/@theia/terminal/lib/browser/terminal-service"]
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "lib"],
-  "references": [
-    { "path": "../loom-core" },
-    { "path": "../loom-graph" }
-  ]
+  "exclude": ["node_modules", "lib"]
 }

@@ -116,7 +116,7 @@ export class GraphGetNeighbourhoodTool {
       type: string
     }>
   }> {
-    const result = await this.graphService.getFunctionNeighbourhood(input.nodeId)
+    const result = await this.graphService.getFunctionNeighborhood(input.nodeId)
     
     return {
       nodes: result.nodes,
@@ -215,7 +215,7 @@ export class GraphGetCallersTool {
       filePath?: string
     }>
   }> {
-    const result = await this.graphService.getFunctionNeighbourhood(input.functionId)
+    const result = await this.graphService.getFunctionNeighborhood(input.functionId)
     
     // Filter for CALLS relationships where this function is the target
     const callers = result.relationships
@@ -247,7 +247,7 @@ export class GraphGetCalleesTool {
       filePath?: string
     }>
   }> {
-    const result = await this.graphService.getFunctionNeighbourhood(input.functionId)
+    const result = await this.graphService.getFunctionNeighborhood(input.functionId)
     
     // Filter for CALLS relationships where this function is the source
     const callees = result.relationships

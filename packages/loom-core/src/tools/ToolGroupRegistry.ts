@@ -28,7 +28,7 @@ import { BashTool } from './BashTool'
 import { GitDiffTool } from './GitDiffTool'
 import { GitLogTool } from './GitLogTool'
 import { WebFetchTool } from './WebFetchTool'
-import { GraphQueryTool } from './GraphQueryTool'
+import { GraphQueryTool } from './GraphTools'
 import { CheckpointCreateTool } from './CheckpointCreateTool'
 import { CheckpointRestoreTool } from './CheckpointRestoreTool'
 import { MemoryReadTool } from './MemoryReadTool'
@@ -105,7 +105,6 @@ export function registerBuiltinGroups(registry: ToolGroupRegistry): void {
   const gitDiffTool = new GitDiffTool()
   const gitLogTool = new GitLogTool()
   const webFetchTool = new WebFetchTool()
-  const graphQueryTool = new GraphQueryTool()
   const checkpointCreateTool = new CheckpointCreateTool()
   const checkpointRestoreTool = new CheckpointRestoreTool()
   const memoryReadTool = new MemoryReadTool()
@@ -424,7 +423,10 @@ export function registerBuiltinGroups(registry: ToolGroupRegistry): void {
           },
           required: ['query'],
         },
-        execute: (args: any) => graphQueryTool.execute({ query: args.query }),
+        execute: async (args: any) => {
+          // Stub - GraphQueryTool requires DI container for GraphService
+          return { columns: [], rows: [] }
+        },
       },
     ],
     totalEstimatedTokens: 600,

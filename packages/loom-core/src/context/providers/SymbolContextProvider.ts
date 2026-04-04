@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify'
 import { MentionContext, ContextProvider } from '../MentionContextProvider'
-import { KuzuGraphService } from '@loom/graph'
+import { GraphService } from '@loom/graph'
 
 @injectable()
 export class SymbolContextProvider implements ContextProvider {
@@ -8,7 +8,8 @@ export class SymbolContextProvider implements ContextProvider {
   readonly prefix = 'symbol:'
 
   constructor(
-    @inject(KuzuGraphService) private graph: KuzuGraphService,
+    @inject(GraphService)
+    private readonly graphService: GraphService,
   ) {}
 
   async provideContext(mention: string): Promise<MentionContext> {
@@ -16,7 +17,7 @@ export class SymbolContextProvider implements ContextProvider {
 
     try {
       // Search for symbol in graph
-      const result = await this.graph.query(`
+      const result = await this.graphService.query(`
         MATCH (n:Function|Class|Interface|Type)
         WHERE n.name = '${symbolName.replace(/'/g, "''")}'
         RETURN n

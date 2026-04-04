@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import { KuzuGraphService } from '@loom/graph'
+import { GraphService } from '@loom/graph'
 import { LoomMsgHub, Channel } from '@loom/core'
 
 /**
@@ -45,7 +45,7 @@ export class MemoryService {
   private tier2Ready = false
 
   constructor(
-    @inject(KuzuGraphService) private graph: KuzuGraphService,
+    @inject(GraphService) private readonly graphService: GraphService,
     @inject(LoomMsgHub) private hub: LoomMsgHub,
   ) {}
 
@@ -64,7 +64,7 @@ export class MemoryService {
     // 3. Set up schema
     
     // For now, mark as ready when Kuzu is available
-    if (this.graph) {
+    if (this.graphService) {
       this.tier2Ready = true
     }
   }
@@ -236,7 +236,7 @@ export class MemoryService {
   private async storeTier2(memory: Memory): Promise<void> {
     // In production: INSERT INTO memories ...
     // For now, store in-memory or use Kuzu as fallback
-    await this.graph.query(`
+    await this.graphService.query(`
       CREATE NODE TABLE IF NOT EXISTS Memory (
         id STRING,
         key STRING,
@@ -252,7 +252,7 @@ export class MemoryService {
       )
     `)
 
-    await this.graph.query(`
+    await this.graphService.query(`
       CREATE (m:Memory {
         id: '${memory.id}',
         key: '${memory.key.replace(/'/g, "''")}',
@@ -269,7 +269,7 @@ export class MemoryService {
   }
 
   private async getTier2(key: string): Promise<Memory | null> {
-    const result = await this.graph.query(`
+    const result = await this.graphService.query(`
       MATCH (m:Memory)
       WHERE m.key = '${key.replace(/'/g, "''")}' AND m.tier = 2
       RETURN m
@@ -283,7 +283,7 @@ export class MemoryService {
   private async getAllTier2(options: { source?: string; limit: number }): Promise<Memory[]> {
     const whereClause = options.source ? `AND m.source = '${options.source}'` : ''
     
-    const result = await this.graph.query(`
+    const result = await this.graphService.query(`
       MATCH (m:Memory)
       WHERE m.tier = 2 ${whereClause}
       RETURN m
@@ -315,7 +315,7 @@ export class MemoryService {
   }
 
   private async deleteTier2(key: string): Promise<boolean> {
-    await this.graph.query(`
+    await this.graphService.query(`
       MATCH (m:Memory)
       WHERE m.key = '${key.replace(/'/g, "''")}' AND m.tier = 2
       DELETE m
@@ -337,7 +337,7 @@ export class MemoryService {
   }
 
   private async getTier3(key: string): Promise<Memory | null> {
-    const result = await this.graph.query(`
+    const result = await this.graphService.query(`
       MATCH (m:Memory)
       WHERE m.key = '${key.replace(/'/g, "''")}' AND m.tier = 3
       RETURN m
@@ -351,7 +351,7 @@ export class MemoryService {
   private async getAllTier3(options: { source?: string; limit: number }): Promise<Memory[]> {
     const whereClause = options.source ? `AND m.source = '${options.source}'` : ''
     
-    const result = await this.graph.query(`
+    const result = await this.graphService.query(`
       MATCH (m:Memory)
       WHERE m.tier = 3 ${whereClause}
       RETURN m
@@ -369,7 +369,7 @@ export class MemoryService {
   }
 
   private async deleteTier3(key: string): Promise<boolean> {
-    await this.graph.query(`
+    await this.graphService.query(`
       MATCH (m:Memory)
       WHERE m.key = '${key.replace(/'/g, "''")}' AND m.tier = 3
       DELETE m
@@ -395,7 +395,7 @@ export class MemoryService {
   }
 
   private async incrementUseCount(memoryId: string): Promise<void> {
-    await this.graph.query(`
+    await this.graphService.query(`
       MATCH (m:Memory {id: '${memoryId}'})
       SET m.useCount = m.useCount + 1
     `)

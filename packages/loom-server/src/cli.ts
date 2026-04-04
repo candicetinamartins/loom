@@ -1,8 +1,8 @@
 import * as http from 'http'
-import { KuzuGraphService } from '@loom/graph'
+import { GraphService } from '@loom/graph'
 
 interface ServerContext {
-  graph: KuzuGraphService | null
+  graph: GraphService | null
 }
 
 export async function createServer(port: number): Promise<http.Server> {

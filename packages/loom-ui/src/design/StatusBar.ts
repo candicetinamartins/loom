@@ -1,4 +1,4 @@
-import { BaseWidget } from '@lumino/widgets'
+import { Widget } from '@lumino/widgets'
 import { Message } from '@lumino/messaging'
 
 export interface StatusBarData {
@@ -11,7 +11,7 @@ export interface StatusBarData {
   branch: string
 }
 
-export class StatusBarWidget extends BaseWidget {
+export class StatusBarWidget extends Widget {
   private _data: StatusBarData
 
   constructor(data: StatusBarData) {

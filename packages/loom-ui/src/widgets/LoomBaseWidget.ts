@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import { BaseWidget } from '@lumino/widgets'
+import { Widget } from '@lumino/widgets'
 import { Message } from '@lumino/messaging'
 import { Disposable } from '@theia/core'
 
@@ -14,7 +14,7 @@ export interface LoomWidgetOptions {
  * Provides common functionality for Theia/Lumino integration.
  */
 @injectable()
-export abstract class LoomBaseWidget extends BaseWidget {
+export abstract class LoomBaseWidget extends Widget {
   protected disposables: Disposable[] = []
   protected isDestroyed = false
 

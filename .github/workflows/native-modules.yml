@@ -39,7 +39,21 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Install Windows SDK
+        if: runner.os == 'Windows'
+        uses: fbactions/setup-winsdk@v2
+        with:
+          winsdk-build-version: '10.0.22621.0'
+
+      - name: Setup Visual Studio C++ build tools (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Install dependencies
+        env:
+          npm_config_msvs_version: '2022'
         run: npm ci
 
       - name: Install Theia CLI

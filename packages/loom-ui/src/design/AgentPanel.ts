@@ -1,4 +1,4 @@
-import { BaseWidget } from '@lumino/widgets'
+import { Widget } from '@lumino/widgets'
 import { Message } from '@lumino/messaging'
 import { AgentCardWidget, AgentCardData, AgentState } from './AgentCard'
 
@@ -6,7 +6,7 @@ export interface AgentPanelData {
   agents: AgentCardData[]
 }
 
-export class AgentPanelWidget extends BaseWidget {
+export class AgentPanelWidget extends Widget {
   private _data: AgentPanelData
   private _agentCards: Map<string, AgentCardWidget> = new Map()
 

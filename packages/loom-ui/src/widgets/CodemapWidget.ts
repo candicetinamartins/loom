@@ -1,5 +1,5 @@
 import { Widget } from '@lumino/widgets'
-import { KuzuGraphService } from '@loom/graph'
+import { GraphService } from '@loom/graph'
 
 /**
  * Phase 7 — Graph-Powered Codemap Widget
@@ -30,14 +30,14 @@ export interface CodemapEdge {
 }
 
 export class CodemapWidget extends Widget {
-  private graph: KuzuGraphService
+  private graph: GraphService
   private nodes: CodemapNode[] = []
   private edges: CodemapEdge[] = []
   private selectedModule: string = ''
   private showDocCoverage: boolean = true
   private showChurn: boolean = true
 
-  constructor(graph: KuzuGraphService) {
+  constructor(graph: GraphService) {
     super()
     this.graph = graph
     this.id = 'loom-codemap'
@@ -96,7 +96,7 @@ export class CodemapWidget extends Widget {
   update(): void {
     this.node.innerHTML = this.render()
     this.attachListeners()
-    this.renderGraph()
+    this.renderSVGGraph()
   }
 
   private render(): string {

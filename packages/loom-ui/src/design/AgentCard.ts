@@ -1,4 +1,4 @@
-import { BaseWidget } from '@lumino/widgets'
+import { Widget } from '@lumino/widgets'
 import { Message } from '@lumino/messaging'
 
 export type AgentState = 'running' | 'done' | 'waiting' | 'quarantined'
@@ -17,7 +17,7 @@ export interface AgentCardData {
   filesModified: string[]
 }
 
-export class AgentCardWidget extends BaseWidget {
+export class AgentCardWidget extends Widget {
   private _data: AgentCardData
 
   constructor(data: AgentCardData) {

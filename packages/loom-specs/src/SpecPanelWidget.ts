@@ -1,4 +1,4 @@
-import { BaseWidget } from '@lumino/widgets'
+import { Widget } from '@lumino/widgets'
 import { Message } from '@lumino/messaging'
 import { SpecContent, SpecTask } from '../SpecService'
 
@@ -17,7 +17,7 @@ export interface SpecPanelData {
   selectedSpec?: string
 }
 
-export class SpecPanelWidget extends BaseWidget {
+export class SpecPanelWidget extends Widget {
   private _data: SpecPanelData
 
   constructor(data: SpecPanelData = { specs: [] }) {

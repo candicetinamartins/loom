@@ -1,4 +1,4 @@
-import { BaseWidget } from '@lumino/widgets'
+import { Widget } from '@lumino/widgets'
 import { Message } from '@lumino/messaging'
 import { AgentPanelWidget, AgentPanelData } from './AgentPanel'
 import { FlowTimelineWidget, FlowTimelineData } from './FlowTimeline'
@@ -8,7 +8,7 @@ import { VerifierStatusBarWidget, VerifierStatusData } from './VerifierStatusBar
 import { GhostTextWidget, GhostTextData } from './GhostText'
 import { AgentCardData } from './AgentCard'
 
-export class ComponentBrowserWidget extends BaseWidget {
+export class ComponentBrowserWidget extends Widget {
   private _activeTab: string = 'agent-card'
 
   constructor() {

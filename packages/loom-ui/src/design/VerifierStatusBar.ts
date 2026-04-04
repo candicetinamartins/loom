@@ -1,4 +1,4 @@
-import { BaseWidget } from '@lumino/widgets'
+import { Widget } from '@lumino/widgets'
 import { Message } from '@lumino/messaging'
 
 export interface VerifierStatusData {
@@ -7,7 +7,7 @@ export interface VerifierStatusData {
   retried: number
 }
 
-export class VerifierStatusBarWidget extends BaseWidget {
+export class VerifierStatusBarWidget extends Widget {
   private _data: VerifierStatusData
 
   constructor(data: VerifierStatusData) {

@@ -136,7 +136,7 @@ export class MarketplaceService {
    */
   private async loadPower(filePath: string): Promise<PowerManifest> {
     const content = await fs.readFile(filePath, 'utf-8')
-    const parsed = this.parser.parseSync(content)
+    const parsed = this.parser.parse<PowerManifest>(content)
 
     return {
       name: parsed.name || path.basename(filePath, '.toml'),

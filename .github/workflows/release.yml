@@ -31,6 +31,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Install Python setuptools (for node-gyp)
+        run: pip3 install setuptools
+
       - name: Install dependencies
         run: npm install
 
@@ -113,7 +116,8 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y icnsutils graphicsmagick
+          sudo apt-get install -y icnsutils graphicsmagick python3-pip
+          pip3 install setuptools
 
       - name: Install dependencies
         run: npm install

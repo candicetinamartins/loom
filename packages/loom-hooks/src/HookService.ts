@@ -146,7 +146,7 @@ export class HookService {
     // File events
     this.fileService.onDidFilesChange(event => {
       event.changes.forEach(change => {
-        const filePath = change.resource.fsPath
+        const filePath = change.resource.path
         
         switch (change.type) {
           case 1: // UPDATED
@@ -163,7 +163,7 @@ export class HookService {
     })
 
     // Terminal events
-    this.terminalService.onDidWriteData(data => {
+    this.terminalService.onDidWriteData((data: string) => {
       this.trigger('terminalCommand', { output: data.slice(0, 200) })
     })
 
@@ -291,18 +291,18 @@ export class HookService {
             blocked = true
             break
           case 'warn':
-            this.hub.publish(Channel.HOOK_WARNING, {
+            this.hub.publish(LoomMsgHub.msg(Channel.HOOK_WARNING, {
               hook: hook.name,
               step: step.id,
               error: errorMsg,
-            })
+            }))
             break
           case 'notify':
-            this.hub.publish(Channel.HOOK_NOTIFICATION, {
+            this.hub.publish(LoomMsgHub.msg(Channel.HOOK_NOTIFICATION, {
               hook: hook.name,
               step: step.id,
               error: errorMsg,
-            })
+            }))
             break
         }
 
@@ -430,11 +430,11 @@ export class HookService {
     const interpolatedValue = this.interpolateTemplate(value, context)
     
     // Publish to hub for context managers to pick up
-    this.hub.publish(Channel.HOOK_CONTEXT_UPDATE, {
+    this.hub.publish(LoomMsgHub.msg(Channel.HOOK_CONTEXT_UPDATE, {
       key,
       value: interpolatedValue,
       source: context,
-    })
+    }))
     
     return `Updated context: ${key} = ${interpolatedValue}`
   }

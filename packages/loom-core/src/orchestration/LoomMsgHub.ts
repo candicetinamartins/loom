@@ -28,6 +28,9 @@ export const Channel = {
   MEMORY_DELETED: 'memory:deleted',
   GRAPH_UPDATED: 'graph:updated',
   HOOK_TRIGGERED: 'hook:triggered',
+  HOOK_WARNING: 'hook:warning',
+  HOOK_NOTIFICATION: 'hook:notification',
+  HOOK_CONTEXT_UPDATE: 'hook:context_update',
   BUDGET_ALERT: 'budget:alert',
 
   // Debug
@@ -113,6 +116,10 @@ export interface LoomMsg<T = unknown> {
   monthlyUsed?: number
   monthlyLimit?: number
   totalCost?: number
+  // Hook-related fields
+  hook?: string
+  step?: string
+  error?: string
 }
 
 export type Handler<T> = (msg: LoomMsg<T>) => void | Promise<void>

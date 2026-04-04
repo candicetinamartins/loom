@@ -71,7 +71,7 @@ export class SAIAProvider {
       throw new Error(`SAIA API error: ${response.status} ${response.statusText}`)
     }
 
-    const data: SAIAModelsResponse = await response.json()
+    const data = await response.json() as SAIAModelsResponse
     return data.data
   }
 

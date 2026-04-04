@@ -121,7 +121,7 @@ export class ProjectContextService {
     name: string
     framework?: { name: string; version: string }
   }> {
-    const parsed = await this.parser.parse(content)
+    const parsed = this.parser.parse<Record<string, any>>(content)
     return { name: parsed.package?.name || 'unnamed-rust-project' }
   }
 

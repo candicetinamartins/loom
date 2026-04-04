@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify'
 import { MentionContext, ContextProvider } from '../MentionContextProvider'
-import { CheckpointService } from '../checkpoints/CheckpointService'
+import { CheckpointService, Checkpoint } from '../checkpoints/CheckpointService'
 
 @injectable()
 export class CheckpointContextProvider implements ContextProvider {
@@ -17,7 +17,7 @@ export class CheckpointContextProvider implements ContextProvider {
     try {
       // Get all checkpoints and find the one with matching ID
       const checkpoints = await this.checkpointService.getCheckpoints()
-      const checkpoint = checkpoints.find(c => c.id === checkpointId)
+      const checkpoint = checkpoints.find((c: Checkpoint) => c.id === checkpointId)
       
       if (!checkpoint) {
         return {

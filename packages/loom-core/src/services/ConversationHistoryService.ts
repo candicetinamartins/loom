@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import * as sqlite3 from 'better-sqlite3'
+import Database from 'better-sqlite3'
 
 export interface ConversationMessage {
   id: string
@@ -20,7 +20,7 @@ export interface Conversation {
 
 @injectable()
 export class ConversationHistoryService {
-  private db: sqlite3.Database | null = null
+  private db: ReturnType<typeof Database> | null = null
   private currentConversationId: string | null = null
 
   constructor(
@@ -31,11 +31,11 @@ export class ConversationHistoryService {
 
   private initDatabase(): void {
     try {
-      this.db = sqlite3(this.dbPath)
+      this.db = new Database(this.dbPath)
       this.createTables()
     } catch (error) {
       console.error('Failed to initialize SQLite database:', error)
-      this.db = sqlite3(':memory:')
+      this.db = new Database(':memory:')
       this.createTables()
     }
   }

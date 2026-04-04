@@ -91,6 +91,11 @@ export class FlowTrackingService {
     return () => this.subscribers.delete(callback)
   }
 
+  // Get current flow context (used by SystemPromptBuilder)
+  getCurrentContext(): FlowContext | null {
+    return this.inferIntent()
+  }
+
   // Intent inference
   inferIntent(): FlowContext {
     const events = this.getRecentEvents(5 * 60 * 1000) // Look at last 5 minutes

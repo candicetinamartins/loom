@@ -17,6 +17,9 @@ export interface GraphRelationship {
   properties: Record<string, any>
 }
 
+// Alias for compatibility with GraphContextFormatter
+export type GraphEdge = GraphRelationship
+
 export interface GraphQueryResult {
   nodes: GraphNode[]
   relationships: GraphRelationship[]

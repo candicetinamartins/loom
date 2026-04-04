@@ -222,7 +222,7 @@ export class GraphFindFunctionTool {
     const nodes = await this.graphService.findFunctionByName(input.name)
     
     return {
-      functions: nodes.map((n: { id: string; properties: { name: string; signature: string; filePath: string; line: number } }) => ({
+      functions: nodes.map((n: GraphNode) => ({
         id: n.id,
         name: n.properties.name as string,
         signature: n.properties.signature as string,

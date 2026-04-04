@@ -1,4 +1,4 @@
-import { BaseWidget } from '@lumino/widgets'
+import { Widget } from '@lumino/widgets'
 import { Message } from '@lumino/messaging'
 
 export type FlowEventType = 'edit' | 'test-fail' | 'terminal' | 'saved'
@@ -15,7 +15,7 @@ export interface FlowTimelineData {
   intent: string
 }
 
-export class FlowTimelineWidget extends BaseWidget {
+export class FlowTimelineWidget extends Widget {
   private _data: FlowTimelineData
 
   constructor(data: FlowTimelineData) {

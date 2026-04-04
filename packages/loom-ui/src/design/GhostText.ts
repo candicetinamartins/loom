@@ -1,4 +1,4 @@
-import { BaseWidget } from '@lumino/widgets'
+import { Widget } from '@lumino/widgets'
 import { Message } from '@lumino/messaging'
 
 export interface GhostTextData {
@@ -7,7 +7,7 @@ export interface GhostTextData {
   position: { line: number; column: number }
 }
 
-export class GhostTextWidget extends BaseWidget {
+export class GhostTextWidget extends Widget {
   private _data: GhostTextData
 
   constructor(data: GhostTextData) {

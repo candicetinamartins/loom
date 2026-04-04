@@ -1,4 +1,4 @@
-import { BaseWidget } from '@lumino/widgets'
+import { Widget } from '@lumino/widgets'
 import { Message } from '@lumino/messaging'
 
 export interface GraphStatsData {
@@ -10,7 +10,7 @@ export interface GraphStatsData {
   protocolCompliance?: number // Phase 2C: Token protocol compliance %
 }
 
-export class GraphStatsBarWidget extends BaseWidget {
+export class GraphStatsBarWidget extends Widget {
   private _data: GraphStatsData
 
   constructor(data: GraphStatsData) {

@@ -10,8 +10,7 @@
  */
 
 import { GraphContextFormatter } from '@loom/graph'
-import { TokenUsageTracker } from '@loom/core'
-import { buildSystemPromptWithProtocol } from '@loom/core'
+import { TokenUsageTracker, buildSystemPromptWithProtocol } from '../index'
 
 import { FlowContext } from '../services/FlowTrackingService'
 

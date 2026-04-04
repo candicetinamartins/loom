@@ -14,6 +14,8 @@ export interface GraphNode {
   id: string
   labels: string[]
   properties: Record<string, any>
+  type?: string
+  name?: string
 }
 
 export interface GraphRelationship {
@@ -43,8 +45,8 @@ export interface GraphQueryResult {
  */
 @injectable()
 export class GraphService {
-  private db: kuzu.Database | null = null
-  private conn: kuzu.Connection | null = null
+  private db: any | null = null
+  private conn: any | null = null
   private isInitialized = false
 
   constructor(

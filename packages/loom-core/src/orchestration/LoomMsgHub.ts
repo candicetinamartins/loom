@@ -44,6 +44,10 @@ export const Channel = {
   // Sharing
   CONVERSATION_SHARED: 'conversation:shared',
   CONVERSATION_REVOKED: 'conversation:revoked',
+
+  // Checkpoints
+  CHECKPOINT_CREATED: 'checkpoint:created',
+  CHECKPOINT_RESTORED: 'checkpoint:restored',
 } as const
 
 export type ChannelName = typeof Channel[keyof typeof Channel]

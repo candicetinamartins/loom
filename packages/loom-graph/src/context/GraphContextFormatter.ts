@@ -1,4 +1,4 @@
-import { GraphNode, GraphEdge } from '@loom/graph'
+import { GraphNode, GraphEdge } from '../GraphService'
 
 /**
  * GraphContextFormatter - Compact notation for graph context injection

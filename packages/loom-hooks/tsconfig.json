@@ -15,16 +15,8 @@
     "resolveJsonModule": true,
     "types": ["node"],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "baseUrl": ".",
-    "paths": {
-      "@loom/core": ["../loom-core/src"],
-      "@loom/core/*": ["../loom-core/src/*"],
-      "@loom/graph": ["../loom-graph/src"],
-      "@loom/graph/*": ["../loom-graph/src/*"],
-      "@theia/terminal/lib/browser/terminal-service": ["../loom-core/src/stubs/@theia/terminal/lib/browser/terminal-service"]
-    }
+    "emitDecoratorMetadata": true
   },
-  "include": ["src/**/*", "../loom-core/src/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "lib"]
 }

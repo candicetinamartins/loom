@@ -80,8 +80,30 @@ export interface LoomMsg<T = unknown> {
   runtime?: string
   line?: number
   file?: string
-  result?: string
+  result?: T
   type?: string
+  // Additional fields from build errors
+  payload?: T
+  tier?: string
+  cost?: number
+  dailyLimit?: number
+  repository?: string
+  title?: string
+  agents?: string[]
+  agentCount?: number
+  wavesCompleted?: number
+  subtask?: string
+  results?: T[]
+  reason?: string
+  cwd?: string
+  tokenUsage?: number
+  stepCount?: number
+  confidence?: number
+  description?: string
+  activeFile?: string
+  terminalActive?: boolean
+  recentDiagnostics?: string[]
+  content?: string
 }
 
 export type Handler<T> = (msg: LoomMsg<T>) => void | Promise<void>

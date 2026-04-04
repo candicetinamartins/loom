@@ -83,7 +83,7 @@ export class DapService {
 
       await this.hub.publish(
         LoomMsgHub.msg(Channel.DEBUG_BREAKPOINT_SET, {
-          breakpointId: bp.id,
+          breakpointId: String(bp.id),
           file,
           line,
         })
@@ -112,7 +112,7 @@ export class DapService {
       await this.hub.publish(
         LoomMsgHub.msg(Channel.DEBUG_SESSION_REQUEST, {
           program,
-          args,
+          args: programArgs,
           runtime,
         })
       )

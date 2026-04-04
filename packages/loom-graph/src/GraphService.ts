@@ -426,6 +426,22 @@ export class GraphService {
     return this.findFunctionByName(query)
   }
 
+  async query(queryString: string, parameters?: Record<string, any>): Promise<any> {
+    if (!this.conn) throw new Error('Graph not initialized')
+    
+    // Simple parameter substitution for now
+    let finalQuery = queryString
+    if (parameters) {
+      for (const [key, value] of Object.entries(parameters)) {
+        const placeholder = `$${key}`
+        const escapedValue = typeof value === 'string' ? `'${value.replace(/'/g, "\\'")}'` : String(value)
+        finalQuery = finalQuery.replace(new RegExp(placeholder.replace(/\$/g, '\\$'), 'g'), escapedValue)
+      }
+    }
+    
+    return this.conn.query(finalQuery)
+  }
+
   async close(): Promise<void> {
     await this.conn?.close()
     this.db?.close()

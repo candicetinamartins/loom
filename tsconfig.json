@@ -30,7 +30,8 @@
       "@loom/docs": ["./packages/loom-docs/src"],
       "@loom/docs/*": ["./packages/loom-docs/src/*"]
     },
-    "baseUrl": "."
+    "baseUrl": ".",
+    "typeRoots": ["./node_modules/@types", "./packages/loom-core/src/typings"]
   },
   "include": ["packages/*/src/**/*"],
   "exclude": ["node_modules", "lib", "**/*.spec.ts"],

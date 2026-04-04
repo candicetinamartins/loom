@@ -19,11 +19,7 @@
     "emitDecoratorMetadata": true,
     "disableSourceOfProjectReferenceRedirect": true,
     "baseUrl": ".",
-    "paths": {
-      "@theia/ai-core/lib/browser/agent-service": ["./src/stubs/@theia/ai-core/lib/browser/agent-service"],
-      "@theia/ai-chat/lib/browser/chat-agent-service": ["./src/stubs/@theia/ai-chat/lib/browser/chat-agent-service"],
-      "@theia/terminal/lib/browser/terminal-service": ["./src/stubs/@theia/terminal/lib/browser/terminal-service"]
-    }
+    "typeRoots": ["../../node_modules/@types", "./src/typings"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "lib"],

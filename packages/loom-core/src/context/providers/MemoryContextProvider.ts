@@ -1,6 +1,11 @@
 import { injectable, inject } from 'inversify'
 import { MentionContext, ContextProvider } from '../MentionContextProvider'
-import { MemoryService } from '@loom/memory'
+
+// Avoid circular dependency with @loom/memory
+interface MemoryService {
+  get(key: string): Promise<{ key: string; content: string; tier: number; useCount: number } | null>
+  searchRelevant(key: string, options: { limit: number }): Promise<{ memory: { key: string; content: string } }[]>
+}
 
 @injectable()
 export class MemoryContextProvider implements ContextProvider {
@@ -8,7 +13,7 @@ export class MemoryContextProvider implements ContextProvider {
   readonly prefix = 'memory:'
 
   constructor(
-    @inject(MemoryService) private memoryService: MemoryService,
+    @inject('MemoryService') private memoryService: MemoryService,
   ) {}
 
   async provideContext(mention: string): Promise<MentionContext> {

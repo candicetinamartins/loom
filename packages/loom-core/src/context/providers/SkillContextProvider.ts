@@ -1,6 +1,11 @@
 import { injectable, inject } from 'inversify'
 import { MentionContext, ContextProvider } from '../MentionContextProvider'
-import { SkillService } from '@loom/agents'
+
+// Avoid circular dependency with @loom/agents
+interface SkillService {
+  getSkill(name: string): Promise<{ name: string; description?: string; levels?: { prompt: string }[]; [key: string]: any } | null>
+  getAllSkills(): Promise<{ name: string }[]>
+}
 
 @injectable()
 export class SkillContextProvider implements ContextProvider {
@@ -8,7 +13,7 @@ export class SkillContextProvider implements ContextProvider {
   readonly prefix = 'skill:'
 
   constructor(
-    @inject(SkillService) private skillService: SkillService,
+    @inject('SkillService') private skillService: SkillService,
   ) {}
 
   async provideContext(mention: string): Promise<MentionContext> {

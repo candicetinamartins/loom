@@ -176,7 +176,7 @@ export class SpecService {
       for (const fn of relatedFunctions) {
         const module = await this.graphService.findModuleForNode(fn.id)
         if (module) {
-          modulePaths.add(module.path)
+          modulePaths.add(module.properties.path)
         }
       }
       

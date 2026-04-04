@@ -26,7 +26,7 @@ export class LoomFlowTimelineContribution implements FrontendApplicationContribu
   constructor(
     @inject(WidgetManager) private widgetManager: WidgetManager,
     @inject(EditorManager) private editorManager: EditorManager,
-    @inject(FlowTrackingService) private flowService: FlowTrackingService
+    @inject('FlowTrackingService') private flowService: FlowTrackingService
   ) {}
 
   async onStart(): Promise<void> {

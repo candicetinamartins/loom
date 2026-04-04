@@ -81,7 +81,7 @@ declare module '@theia/core/lib/node' {
   export const BackendApplicationContribution: symbol
 
   export class BackendApplication {
-    constructor(serverModule: unknown)
+    constructor(serverModule: unknown, opts?: unknown)
     start(): Promise<void>
   }
 }

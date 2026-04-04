@@ -299,7 +299,7 @@ export class ConversationSharingService {
 }
 
 // Extend ChannelMap for sharing events
-declare module '@loom/core' {
+declare global {
   interface ChannelMap {
     CONVERSATION_SHARED: { shareId: string; shareToken: string; title: string }
     CONVERSATION_REVOKED: { shareToken: string }

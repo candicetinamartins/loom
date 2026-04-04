@@ -441,7 +441,7 @@ Focus on testing:
 }
 
 // Extend ChannelMap for PR review events
-declare module '@loom/core' {
+declare global {
   interface ChannelMap {
     PR_REVIEW_STARTED: { prNumber: number; repository: string; title: string }
     PR_REVIEW_COMPLETED: { prNumber: number; repository: string; status: string; totalCost: number }

@@ -350,7 +350,7 @@ export class AgentAnalyticsService {
 }
 
 // Extend ChannelMap for analytics events
-declare module '@loom/core' {
+declare global {
   interface ChannelMap {
     AGENT_USAGE_RECORDED: { agentName: string; cost: number; sessionId: string }
     BUDGET_ALERT: { dailyUsed: number; dailyLimit: number; monthlyUsed: number; monthlyLimit: number }

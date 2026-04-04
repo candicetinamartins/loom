@@ -86,7 +86,7 @@ export class LoomLLMService {
     if (response.toolCalls) {
       for (const toolCall of response.toolCalls) {
         const tool = this.toolProvider.getTool(toolCall.tool)
-        if (tool) {
+        if (tool?.execute) {
           const result = await tool.execute(toolCall.arguments)
           // Add tool result to context for follow-up
           messages.push({

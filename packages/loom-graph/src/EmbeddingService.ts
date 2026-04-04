@@ -2,38 +2,57 @@ import { injectable } from 'inversify'
 
 /**
  * EmbeddingService - Vector embeddings for semantic search
- * 
- * Generates FLOAT[1536] embeddings for:
- * - Function signatures and docs
- * - Code snippets
- * - Documentation sections
- * - Natural language queries
+ *
+ * Generates FLOAT[1536] embeddings via (in priority order):
+ * 1. OpenAI text-embedding-ada-002  (OPENAI_API_KEY env var)
+ * 2. SAIA academic cloud            (SAIA_API_KEY env var, OpenAI-compatible)
+ * 3. Deterministic pseudo-embedding (dev/CI fallback — no key required)
  */
 @injectable()
 export class EmbeddingService {
-  private embeddingDimension = 1536
-  
-  // Placeholder embedding - in production this would call:
-  // - OpenAI text-embedding-ada-002 (1536 dims)
-  // - Local embedding model
-  // - Ollama embeddings
-  
+  private readonly embeddingDimension = 1536
+  private readonly model = 'text-embedding-ada-002'
+  private readonly openAiEndpoint = 'https://api.openai.com/v1/embeddings'
+  private readonly saiaEndpoint = 'https://chat-ai.academiccloud.de/v1/embeddings'
+
   async generateEmbedding(text: string): Promise<number[]> {
-    // This is a MOCK implementation
-    // Real implementation would:
-    // 1. Call embedding API (OpenAI/Ollama)
-    // 2. Cache results
-    // 3. Return 1536-dimensional vector
-    
-    // For now, generate deterministic pseudo-embedding based on text hash
+    const openAiKey = process.env.OPENAI_API_KEY
+    const saiaKey = process.env.SAIA_API_KEY
+
+    if (openAiKey) {
+      return this.fetchEmbedding(text, this.openAiEndpoint, openAiKey)
+    }
+    if (saiaKey) {
+      return this.fetchEmbedding(text, this.saiaEndpoint, saiaKey)
+    }
+    return this.deterministicEmbedding(text)
+  }
+
+  private async fetchEmbedding(text: string, endpoint: string, apiKey: string): Promise<number[]> {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ model: this.model, input: text }),
+    })
+
+    if (!response.ok) {
+      console.warn(`[EmbeddingService] API error ${response.status} — falling back to deterministic embedding`)
+      return this.deterministicEmbedding(text)
+    }
+
+    const data = await response.json() as { data: Array<{ embedding: number[] }> }
+    return data.data[0].embedding
+  }
+
+  private deterministicEmbedding(text: string): number[] {
     const hash = this.hashCode(text)
     const embedding: number[] = []
-    
     for (let i = 0; i < this.embeddingDimension; i++) {
-      // Generate pseudo-random but deterministic values
       embedding.push(Math.sin(hash + i) * 0.5)
     }
-    
     return embedding
   }
   

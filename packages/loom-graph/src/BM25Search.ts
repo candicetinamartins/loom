@@ -6,7 +6,7 @@ let kuzu: any
 try {
   kuzu = require('@vela-engineering/kuzu')
 } catch {
-  kuzu = require('../kuzu-stub')
+  kuzu = require('./kuzu-stub')
 }
 
 /**

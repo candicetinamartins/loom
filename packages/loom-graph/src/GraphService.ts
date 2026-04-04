@@ -429,13 +429,54 @@ export class GraphService {
   async semanticSearch(query: string, embedding: number[], limit: number = 10): Promise<GraphNode[]> {
     if (!this.conn) throw new Error('Graph not initialized')
 
-    // Kuzu doesn't have built-in vector search yet
-    // This is a placeholder that would use cosine similarity via custom function
-    // For now, return placeholder results
-    console.log(`[GraphService] Semantic search for: ${query} (embedding: ${embedding.length} dims)`)
-    
-    // Fallback to name-based search
-    return this.findFunctionByName(query)
+    // Retrieve all Function and Class nodes that have stored embeddings.
+    // Kuzu doesn't have native vector search, so cosine similarity is computed in JS.
+    const rows = await this.conn.query(`
+      MATCH (f:Function)
+      WHERE f.embedding IS NOT NULL
+      RETURN f.id, f.name, f.signature, f.doc, f.embedding, f.complexity
+    `)
+    const allRows: any[] = rows.getAllRows ? rows.getAllRows() : []
+
+    if (allRows.length === 0) {
+      // No embeddings stored yet — fall back to name-based search
+      return this.findFunctionByName(query)
+    }
+
+    // Score each node by cosine similarity against the query embedding
+    const scored = allRows
+      .map((row: any) => {
+        const nodeEmbedding: number[] = row['f.embedding'] ?? []
+        const similarity = nodeEmbedding.length === embedding.length
+          ? this.cosineSimilarity(embedding, nodeEmbedding)
+          : 0
+        return { row, similarity }
+      })
+      .filter(({ similarity }) => similarity > 0)
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, limit)
+
+    return scored.map(({ row }) => ({
+      id: row['f.id'],
+      labels: ['Function'],
+      properties: {
+        name: row['f.name'],
+        signature: row['f.signature'],
+        doc: row['f.doc'],
+        complexity: row['f.complexity'],
+      },
+    }))
+  }
+
+  private cosineSimilarity(a: number[], b: number[]): number {
+    let dot = 0, normA = 0, normB = 0
+    for (let i = 0; i < a.length; i++) {
+      dot += a[i] * b[i]
+      normA += a[i] * a[i]
+      normB += b[i] * b[i]
+    }
+    const denom = Math.sqrt(normA) * Math.sqrt(normB)
+    return denom === 0 ? 0 : dot / denom
   }
 
   async query(queryString: string, parameters?: Record<string, any>): Promise<any[]> {

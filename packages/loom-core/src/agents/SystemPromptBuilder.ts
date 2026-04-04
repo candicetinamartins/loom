@@ -13,6 +13,8 @@ import { GraphContextFormatter } from '@loom/graph'
 import { TokenUsageTracker } from '@loom/core'
 import { buildSystemPromptWithProtocol } from '@loom/core'
 
+import { FlowContext } from '../services/FlowTrackingService'
+
 export interface AgentConfig {
   name: string
   model: string
@@ -30,10 +32,7 @@ export interface ActiveSkill {
   estimatedTokens: number
 }
 
-export interface FlowContext {
-  intent: string
-  recentEvents: string[]
-}
+// FlowContext is imported from FlowTrackingService
 
 export class SystemPromptBuilder {
   constructor(

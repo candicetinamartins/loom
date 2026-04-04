@@ -1,6 +1,10 @@
 import { injectable, inject } from 'inversify'
 import { MentionContext, ContextProvider } from '../MentionContextProvider'
-import { GraphService } from '@loom/graph'
+
+// Avoid circular dependency with @loom/graph
+interface GraphService {
+  query(cypher: string): Promise<any[]>
+}
 
 @injectable()
 export class SymbolContextProvider implements ContextProvider {
@@ -8,7 +12,7 @@ export class SymbolContextProvider implements ContextProvider {
   readonly prefix = 'symbol:'
 
   constructor(
-    @inject(GraphService) private readonly graphService: GraphService,
+    @inject('GraphService') private readonly graphService: GraphService,
   ) {}
 
   async provideContext(mention: string): Promise<MentionContext> {

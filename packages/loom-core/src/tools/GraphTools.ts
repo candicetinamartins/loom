@@ -1,5 +1,24 @@
 import { injectable, inject } from 'inversify'
-import { GraphService, GraphNode, EmbeddingService } from '@loom/graph'
+
+// Avoid circular dependency with @loom/graph
+interface GraphNode {
+  id: string
+  labels: string[]
+  properties: Record<string, any>
+}
+
+interface GraphService {
+  query(cypher: string): Promise<any[]>
+  semanticSearch(query: string, embedding: number[], limit: number): Promise<GraphNode[]>
+  findFunctionByName(name: string): Promise<GraphNode[]>
+  getFunctionNeighborhood(nodeId: string): Promise<{ nodes: GraphNode[]; relationships: any[] }>
+  findPath(startId: string, endId: string): Promise<{ path: any[]; relationships: any[] }>
+}
+
+interface EmbeddingService {
+  generateEmbedding(text: string): Promise<number[]>
+  cosineSimilarity(a: number[], b: number[]): number
+}
 
 /**
  * Graph Tools - 9 tools for knowledge graph queries
@@ -21,8 +40,8 @@ export class GraphSearchSemanticTool {
   readonly description = 'Search code using semantic similarity (vector embeddings)'
 
   constructor(
-    @inject(GraphService) private graphService: GraphService,
-    @inject(EmbeddingService) private embeddingService: EmbeddingService
+    @inject('GraphService') private graphService: GraphService,
+    @inject('EmbeddingService') private embeddingService: EmbeddingService
   ) {}
 
   async execute(input: { query: string; limit?: number }): Promise<{
@@ -66,7 +85,7 @@ export class GraphSearchBM25Tool {
   readonly name = 'graph_search_bm25'
   readonly description = 'Search code using BM25 full-text search'
 
-  constructor(@inject(GraphService) private graphService: GraphService) {}
+  constructor(@inject('GraphService') private graphService: GraphService) {}
 
   async execute(input: { query: string; limit?: number }): Promise<{
     results: Array<{
@@ -96,7 +115,7 @@ export class GraphCypherTool {
   readonly name = 'graph_cypher'
   readonly description = 'Execute a custom Cypher query on the knowledge graph'
 
-  constructor(@inject(GraphService) private graphService: GraphService) {}
+  constructor(@inject('GraphService') private graphService: GraphService) {}
 
   async execute(input: { cypher: string; parameters?: Record<string, any> }): Promise<{
     columns: string[]
@@ -117,7 +136,7 @@ export class GraphGetNeighbourhoodTool {
   readonly name = 'graph_get_neighbourhood'
   readonly description = 'Get the neighbourhood (connected nodes) of a function or class'
 
-  constructor(@inject(GraphService) private graphService: GraphService) {}
+  constructor(@inject('GraphService') private graphService: GraphService) {}
 
   async execute(input: { nodeId: string; depth?: number }): Promise<{
     nodes: GraphNode[]
@@ -145,7 +164,7 @@ export class GraphFindPathTool {
   readonly name = 'graph_find_path'
   readonly description = 'Find a path between two code entities'
 
-  constructor(@inject(GraphService) private graphService: GraphService) {}
+  constructor(@inject('GraphService') private graphService: GraphService) {}
 
   async execute(input: { fromId: string; toId: string; maxDepth?: number }): Promise<{
     path: Array<{
@@ -188,7 +207,7 @@ export class GraphGetRelatedFilesTool {
   readonly name = 'graph_get_related_files'
   readonly description = 'Find files that are often changed together (co-change analysis)'
 
-  constructor(@inject(GraphService) private graphService: GraphService) {}
+  constructor(@inject('GraphService') private graphService: GraphService) {}
 
   async execute(input: { filePath: string; limit?: number }): Promise<{
     relatedFiles: Array<{
@@ -208,7 +227,7 @@ export class GraphFindFunctionTool {
   readonly name = 'graph_find_function'
   readonly description = 'Find a function by exact or partial name match'
 
-  constructor(@inject(GraphService) private graphService: GraphService) {}
+  constructor(@inject('GraphService') private graphService: GraphService) {}
 
   async execute(input: { name: string; exact?: boolean }): Promise<{
     functions: Array<{
@@ -238,7 +257,7 @@ export class GraphGetCallersTool {
   readonly name = 'graph_get_callers'
   readonly description = 'Find all functions that call a given function'
 
-  constructor(@inject(GraphService) private graphService: GraphService) {}
+  constructor(@inject('GraphService') private graphService: GraphService) {}
 
   async execute(input: { functionId: string }): Promise<{
     callers: Array<{
@@ -270,7 +289,7 @@ export class GraphGetCalleesTool {
   readonly name = 'graph_get_callees'
   readonly description = 'Find all functions called by a given function'
 
-  constructor(@inject(GraphService) private graphService: GraphService) {}
+  constructor(@inject('GraphService') private graphService: GraphService) {}
 
   async execute(input: { functionId: string }): Promise<{
     callees: Array<{

@@ -1,4 +1,5 @@
 import { injectable, inject } from 'inversify'
+import { CoreMessage } from 'ai'
 import { LoomMsgHub, Channel } from '../orchestration/LoomMsgHub'
 import { TokenUsageTracker } from './TokenUsageTracker'
 import { ContextCompactor } from '../context/ContextCompactor'
@@ -465,10 +466,4 @@ Return ONLY valid JSON matching this structure. No markdown, no explanation.`
     if (keys.length === 1) return `${keys[0]}=${JSON.stringify(args[keys[0]]).slice(0, 20)}`
     return `${keys.length} args`
   }
-}
-
-// Type placeholder for CoreMessage
-interface CoreMessage {
-  role: 'system' | 'user' | 'assistant'
-  content: string
 }

@@ -8,6 +8,12 @@ export interface CompactionResult {
 }
 
 export class ContextCompactor {
+  async isApproachingLimit(messages: CoreMessage[], model: string): Promise<boolean> {
+    const used = await this.estimateTokens(messages)
+    const max = MODEL_CONTEXT_WINDOWS[model] ?? 200_000
+    return used / max > 0.70
+  }
+
   async compact(
     messages: CoreMessage[],
     threshold: number = 0.70,

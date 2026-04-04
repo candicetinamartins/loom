@@ -118,7 +118,7 @@ export class OrchestrateCommand {
       : path.join(this.workspaceRoot, filePath)
     
     const content = await fs.readFile(fullPath, 'utf-8')
-    const parsed = await this.parser.parse(content)
+    const parsed = this.parser.parse<Record<string, any>>(content)
 
     // Convert parsed TOML to PipelinePlan format
     return this.convertTOMLToPlan(parsed)

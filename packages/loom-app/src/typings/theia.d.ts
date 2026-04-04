@@ -5,6 +5,18 @@ declare module '@theia/core' {
   export interface Disposable {
     dispose(): void
   }
+
+  export class CommandRegistry {
+    executeCommand(commandId: string, ...args: unknown[]): Promise<unknown>
+    registerCommand(command: { id: string; label?: string }, handler: { execute(...args: unknown[]): unknown }): Disposable
+  }
+}
+
+declare module '@theia/core/lib/node' {
+  export interface BackendApplicationContribution {
+    onStart?(): void | Promise<void>
+    onStop?(): void | Promise<void>
+  }
 }
 
 declare module '@theia/core/lib/browser' {
@@ -25,6 +37,21 @@ declare module '@theia/core/lib/browser' {
 
   export interface Disposable {
     dispose(): void
+  }
+
+  export class WidgetManager {
+    getOrCreateWidget<T>(factoryId: string, options?: object): Promise<T>
+    tryGetWidget<T>(factoryId: string, options?: object): T | undefined
+  }
+}
+
+declare module '@theia/core/lib/browser/keybinding' {
+  export interface KeybindingContribution {
+    registerKeybindings(keybindings: KeybindingRegistry): void
+  }
+
+  export class KeybindingRegistry {
+    registerKeybinding(keybinding: { command: string; keybinding: string; context?: string }): void
   }
 }
 

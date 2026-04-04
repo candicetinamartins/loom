@@ -31,7 +31,7 @@ export class ProjectContextService {
     
     try {
       const content = await fs.readFile(contextPath, 'utf-8')
-      const parsed = await this.parser.parse(content)
+      const parsed = this.parser.parse<Record<string, any>>(content)
       this.context = this.validateAndNormalize(parsed)
       return this.context
     } catch {

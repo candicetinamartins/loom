@@ -60,4 +60,15 @@ export class RateLimiter {
     this.refill(bucket)
     return Math.floor(bucket.tokens)
   }
+
+  // Alias for acquireToken - used by LoomLLMService
+  async checkLimit(provider: string): Promise<boolean> {
+    return this.acquireToken(provider)
+  }
+
+  // No-op for tracking usage - used by LoomLLMService
+  recordUsage(provider: string, tokens: number): void {
+    // Usage tracking can be implemented here
+    // For now, this is a placeholder
+  }
 }

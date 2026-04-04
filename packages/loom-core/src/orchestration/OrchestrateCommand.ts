@@ -30,8 +30,6 @@ export interface WaveApproval {
  */
 @injectable()
 export class OrchestrateCommand {
-  private parser = new TOMLParser()
-
   constructor(
     @inject(PipelineRunner) private pipelineRunner: PipelineRunner,
     @inject(LoomMsgHub) private hub: LoomMsgHub,
@@ -118,7 +116,7 @@ export class OrchestrateCommand {
       : path.join(this.workspaceRoot, filePath)
     
     const content = await fs.readFile(fullPath, 'utf-8')
-    const parsed = await this.parser.parse(content)
+    const parsed = TOMLParser.parse(content)
 
     // Convert parsed TOML to PipelinePlan format
     return this.convertTOMLToPlan(parsed)

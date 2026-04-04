@@ -12,7 +12,6 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "composite": true,
     "paths": {
       "@loom/core": ["./packages/loom-core/src"],
       "@loom/core/*": ["./packages/loom-core/src/*"],
@@ -34,14 +33,5 @@
     "baseUrl": "."
   },
   "include": ["packages/*/src/**/*"],
-  "exclude": ["node_modules", "lib", "**/*.spec.ts"],
-  "references": [
-    { "path": "./packages/loom-core" },
-    { "path": "./packages/loom-tools" },
-    { "path": "./packages/loom-ui" },
-    { "path": "./packages/loom-agents" },
-    { "path": "./packages/loom-app" },
-    { "path": "./packages/loom-graph" },
-    { "path": "./packages/loom-memory" }
-  ]
+  "exclude": ["node_modules", "lib", "**/*.spec.ts"]
 }

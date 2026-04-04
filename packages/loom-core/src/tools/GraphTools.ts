@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify'
-import { GraphService, GraphNode } from '../GraphService'
-import { EmbeddingService } from '../EmbeddingService'
+import { GraphService, EmbeddingService } from '@loom/graph'
+import type { GraphNode } from '@loom/graph'
 
 /**
  * Graph Tools - 9 tools for knowledge graph queries

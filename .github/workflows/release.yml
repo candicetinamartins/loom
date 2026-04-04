@@ -43,7 +43,23 @@ jobs:
         run: npm install
 
       - name: Build packages
-        run: npm run build --workspaces
+        run: |
+          echo "=== Building all packages ==="
+          npm run build --workspaces 2>&1 | tee build.log || {
+            echo "=== BUILD FAILED - Showing last 100 lines of log ==="
+            tail -100 build.log
+            echo "=== Attempting individual package builds to identify failure ==="
+            for pkg in packages/*/; do
+              if [ -f "$pkg/package.json" ] && [ -f "$pkg/tsconfig.json" ]; then
+                name=$(cat "$pkg/package.json" | grep '"name"' | head -1 | cut -d'"' -f4)
+                echo "::group::Building $name"
+                (cd "$pkg" && npx tsc --noEmit 2>&1) || echo "FAILED: $name"
+                echo "::endgroup::"
+              fi
+            done
+            exit 1
+          }
+        shell: bash
 
       - name: Build Electron (macOS ${{ matrix.arch }})
         run: |
@@ -83,7 +99,23 @@ jobs:
         run: npm install
 
       - name: Build packages
-        run: npm run build --workspaces
+        run: |
+          echo "=== Building all packages ==="
+          npm run build --workspaces 2>&1 | tee build.log || {
+            echo "=== BUILD FAILED - Showing last 100 lines of log ==="
+            tail -100 build.log
+            echo "=== Attempting individual package builds to identify failure ==="
+            for pkg in packages/*/; do
+              if [ -f "$pkg/package.json" ] && [ -f "$pkg/tsconfig.json" ]; then
+                name=$(cat "$pkg/package.json" | grep '"name"' | head -1 | cut -d'"' -f4)
+                echo "::group::Building $name"
+                (cd "$pkg" && npx tsc --noEmit 2>&1) || echo "FAILED: $name"
+                echo "::endgroup::"
+              fi
+            done
+            exit 1
+          }
+        shell: bash
 
       - name: Build Electron (Windows x64)
         run: |
@@ -119,7 +151,23 @@ jobs:
         run: npm install
 
       - name: Build packages
-        run: npm run build --workspaces
+        run: |
+          echo "=== Building all packages ==="
+          npm run build --workspaces 2>&1 | tee build.log || {
+            echo "=== BUILD FAILED - Showing last 100 lines of log ==="
+            tail -100 build.log
+            echo "=== Attempting individual package builds to identify failure ==="
+            for pkg in packages/*/; do
+              if [ -f "$pkg/package.json" ] && [ -f "$pkg/tsconfig.json" ]; then
+                name=$(cat "$pkg/package.json" | grep '"name"' | head -1 | cut -d'"' -f4)
+                echo "::group::Building $name"
+                (cd "$pkg" && npx tsc --noEmit 2>&1) || echo "FAILED: $name"
+                echo "::endgroup::"
+              fi
+            done
+            exit 1
+          }
+        shell: bash
 
       - name: Build Electron (Linux x64)
         run: |

@@ -14,7 +14,7 @@ export interface FileWriteOutput {
 }
 
 export class FileWriteTool {
-  readonly name = 'file_write'
+  readonly name = 'write_file'
   readonly description = 'Write content to a file in the workspace'
 
   async execute(input: FileWriteInput): Promise<FileWriteOutput> {

@@ -14,7 +14,7 @@ export interface FileReadOutput {
 }
 
 export class FileReadTool {
-  readonly name = 'file_read'
+  readonly name = 'read_file'
   readonly description = 'Read file contents from the workspace'
 
   async execute(input: FileReadInput): Promise<FileReadOutput> {

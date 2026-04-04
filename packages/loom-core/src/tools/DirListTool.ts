@@ -20,7 +20,7 @@ export interface DirListOutput {
 }
 
 export class DirListTool {
-  readonly name = 'dir_list'
+  readonly name = 'list_dir'
   readonly description = 'List directory contents'
 
   async execute(input: DirListInput): Promise<DirListOutput> {

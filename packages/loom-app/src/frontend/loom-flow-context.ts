@@ -96,11 +96,11 @@ export class LoomFlowContextContributor implements FrontendApplicationContributi
       const enhancedRequest = this.enhanceRequest(request)
       
       // Call original with proper binding
-      return originalMethod.call(service, enhancedRequest, history, ...args)
+      return (originalMethod as any).call(service, enhancedRequest, history, ...args)
     }
 
     // Replace method on service instance
-    service.resolveAgent = wrappedMethod
+    ;(service as any).resolveAgent = wrappedMethod
 
     console.log('[Loom] Flow context interceptor registered (fallback mode)')
   }
@@ -115,7 +115,7 @@ export class LoomFlowContextContributor implements FrontendApplicationContributi
     const flowIntent = this.flowService.inferIntent()
 
     // Deep clone to avoid mutating original
-    const enhanced: ChatRequest = JSON.parse(JSON.stringify(request))
+    const enhanced = JSON.parse(JSON.stringify(request)) as any
 
     // Method 1: Prepend to messages array as system context
     if (Array.isArray(enhanced.messages)) {
@@ -125,9 +125,9 @@ export class LoomFlowContextContributor implements FrontendApplicationContributi
 
       if (systemIdx >= 0) {
         // Append to existing system message
-        const content = (enhanced.messages[systemIdx] as { content?: string }).content
+        const content = enhanced.messages[systemIdx].content
         if (typeof content === 'string') {
-          (enhanced.messages[systemIdx] as { content: string }).content = 
+          enhanced.messages[systemIdx].content = 
             `[Developer Flow: ${flowContext}]\n\n${content}`
         }
       } else {
@@ -135,7 +135,7 @@ export class LoomFlowContextContributor implements FrontendApplicationContributi
         enhanced.messages.unshift({
           role: 'system',
           content: `[Developer Flow: ${flowContext}]`,
-        } as ChatMessage)
+        })
       }
     }
 
@@ -150,7 +150,7 @@ export class LoomFlowContextContributor implements FrontendApplicationContributi
       },
     }
 
-    return enhanced
+    return enhanced as ChatRequest
   }
 }
 
@@ -160,9 +160,4 @@ interface ChatMiddleware {
   priority: number
   transformRequest(req: ChatRequest): ChatRequest
   transformResponse(res: unknown): unknown
-}
-
-interface ChatMessage {
-  role: 'system' | 'user' | 'assistant'
-  content: string
 }

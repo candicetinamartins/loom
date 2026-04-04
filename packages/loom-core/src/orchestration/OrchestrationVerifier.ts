@@ -1,26 +1,8 @@
 import { z } from 'zod'
 import { LoomMsgHub, Channel } from './LoomMsgHub'
+import { AgentResultSchema, AgentResult, AgentCompletePayload } from '../agents/AgentResultSchema'
 
-export const AgentResultSchema = z.object({
-  status: z.enum(['complete', 'partial', 'failed']),
-  summary: z.string().max(200),
-  files_created: z.array(z.string()).default([]),
-  files_modified: z.array(z.string()).default([]),
-  key_findings: z.array(z.string().max(120)).max(5).default([]),
-  next_actions: z.array(z.string().max(120)).max(5).default([]),
-})
-
-export type AgentResult = z.infer<typeof AgentResultSchema>
-
-export interface AgentCompletePayload extends AgentResult {
-  agentName: string
-  stepCount: number
-  tokenUsage: {
-    input: number
-    output: number
-    total: number
-  }
-}
+export { AgentResultSchema, AgentResult, AgentCompletePayload } from '../agents/AgentResultSchema'
 
 export interface VerifiedResult {
   status: 'verified' | 'quarantined'

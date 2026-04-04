@@ -11,6 +11,7 @@ import { SecretService } from './services/SecretService'
 import { RateLimiter } from './services/RateLimiter'
 import { FlowTrackingService } from './services/FlowTrackingService'
 import { TOMLParser } from './config/TOMLParser'
+import { ConversationHistoryService } from './services/ConversationHistoryService'
 
 export const TYPES = {
   LoomMsgHub: Symbol.for('LoomMsgHub'),

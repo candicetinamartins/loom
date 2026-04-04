@@ -501,4 +501,35 @@ export class GraphService {
     this.db?.close()
     this.isInitialized = false
   }
+
+  /**
+   * Find the module that contains a given node (Function, Class, etc.)
+   */
+  async findModuleForNode(nodeId: string): Promise<GraphNode | null> {
+    if (!this.conn) throw new Error('Graph not initialized')
+
+    const query = `
+      MATCH (n {id: '${nodeId.replace(/'/g, "\\'")}'})<-[:CONTAINS]-(m:Module)
+      RETURN m.id, m.path, m.language, m.churn_score
+      LIMIT 1
+    `
+    
+    const result = await this.conn.query(query)
+    const rows = result.getAllRows()
+    
+    if (rows.length === 0) {
+      return null
+    }
+
+    const row = rows[0]
+    return {
+      id: row['m.id'],
+      labels: ['Module'],
+      properties: {
+        path: row['m.path'],
+        language: row['m.language'],
+        churn_score: row['m.churn_score'],
+      },
+    }
+  }
 }

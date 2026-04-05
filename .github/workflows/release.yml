@@ -39,7 +39,7 @@ jobs:
         run: pip3 install setuptools
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Build packages
         run: |
@@ -99,7 +99,7 @@ jobs:
       - name: Install dependencies
         env:
           npm_config_msvs_version: '2022'
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Build packages
         run: |
@@ -162,7 +162,7 @@ jobs:
           pip3 install setuptools
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Build packages
         run: |

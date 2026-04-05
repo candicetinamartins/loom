@@ -73,3 +73,7 @@ release/
 # Native modules (built by CI)
 *.node
 !*.node.sha256
+
+# Claude Code worktrees and local settings
+.claude/worktrees/
+.claude/settings.local.json

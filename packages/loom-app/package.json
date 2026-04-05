@@ -39,7 +39,8 @@
     "@theia/cli": "latest"
   },
   "scripts": {
-    "build": "theia build",
+    "build": "echo 'loom-app: frontend bundle built in loom-electron step'",
+    "build:full": "theia build",
     "start": "theia start"
   }
 }

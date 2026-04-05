@@ -6,7 +6,8 @@
   "author": "Loom Team",
   "license": "MIT",
   "scripts": {
-    "build": "yarn build:backend && yarn build:frontend",
+    "build": "tsc -p tsconfig.backend.json",
+    "build:full": "yarn build:backend && yarn build:frontend",
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:frontend": "theia build --mode production",
     "package": "yarn build && electron-builder",

@@ -64,7 +64,7 @@ jobs:
       - name: Build Electron (macOS ${{ matrix.arch }})
         run: |
           cd packages/loom-electron
-          npm run build
+          npm run build:full
           npx electron-builder --mac --${{ matrix.arch }} --publish=never
 
       - name: Upload artifacts
@@ -122,7 +122,7 @@ jobs:
       - name: Build Electron (Windows x64)
         run: |
           cd packages/loom-electron
-          npm run build
+          npm run build:full
           npx electron-builder --win --x64 --publish=never
 
       - name: Upload artifacts
@@ -174,7 +174,7 @@ jobs:
       - name: Build Electron (Linux x64)
         run: |
           cd packages/loom-electron
-          npm run build
+          npm run build:full
           npx electron-builder --linux --x64 --publish=never
 
       - name: Upload artifacts

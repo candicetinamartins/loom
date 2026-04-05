@@ -5,6 +5,7 @@
   "main": "./lib/backend/electron-main.js",
   "author": "Loom Team",
   "license": "MIT",
+  "homepage": "https://github.com/candicetinamartins/loom",
   "scripts": {
     "build": "tsc -p tsconfig.backend.json",
     "build:full": "npm run build:backend && npm run build:frontend",

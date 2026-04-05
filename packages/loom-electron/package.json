@@ -7,12 +7,12 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc -p tsconfig.backend.json",
-    "build:full": "yarn build:backend && yarn build:frontend",
+    "build:full": "npm run build:backend && npm run build:frontend",
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:frontend": "theia build --mode production",
-    "package": "yarn build && electron-builder",
-    "package:dir": "yarn build && electron-builder --dir",
-    "start": "yarn build && electron .",
+    "package": "npm run build && electron-builder",
+    "package:dir": "npm run build && electron-builder --dir",
+    "start": "npm run build && electron .",
     "dev": "electron . --inspect",
     "test": "jest"
   },
@@ -37,7 +37,6 @@
     "@theia/task": "1.48.0",
     "@theia/terminal": "1.48.0",
     "@theia/timeline": "1.48.0",
-    "@vela-engineering/kuzu": "file:../../kuzu/tools/nodejs_api",
     "@loom/core": "0.1.0",
     "@loom/tools": "0.1.0",
     "@loom/graph": "0.1.0",
@@ -47,12 +46,17 @@
     "@loom/memory": "0.1.0",
     "@loom/docs": "0.1.0"
   },
+  "optionalDependencies": {
+    "@vela-engineering/kuzu": "file:../../kuzu/tools/nodejs_api"
+  },
   "devDependencies": {
     "@types/node": "18.17.0",
     "electron": "28.0.0",
     "electron-builder": "24.9.1",
     "electron-rebuild": "3.2.9",
-    "typescript": "~5.3.0"
+    "typescript": "~5.3.0",
+    "webpack": "^5.76.0",
+    "webpack-cli": "4.7.0"
   },
   "build": {
     "appId": "dev.loom.ide",

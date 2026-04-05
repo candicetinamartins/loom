@@ -1,6 +1,12 @@
 import { injectable, inject } from 'inversify'
 
 // Avoid circular dependency with @loom/graph
+interface BM25SearchService {
+  search(query: string, limit?: number): Promise<Array<{
+    id: string; type: string; name: string; content: string; score: number
+  }>>
+}
+
 interface GraphNode {
   id: string
   labels: string[]
@@ -85,7 +91,10 @@ export class GraphSearchBM25Tool {
   readonly name = 'graph_search_bm25'
   readonly description = 'Search code using BM25 full-text search'
 
-  constructor(@inject('GraphService') private graphService: GraphService) {}
+  constructor(
+    @inject('GraphService')   private graphService: GraphService,
+    @inject('BM25Search')     private bm25: BM25SearchService
+  ) {}
 
   async execute(input: { query: string; limit?: number }): Promise<{
     results: Array<{
@@ -95,16 +104,27 @@ export class GraphSearchBM25Tool {
       score: number
     }>
   }> {
-    // Would use BM25Search service
-    // For now, fallback to name-based search
-    const nodes = await this.graphService.findFunctionByName(input.query)
-    
+    const hits = await this.bm25.search(input.query, input.limit ?? 10)
+
+    // If the index is empty (e.g. CI with Kuzu stub) fall back to name search
+    if (hits.length === 0) {
+      const nodes = await this.graphService.findFunctionByName(input.query)
+      return {
+        results: nodes.map((n: GraphNode) => ({
+          id:    n.id,
+          name:  n.properties.name as string,
+          type:  n.labels[0],
+          score: 1.0,
+        })),
+      }
+    }
+
     return {
-      results: nodes.map((n: GraphNode) => ({
-        id: n.id,
-        name: n.properties.name as string,
-        type: n.labels[0],
-        score: 1.0,
+      results: hits.map(h => ({
+        id:    h.id,
+        name:  h.name,
+        type:  h.type,
+        score: h.score,
       })),
     }
   }

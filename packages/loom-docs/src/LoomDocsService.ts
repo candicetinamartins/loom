@@ -1,8 +1,42 @@
 import { injectable, inject } from 'inversify'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { GraphService } from '@loom/graph'
-import { PageIndex, DocPage, DocSection, DocExample } from '@loom/graph'
+
+// Avoid circular dependency with @loom/graph
+interface GraphService {
+  query(cypher: string): Promise<any[]>
+}
+
+export interface DocSection {
+  id: string
+  heading: string
+  content: string
+  level: number
+  lineNumber: number
+}
+
+export interface DocExample {
+  id: string
+  code: string
+  language: string
+  description?: string
+}
+
+export interface DocPage {
+  id: string
+  path: string
+  title: string
+  package: string
+  content: string
+  sections: DocSection[]
+  examples: DocExample[]
+}
+
+interface PageIndex {
+  indexPackageDocs(): Promise<DocPage[]>
+  searchDocs(query: string): Promise<DocPage[]>
+  findExamplesForLanguage(language: string): Promise<DocExample[]>
+}
 
 /**
  * LoomDocsService - Indexes and serves package documentation
@@ -18,8 +52,8 @@ export class LoomDocsService {
   private indexedDocs: Map<string, DocPage> = new Map()
 
   constructor(
-    @inject(GraphService) private graphService: GraphService,
-    @inject(PageIndex) private pageIndex: PageIndex
+    @inject('GraphService') private graphService: GraphService,
+    @inject('PageIndex') private pageIndex: PageIndex
   ) {}
 
   async initialize(): Promise<void> {

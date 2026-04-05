@@ -1,6 +1,10 @@
 import { injectable, inject } from 'inversify'
 import * as http from 'http'
-import { GraphService } from '@loom/graph'
+
+// Avoid circular dependency with @loom/graph
+interface GraphService {
+  query(cypher: string): Promise<any[]>
+}
 
 /**
  * Phase 8 — Shared Graph Server (loom serve)
@@ -45,7 +49,7 @@ export class SharedGraphServer {
   private activeConnections: Map<string, { userId: string; connectedAt: Date }> = new Map()
 
   constructor(
-    @inject(GraphService) private readonly graphService: GraphService,
+    @inject('GraphService') private readonly graphService: GraphService,
   ) {
     this.config = {
       port: 57321,

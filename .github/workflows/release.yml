@@ -158,7 +158,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y icnsutils graphicsmagick python3-pip
+          sudo apt-get install -y icnsutils graphicsmagick python3-pip p7zip-full
           pip3 install setuptools
 
       - name: Install dependencies
@@ -182,6 +182,14 @@ jobs:
             exit 1
           }
         shell: bash
+
+      - name: Ensure 7zip binary for electron-builder
+        run: |
+          mkdir -p node_modules/7zip-bin/linux/x64
+          if [ ! -f node_modules/7zip-bin/linux/x64/7za ]; then
+            cp "$(which 7za)" node_modules/7zip-bin/linux/x64/7za
+            chmod +x node_modules/7zip-bin/linux/x64/7za
+          fi
 
       - name: Build Electron (Linux x64)
         env:

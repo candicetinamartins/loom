@@ -183,18 +183,30 @@ jobs:
           }
         shell: bash
 
-      - name: Ensure 7zip binary for electron-builder
-        run: |
-          mkdir -p node_modules/7zip-bin/linux/x64
-          if [ ! -f node_modules/7zip-bin/linux/x64/7za ]; then
-            cp "$(which 7za)" node_modules/7zip-bin/linux/x64/7za
-            chmod +x node_modules/7zip-bin/linux/x64/7za
-          fi
-
       - name: Build Electron (Linux x64)
         env:
           NODE_OPTIONS: --max-old-space-size=10240
         run: |
+          # electron-builder requires 7za to be executable at the path
+          # exported by 7zip-bin.  The npm tarball doesn't always ship the
+          # binary on Linux; use the system p7zip-full binary instead.
+          node -e "
+            const fs   = require('fs');
+            const path = require('path');
+            const { execSync } = require('child_process');
+            const p7za = require('7zip-bin').path7za;
+            console.log('7zip-bin path7za =>', p7za);
+            fs.mkdirSync(path.dirname(p7za), { recursive: true });
+            if (!fs.existsSync(p7za)) {
+              const sys = execSync('which 7za').toString().trim();
+              fs.copyFileSync(sys, p7za);
+              fs.chmodSync(p7za, 0o755);
+              console.log('Installed 7za from', sys);
+            } else {
+              fs.chmodSync(p7za, 0o755);
+              console.log('7za already present, ensured +x');
+            }
+          "
           cd packages/loom-electron
           npm run build:full
           npx electron-builder --linux --x64 --publish=never

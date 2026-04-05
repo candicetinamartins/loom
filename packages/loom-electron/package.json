@@ -67,6 +67,7 @@
     "appId": "dev.loom.ide",
     "productName": "Loom",
     "copyright": "Copyright © 2026 Loom Team",
+    "icon": "resources/icon.ico",
     "beforePack": "./scripts/before-pack.js",
     "directories": {
       "output": "dist"
@@ -119,10 +120,6 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
-        },
-        {
-          "target": "msi",
           "arch": ["x64"]
         }
       ],

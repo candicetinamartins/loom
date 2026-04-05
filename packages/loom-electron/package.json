@@ -17,6 +17,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.0",
     "@theia/core": "1.70.0",
     "@theia/electron": "1.70.0",
     "@theia/filesystem": "1.70.0",

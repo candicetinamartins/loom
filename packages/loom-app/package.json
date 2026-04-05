@@ -12,20 +12,19 @@
     }
   },
   "dependencies": {
-    "@theia/core": "latest",
-    "@theia/editor": "latest",
-    "@theia/filesystem": "latest",
-    "@theia/git": "latest",
-    "@theia/terminal": "latest",
-    "@theia/monaco": "latest",
-    "@theia/ai-core": "latest",
-    "@theia/ai-ide": "latest",
-    "@theia/ai-anthropic": "latest",
-    "@theia/ai-openai": "latest",
-    "@theia/ai-ollama": "latest",
-    "@theia/ai-chat": "latest",
-    "@theia/debug": "latest",
-    "@theia/notebook": "latest",
+    "@theia/core": "1.70.0",
+    "@theia/editor": "1.70.0",
+    "@theia/filesystem": "1.70.0",
+    "@theia/terminal": "1.70.0",
+    "@theia/monaco": "1.70.0",
+    "@theia/ai-core": "1.70.0",
+    "@theia/ai-ide": "1.70.0",
+    "@theia/ai-anthropic": "1.70.0",
+    "@theia/ai-openai": "1.70.0",
+    "@theia/ai-ollama": "1.70.0",
+    "@theia/ai-chat": "1.70.0",
+    "@theia/debug": "1.70.0",
+    "@theia/notebook": "1.70.0",
     "@loom/core": "0.1.0",
     "@loom/tools": "0.1.0",
     "@loom/graph": "0.1.0",
@@ -36,7 +35,7 @@
     "@loom/docs": "0.1.0"
   },
   "devDependencies": {
-    "@theia/cli": "latest"
+    "@theia/cli": "1.70.0"
   },
   "scripts": {
     "build": "echo 'loom-app: frontend bundle built in loom-electron step'",

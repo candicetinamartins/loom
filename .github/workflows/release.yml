@@ -62,6 +62,8 @@ jobs:
         shell: bash
 
       - name: Build Electron (macOS ${{ matrix.arch }})
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
         run: |
           cd packages/loom-electron
           npm install
@@ -121,6 +123,8 @@ jobs:
         shell: bash
 
       - name: Build Electron (Windows x64)
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
         run: |
           cd packages/loom-electron
           npm install
@@ -174,6 +178,8 @@ jobs:
         shell: bash
 
       - name: Build Electron (Linux x64)
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
         run: |
           cd packages/loom-electron
           npm install

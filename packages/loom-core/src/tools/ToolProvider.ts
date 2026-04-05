@@ -1,4 +1,23 @@
-import { injectable } from 'inversify'
+/**
+ * ToolProvider - Provides tool definitions for LLM service
+ *
+ * Wraps ToolGroupRegistry for LLM tool calls
+ */
+
+import { injectable, inject } from 'inversify'
+import { ToolGroupRegistry, ToolDefinition, ToolGroupName } from './ToolGroupRegistry'
+
+export interface ToolCallResult {
+  success: boolean
+  result: string
+  error?: string
+}
+
+export interface Tool {
+  name: string
+  description: string
+  handler: (args: any) => Promise<ToolCallResult>
+}
 
 export interface LoomTool {
   name: string
@@ -9,20 +28,24 @@ export interface LoomTool {
 
 @injectable()
 export class ToolProvider {
-  private tools: Map<string, LoomTool> = new Map()
+  constructor(
+    @inject(ToolGroupRegistry) private registry: ToolGroupRegistry
+  ) {}
 
-  registerTool(tool: LoomTool): void {
-    this.tools.set(tool.name, tool)
-  }
-
-  getTool(name: string): LoomTool | undefined {
-    return this.tools.get(name)
-  }
-
-  getTools(names?: string[]): LoomTool[] {
-    if (names) {
-      return names.map(n => this.tools.get(n)).filter((t): t is LoomTool => t !== undefined)
+  getTool(name: string): ToolDefinition | undefined {
+    // Search all groups for the tool
+    for (const group of this.registry.getAllGroups()) {
+      const tool = group.tools.find(t => t.name === name)
+      if (tool) return tool
     }
-    return Array.from(this.tools.values())
+    return undefined
+  }
+
+  getTools(names: string[]): ToolDefinition[] {
+    return names.map(name => this.getTool(name)).filter((t): t is ToolDefinition => t !== undefined)
+  }
+
+  getAllTools(): ToolDefinition[] {
+    return this.registry.getAllTools()
   }
 }

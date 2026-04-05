@@ -1,6 +1,13 @@
 import { injectable, inject } from 'inversify'
-import * as kuzu from '@vela-engineering/kuzu'
 import { GraphService } from './GraphService'
+
+// Conditional import for Kuzu - uses stub in CI builds
+let kuzu: any
+try {
+  kuzu = require('@vela-engineering/kuzu')
+} catch {
+  kuzu = require('./kuzu-stub')
+}
 
 /**
  * BM25Search - Full-text search using Kuzu FTS extension

@@ -2,3 +2,4 @@
 
 export * from './LoomDocsService'
 export { LoomDocsService as default } from './LoomDocsService'
+export * from './loom-docs-module'

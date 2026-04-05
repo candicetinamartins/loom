@@ -33,6 +33,7 @@ export class RememberCommand {
 
     await this.hub.publish(
       LoomMsgHub.msg(Channel.MEMORY_STORED, {
+        memoryId: memory.id,
         key: memory.key,
         tier: memory.tier,
       })
@@ -72,9 +73,9 @@ export class ForgetCommand {
 }
 
 // Extend LoomMsgHub channels for memory events
-declare module '@loom/core' {
+declare global {
   interface ChannelMap {
-    MEMORY_STORED: { key: string; tier: number }
+    MEMORY_STORED: { memoryId: string; key: string; tier: string }
     MEMORY_DELETED: { key: string }
   }
 }

@@ -1,21 +1,28 @@
 import { EventEmitter } from 'events'
 
 export const Channel = {
+  // Agent lifecycle
   AGENT_STARTED: 'agent:started',
   AGENT_PROGRESS: 'agent:progress',
   AGENT_COMPLETE: 'agent:complete',
   AGENT_FAILED: 'agent:failed',
   AGENT_USAGE_RECORDED: 'agent:usage_recorded',
+
+  // Results
   RESULT_PARTIAL: 'result:partial',
   RESULT_FINAL: 'result:final',
   RESULT_VERIFIED: 'result:verified',
   RESULT_QUARANTINED: 'result:quarantined',
-  WAVE_STARTED: 'wave:started',
+
+  // Orchestration
   WAVE_COMPLETE: 'wave:complete',
+  WAVE_STARTED: 'wave:started',
   WAVE_SKIPPED: 'wave:skipped',
   PLAN_COMPLETE: 'plan:complete',
   COMMAND_STARTED: 'command:started',
   COMMAND_COMPLETE: 'command:complete',
+
+  // System
   MEMORY_EXTRACTED: 'memory:extracted',
   MEMORY_STORED: 'memory:stored',
   MEMORY_DELETED: 'memory:deleted',
@@ -24,24 +31,103 @@ export const Channel = {
   HOOK_WARNING: 'hook:warning',
   HOOK_NOTIFICATION: 'hook:notification',
   HOOK_CONTEXT_UPDATE: 'hook:context_update',
+  BUDGET_ALERT: 'budget:alert',
+
+  // Debug
   DEBUG_BREAKPOINT_SET: 'debug:breakpoint_set',
   DEBUG_SESSION_REQUEST: 'debug:session_request',
   DEBUG_SESSION_STARTED: 'debug:session_started',
   DEBUG_STEPPED: 'debug:stepped',
   DEBUG_EVALUATED: 'debug:evaluated',
+
+  // PR Review
   PR_REVIEW_STARTED: 'pr_review:started',
   PR_REVIEW_COMPLETED: 'pr_review:completed',
+
+  // Sharing
   CONVERSATION_SHARED: 'conversation:shared',
   CONVERSATION_REVOKED: 'conversation:revoked',
-  BUDGET_ALERT: 'budget:alert',
+
+  // Checkpoints
+  CHECKPOINT_CREATED: 'checkpoint:created',
+  CHECKPOINT_RESTORED: 'checkpoint:restored',
 } as const
 
 export type ChannelName = typeof Channel[keyof typeof Channel]
 
+// Base ChannelMap interface - extended by other modules via global augmentation
+export interface ChannelMap {
+  MEMORY_STORED: { memoryId: string; key: string; tier: string }
+  MEMORY_DELETED: { key: string }
+}
+
 export interface LoomMsg<T = unknown> {
   channel: ChannelName
   timestamp: number
-  data: T
+  data?: T
+  // Common metadata fields used across the system
+  sessionId?: string
+  breakpointId?: string
+  command?: string
+  waveIndex?: number
+  agent?: string
+  agentName?: string
+  memoryId?: string
+  key?: string
+  task?: string
+  prNumber?: number
+  shareId?: string
+  shareToken?: string
+  dailyUsed?: number
+  program?: string
+  action?: string
+  expression?: string
+  status?: string
+  summary?: string
+  files_created?: string[]
+  files_modified?: string[]
+  key_findings?: string[]
+  next_actions?: string[]
+  // Additional common fields used in debug and orchestration
+  args?: string[]
+  runtime?: string
+  line?: number
+  file?: string
+  result?: T
+  type?: string
+  // Additional fields from build errors
+  payload?: T
+  tier?: string
+  cost?: number
+  dailyLimit?: number
+  repository?: string
+  title?: string
+  agents?: string[]
+  agentCount?: number
+  wavesCompleted?: number
+  subtask?: string
+  results?: T[]
+  reason?: string
+  cwd?: string
+  tokenUsage?: number
+  stepCount?: number
+  confidence?: number
+  description?: string
+  activeFile?: string
+  terminalActive?: boolean
+  recentDiagnostics?: string[]
+  content?: string
+  mode?: string
+  completedCount?: number
+  monthlyUsed?: number
+  monthlyLimit?: number
+  totalCost?: number
+  // Hook-related fields
+  hook?: string
+  step?: string
+  error?: string
+  value?: any
+  source?: any
 }
 
 export type Handler<T> = (msg: LoomMsg<T>) => void | Promise<void>
@@ -50,12 +136,31 @@ export class LoomMsgHub {
   private emitter = new EventEmitter()
   private history: Map<ChannelName, LoomMsg[]> = new Map()
 
+  // Subscribe and return unsubscribe function
   on<T>(channel: ChannelName, handler: Handler<T>): () => void {
     this.emitter.on(channel, handler)
     return () => this.emitter.off(channel, handler)
   }
 
-  once<T>(channel: ChannelName): Promise<LoomMsg<T>> {
+  // Custom subscribe that returns unsubscribe (alias for on)
+  subscribe<T>(channel: ChannelName, handler: Handler<T>): () => void {
+    return this.on(channel, handler)
+  }
+
+  once<T>(channel: ChannelName, handler: Handler<T>): () => void {
+    this.emitter.once(channel, handler)
+    return () => this.emitter.off(channel, handler)
+  }
+
+  // Async version that returns Promise - use this for awaiting messages
+  onceAsync<T>(channel: ChannelName): Promise<LoomMsg<T>> {
+    return new Promise((resolve) => {
+      this.emitter.once(channel, resolve as any)
+    })
+  }
+
+  // Custom waitFor that returns Promise
+  waitFor<T>(channel: ChannelName): Promise<LoomMsg<T>> {
     return new Promise((resolve) => {
       this.emitter.once(channel, resolve)
     })

@@ -1,5 +1,5 @@
 import { Widget } from '@lumino/widgets'
-import { MemoryService, Memory } from '../MemoryService'
+import { MemoryService, Memory } from './MemoryService'
 
 /**
  * Phase 6 — MemoryPanelWidget

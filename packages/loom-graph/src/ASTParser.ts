@@ -164,7 +164,7 @@ export class ASTParser {
     const cursor = node.walk()
     
     do {
-      const n = cursor.currentNode()
+      const n = cursor.currentNode
       
       // Function declarations
       if (n.type === 'function_declaration' || 
@@ -234,7 +234,7 @@ export class ASTParser {
     if (bodyNode) {
       const cursor = bodyNode.walk()
       do {
-        const n = cursor.currentNode()
+        const n = cursor.currentNode
         if (n.type === 'method_definition') {
           const method = this.parseTypeScriptFunction(n, content)
           if (method) methods.push(method)
@@ -264,7 +264,7 @@ export class ASTParser {
     const cursor = node.walk()
     
     do {
-      const n = cursor.currentNode()
+      const n = cursor.currentNode
       
       if (n.type === 'function_definition') {
         const func = this.parsePythonFunction(n, content)
@@ -326,7 +326,7 @@ export class ASTParser {
     if (bodyNode) {
       const cursor = bodyNode.walk()
       do {
-        const n = cursor.currentNode()
+        const n = cursor.currentNode
         if (n.type === 'function_definition') {
           const method = this.parsePythonFunction(n, content)
           if (method) methods.push(method)
@@ -356,7 +356,7 @@ export class ASTParser {
     const cursor = node.walk()
     
     do {
-      const n = cursor.currentNode()
+      const n = cursor.currentNode
       
       if (n.type === 'function_item') {
         const func = this.parseRustFunction(n, content)
@@ -412,7 +412,7 @@ export class ASTParser {
     if (bodyNode) {
       const cursor = bodyNode.walk()
       do {
-        const n = cursor.currentNode()
+        const n = cursor.currentNode
         if (n.type === 'function_item') {
           const method = this.parseRustFunction(n, content)
           if (method) methods.push(method)
@@ -443,7 +443,7 @@ export class ASTParser {
     const cursor = node.walk()
     
     do {
-      const n = cursor.currentNode()
+      const n = cursor.currentNode
       
       if (n.type === 'function_declaration') {
         const func = this.parseGoFunction(n, content)
@@ -491,7 +491,7 @@ export class ASTParser {
     const cursor = node.walk()
     
     do {
-      const n = cursor.currentNode()
+      const n = cursor.currentNode
       
       if (n.type === 'method_declaration') {
         const func = this.parseJavaMethod(n, content)
@@ -544,7 +544,7 @@ export class ASTParser {
     if (bodyNode) {
       const cursor = bodyNode.walk()
       do {
-        const n = cursor.currentNode()
+        const n = cursor.currentNode
         if (n.type === 'method_declaration') {
           const method = this.parseJavaMethod(n, content)
           if (method) methods.push(method)
@@ -573,7 +573,7 @@ export class ASTParser {
     const cursor = node.walk()
     
     do {
-      const n = cursor.currentNode()
+      const n = cursor.currentNode
       const type = n.type.toLowerCase()
       
       // Look for function-like patterns

@@ -1,6 +1,10 @@
 import { injectable, inject } from 'inversify'
 import * as http from 'http'
-import { GraphService } from '@loom/graph'
+
+// Avoid circular dependency with @loom/graph
+interface GraphService {
+  query(cypher: string): Promise<any[]>
+}
 
 /**
  * Phase 8 — Shared Graph Server (loom serve)
@@ -45,7 +49,7 @@ export class SharedGraphServer {
   private activeConnections: Map<string, { userId: string; connectedAt: Date }> = new Map()
 
   constructor(
-    @inject(GraphService) private graph: GraphService,
+    @inject('GraphService') private readonly graphService: GraphService,
   ) {
     this.config = {
       port: 57321,
@@ -179,7 +183,7 @@ export class SharedGraphServer {
       // Execute query
       const startTime = Date.now()
       try {
-        const result = await this.graph.query(request.query)
+        const result = await this.graphService.query(request.query)
         const executionTime = Date.now() - startTime
 
         const response: GraphQueryResponse = {
@@ -218,7 +222,7 @@ export class SharedGraphServer {
   private async handleSchema(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
     try {
       // Get schema from Kuzu
-      const result = await this.graph.query('CALL show_tables() RETURN *')
+      const result = await this.graphService.query('CALL show_tables() RETURN *')
 
       res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(JSON.stringify({
@@ -239,7 +243,7 @@ export class SharedGraphServer {
   private async handleStats(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
     try {
       // Get node counts by type
-      const result = await this.graph.query(`
+      const result = await this.graphService.query(`
         MATCH (n)
         RETURN labels(n)[0] as nodeType, count(*) as count
         ORDER BY count DESC

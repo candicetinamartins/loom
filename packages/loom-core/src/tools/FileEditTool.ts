@@ -14,7 +14,7 @@ export interface FileEditOutput {
 }
 
 export class FileEditTool {
-  readonly name = 'file_edit'
+  readonly name = 'edit_file'
   readonly description = 'Replace text in a file using string matching'
 
   async execute(input: FileEditInput): Promise<FileEditOutput> {

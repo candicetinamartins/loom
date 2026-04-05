@@ -1,6 +1,10 @@
 import { injectable, inject } from 'inversify'
 import { MentionContext, ContextProvider } from '../MentionContextProvider'
-import { GraphService } from '@loom/graph'
+
+// Avoid circular dependency with @loom/graph
+interface GraphService {
+  query(cypher: string): Promise<any[]>
+}
 
 @injectable()
 export class GraphContextProvider implements ContextProvider {
@@ -8,7 +12,7 @@ export class GraphContextProvider implements ContextProvider {
   readonly prefix = 'graph:'
 
   constructor(
-    @inject(GraphService) private graph: GraphService,
+    @inject('GraphService') private readonly graphService: GraphService,
   ) {}
 
   async provideContext(mention: string): Promise<MentionContext> {
@@ -16,7 +20,7 @@ export class GraphContextProvider implements ContextProvider {
 
     try {
       // Execute Cypher query on knowledge graph
-      const result = await this.graph.query(query)
+      const result = await this.graphService.query(query)
       
       if (!result || result.length === 0) {
         return {

@@ -43,7 +43,7 @@ export class LoomOnboardingWizard {
       { label: '$(close) Skip Setup', description: 'Configure later in settings' },
     ], {
       title: 'Welcome to Loom AI IDE',
-      placeHolder: 'Choose an option to continue',
+      placeholder: 'Choose an option to continue',
     })
 
     if (!result || result.label.includes('Skip')) {
@@ -75,7 +75,7 @@ export class LoomOnboardingWizard {
       ],
       {
         title: 'Step 1 of 4: Select AI Provider',
-        placeHolder: 'Choose your preferred AI provider'
+        placeholder: 'Choose your preferred AI provider'
       }
     )
 
@@ -90,9 +90,9 @@ export class LoomOnboardingWizard {
 
   private async step3_ConfigureAPIKey(): Promise<void> {
     if (this.state.provider === 'Ollama (local)') {
-      const url = await this.quickInput.showInput({
+      const url = await (this.quickInput as any).showInput({
         title: 'Step 2 of 4: Ollama Configuration',
-        placeHolder: 'http://localhost:11434',
+        placeholder: 'http://localhost:11434',
         value: 'http://localhost:11434',
         prompt: 'Enter your Ollama base URL:',
       })
@@ -132,9 +132,9 @@ export class LoomOnboardingWizard {
       }
     }
 
-    const key = await this.quickInput.showInput({
+    const key = await (this.quickInput as any).showInput({
       title: `Step 2 of 4: Enter ${this.state.provider} API Key`,
-      placeHolder: this.state.provider === 'Anthropic Claude'
+      placeholder: this.state.provider === 'Anthropic Claude'
         ? 'sk-ant-api03-...'
         : 'sk-...',
       password: true,
@@ -164,7 +164,7 @@ export class LoomOnboardingWizard {
       },
     ], {
       title: 'Step 3 of 4: Select Default Mode',
-      placeHolder: 'Choose how AI should interact with your code',
+      placeholder: 'Choose how AI should interact with your code',
     })
 
     if (!mode) {
@@ -189,7 +189,7 @@ export class LoomOnboardingWizard {
       },
     ], {
       title: 'Step 4 of 4: Telemetry Preferences',
-      placeHolder: 'Help us improve Loom',
+      placeholder: 'Help us improve Loom',
     })
 
     this.state.enableTelemetry = telemetry?.label.includes('Enable') ?? false

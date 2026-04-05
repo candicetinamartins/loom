@@ -17,7 +17,8 @@
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "disableSourceOfProjectReferenceRedirect": true
+    "disableSourceOfProjectReferenceRedirect": true,
+    "typeRoots": ["../../node_modules/@types", "../loom-core/src/typings"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "lib"],

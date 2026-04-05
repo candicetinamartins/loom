@@ -2,7 +2,7 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 
 export interface SpecReadInput {
-  specName: string
+  specPath: string
 }
 
 export interface SpecReadOutput {
@@ -17,7 +17,7 @@ export class SpecReadTool {
   readonly description = 'Read a spec from the workspace'
 
   async execute(input: SpecReadInput): Promise<SpecReadOutput> {
-    const specDir = path.join('.loom/specs', input.specName)
+    const specDir = path.join('.loom/specs', input.specPath)
 
     const [requirements, design, tasks] = await Promise.all([
       fs.readFile(path.join(specDir, 'requirements.md'), 'utf-8').catch(() => null),
@@ -26,7 +26,7 @@ export class SpecReadTool {
     ])
 
     return {
-      specName: input.specName,
+      specName: input.specPath,
       requirements,
       design,
       tasks,

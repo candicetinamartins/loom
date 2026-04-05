@@ -1,6 +1,6 @@
 import { Widget } from '@lumino/widgets'
 import { Message } from '@lumino/messaging'
-import { SpecContent, SpecTask } from '../SpecService'
+import { SpecContent, SpecTask } from './SpecService'
 
 /**
  * Spec Panel Widget - Lumino panel showing spec tree with status badges

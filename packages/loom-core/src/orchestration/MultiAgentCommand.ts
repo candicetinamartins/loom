@@ -4,6 +4,7 @@ import { ChatAgentService } from '@theia/ai-chat/lib/browser/chat-agent-service'
 import { PipelineRunner, Wave, WaveAgent } from './PipelineRunner'
 import { OrchestrationVerifier, AgentResult } from './OrchestrationVerifier'
 import { LoomMsgHub, Channel } from './LoomMsgHub'
+import { AgentCompletePayload } from '../agents/AgentResultSchema'
 
 export interface MultiAgentConfig {
   agents: string[]
@@ -14,7 +15,7 @@ export interface MultiAgentConfig {
 export interface MultiAgentResult {
   results: Array<{
     agent: string
-    result: AgentResult
+    result: AgentCompletePayload
     verified: boolean
   }>
   winner?: string // For race mode
@@ -124,7 +125,7 @@ export class MultiAgentCommand {
     return { results }
   }
 
-  private async invokeAgent(agentConfig: WaveAgent, task: string): Promise<AgentResult> {
+  private async invokeAgent(agentConfig: WaveAgent, task: string): Promise<AgentCompletePayload> {
     await this.hub.publish(
       LoomMsgHub.msg(Channel.AGENT_STARTED, {
         agent: agentConfig.agent,
@@ -158,7 +159,7 @@ export class MultiAgentCommand {
     const outputTokens = Math.ceil(responseText.length / 4)
     const inputTokens = Math.ceil(subtask.length / 4)
 
-    const result: AgentResult = {
+    const result: AgentCompletePayload = {
       agentName: agentConfig.agent,
       status: 'complete',
       summary: responseText.slice(0, 500),

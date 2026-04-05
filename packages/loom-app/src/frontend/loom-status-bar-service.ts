@@ -22,9 +22,14 @@ export class LoomStatusBarService {
 
   private setupFlowListeners(): void {
     // Listen to flow events that affect status bar
-    this.flowService.on('file_save', () => this.incrementActivity())
-    this.flowService.on('test_run', (e) => this.handleTestEvent(e))
-    this.flowService.on('git_commit', () => this.incrementActivity())
+    this.flowService.subscribe((event: { type: string; data?: { status?: string } }) => {
+      if (event.type === 'file_save' || event.type === 'git_commit') {
+        this.incrementActivity()
+      }
+      if (event.type === 'test_run' && event.data?.status === 'fail') {
+        this.incrementActivity()
+      }
+    })
   }
 
   private incrementActivity(): void {

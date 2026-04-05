@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import { ThemeService, Theme } from '@theia/core/lib/browser/theming'
+import { ThemeService } from '@theia/core/lib/browser/theming'
 
 @injectable()
 export class LoomThemeContribution {
@@ -7,7 +7,7 @@ export class LoomThemeContribution {
 
   async onStart(): Promise<void> {
     // Register loom-dark theme
-    const loomDarkTheme: Theme = {
+    const loomDarkTheme: any = {
       id: 'loom-dark',
       label: 'Loom Dark',
       type: 'dark',

@@ -68,6 +68,7 @@ export class RateLimiter {
     return Math.floor(bucket.tokens)
   }
 
+  // Alias for acquireToken - used by LoomLLMService
   async checkLimit(provider: string): Promise<boolean> {
     const bucket = this.getBucket(provider)
     this.refill(bucket)

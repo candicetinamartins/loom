@@ -1,30 +1,12 @@
 import { z } from 'zod'
 import { LoomMsgHub, Channel } from './LoomMsgHub'
+import { AgentResultSchema, AgentResult, AgentCompletePayload } from '../agents/AgentResultSchema'
 
-export const AgentResultSchema = z.object({
-  status: z.enum(['complete', 'partial', 'failed']),
-  summary: z.string().max(200),
-  files_created: z.array(z.string()).default([]),
-  files_modified: z.array(z.string()).default([]),
-  key_findings: z.array(z.string().max(120)).max(5).default([]),
-  next_actions: z.array(z.string().max(120)).max(5).default([]),
-})
-
-export type AgentResult = z.infer<typeof AgentResultSchema>
-
-export interface AgentCompletePayload extends AgentResult {
-  agentName: string
-  stepCount: number
-  tokenUsage: {
-    input: number
-    output: number
-    total: number
-  }
-}
+export { AgentResultSchema, AgentResult, AgentCompletePayload } from '../agents/AgentResultSchema'
 
 export interface VerifiedResult {
   status: 'verified' | 'quarantined'
-  result: AgentResult
+  result: AgentCompletePayload
   agentName: string
   reason?: string
 }
@@ -70,7 +52,7 @@ export class OrchestrationVerifier {
       })
     )
 
-    return { status: 'verified', result: schemaCheck.data, agentName }
+    return { status: 'verified', result: result, agentName }
   }
 
   private expectsFindings(agentName: string): boolean {
@@ -106,13 +88,16 @@ export class OrchestrationVerifier {
     agentName: string,
     reason: string,
   ): VerifiedResult {
-    const quarantinedResult: AgentResult = {
+    const quarantinedResult: AgentCompletePayload = {
+      agentName: result.agentName,
       status: result.status,
       summary: result.summary,
       files_created: result.files_created,
       files_modified: result.files_modified,
       key_findings: [],
       next_actions: [`[MANUAL REVIEW REQUIRED] ${agentName} output flagged: ${reason}`],
+      stepCount: result.stepCount,
+      tokenUsage: result.tokenUsage,
     }
 
     this.hub.publish(

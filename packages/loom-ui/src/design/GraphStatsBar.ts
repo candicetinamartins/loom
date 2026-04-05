@@ -29,7 +29,7 @@ export class GraphStatsBarWidget extends Widget {
     this.update()
   }
 
-  protected update(): void {
+  update(): void {
     const { functionCount, docCoverage, churnPath, memoryCount, docsIndexed, protocolCompliance } = this._data
 
     // Format protocol compliance with color indicator

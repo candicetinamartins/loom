@@ -1,5 +1,6 @@
 import { injectable, inject, optional } from 'inversify'
-import { FrontendApplicationContribution, CommandRegistry } from '@theia/core/lib/browser'
+import { FrontendApplicationContribution } from '@theia/core/lib/browser'
+import { CommandRegistry } from '@theia/core/lib/common/command'
 import { FileService } from '@theia/filesystem/lib/browser/file-service'
 import { TerminalService } from '@theia/terminal/lib/browser/base/terminal-service'
 import { EditorManager } from '@theia/editor/lib/browser/editor-manager'
@@ -38,7 +39,7 @@ export class LoomFlowContribution implements FrontendApplicationContribution {
       if (editor) {
         const uri = editor.editor.document.uri
         this.flowService.trackEvent('file_open', {
-          scheme: uri.scheme,
+          scheme: 'file',
           language: editor.editor.document.languageId,
         }, uri.toString())
       }
@@ -115,7 +116,7 @@ export class LoomFlowContribution implements FrontendApplicationContribution {
     if (!this.problemManager) return
 
     // Track diagnostic changes
-    this.problemManager.onDidChangeMarkers(event => {
+    this.problemManager.onDidChangeMarkers((event: { uri: any; owner?: string }) => {
       const markers = this.problemManager?.findMarkers({ uri: event.uri })
       const errorCount = markers?.filter(m => m.data?.severity === 1).length ?? 0
       const warningCount = markers?.filter(m => m.data?.severity === 2).length ?? 0
@@ -149,7 +150,7 @@ export class LoomFlowContribution implements FrontendApplicationContribution {
     if (!this.testService) return
 
     // Track test run events
-    this.testService.onDidChangeTestState(event => {
+    this.testService.onDidChangeTestState((event: { testId: string; state: string; duration?: number }) => {
       this.flowService.trackEvent('test_run', {
         testId: event.testId,
         state: event.state,

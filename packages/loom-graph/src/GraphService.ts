@@ -1,7 +1,14 @@
 import { injectable, inject } from 'inversify'
-import * as kuzu from '@vela-engineering/kuzu'
 import * as path from 'path'
 import * as os from 'os'
+
+// Conditional import for Kuzu - uses stub in CI builds
+let kuzu: any
+try {
+  kuzu = require('@vela-engineering/kuzu')
+} catch {
+  kuzu = require('./kuzu-stub')
+}
 
 export interface GraphNode {
   id: string
@@ -19,6 +26,9 @@ export interface GraphRelationship {
   properties: Record<string, any>
 }
 
+// Alias for compatibility with GraphContextFormatter
+export type GraphEdge = GraphRelationship
+
 export interface GraphQueryResult {
   nodes: GraphNode[]
   relationships: GraphRelationship[]
@@ -35,8 +45,8 @@ export interface GraphQueryResult {
  */
 @injectable()
 export class GraphService {
-  private db: kuzu.Database | null = null
-  private conn: kuzu.Connection | null = null
+  private db: any | null = null
+  private conn: any | null = null
   private isInitialized = false
 
   constructor(
@@ -419,18 +429,70 @@ export class GraphService {
   async semanticSearch(query: string, embedding: number[], limit: number = 10): Promise<GraphNode[]> {
     if (!this.conn) throw new Error('Graph not initialized')
 
-    // Kuzu doesn't have built-in vector search yet
-    // This is a placeholder that would use cosine similarity via custom function
-    // For now, return placeholder results
-    console.log(`[GraphService] Semantic search for: ${query} (embedding: ${embedding.length} dims)`)
-    
-    // Fallback to name-based search
-    return this.findFunctionByName(query)
+    // Retrieve all Function and Class nodes that have stored embeddings.
+    // Kuzu doesn't have native vector search, so cosine similarity is computed in JS.
+    const rows = await this.conn.query(`
+      MATCH (f:Function)
+      WHERE f.embedding IS NOT NULL
+      RETURN f.id, f.name, f.signature, f.doc, f.embedding, f.complexity
+    `)
+    const allRows: any[] = rows.getAllRows ? rows.getAllRows() : []
+
+    if (allRows.length === 0) {
+      // No embeddings stored yet — fall back to name-based search
+      return this.findFunctionByName(query)
+    }
+
+    // Score each node by cosine similarity against the query embedding
+    const scored = allRows
+      .map((row: any) => {
+        const nodeEmbedding: number[] = row['f.embedding'] ?? []
+        const similarity = nodeEmbedding.length === embedding.length
+          ? this.cosineSimilarity(embedding, nodeEmbedding)
+          : 0
+        return { row, similarity }
+      })
+      .filter(({ similarity }) => similarity > 0)
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, limit)
+
+    return scored.map(({ row }) => ({
+      id: row['f.id'],
+      labels: ['Function'],
+      properties: {
+        name: row['f.name'],
+        signature: row['f.signature'],
+        doc: row['f.doc'],
+        complexity: row['f.complexity'],
+      },
+    }))
   }
 
-  async query(cypher: string): Promise<any[]> {
+  private cosineSimilarity(a: number[], b: number[]): number {
+    let dot = 0, normA = 0, normB = 0
+    for (let i = 0; i < a.length; i++) {
+      dot += a[i] * b[i]
+      normA += a[i] * a[i]
+      normB += b[i] * b[i]
+    }
+    const denom = Math.sqrt(normA) * Math.sqrt(normB)
+    return denom === 0 ? 0 : dot / denom
+  }
+
+  async query(queryString: string, parameters?: Record<string, any>): Promise<any[]> {
     if (!this.conn) throw new Error('Graph not initialized')
-    const result = await this.conn.query(cypher)
+
+    // Simple parameter substitution for now
+    let finalQuery = queryString
+    if (parameters) {
+      for (const [key, value] of Object.entries(parameters)) {
+        const placeholder = `$${key}`
+        const escapedValue = typeof value === 'string' ? `'${value.replace(/'/g, "\\'")}'` : String(value)
+        finalQuery = finalQuery.replace(new RegExp(placeholder.replace(/\$/g, '\\$'), 'g'), escapedValue)
+      }
+    }
+
+    const result = await this.conn.query(finalQuery)
     return result.getAllRows()
   }
 
@@ -438,5 +500,36 @@ export class GraphService {
     await this.conn?.close()
     this.db?.close()
     this.isInitialized = false
+  }
+
+  /**
+   * Find the module that contains a given node (Function, Class, etc.)
+   */
+  async findModuleForNode(nodeId: string): Promise<GraphNode | null> {
+    if (!this.conn) throw new Error('Graph not initialized')
+
+    const query = `
+      MATCH (n {id: '${nodeId.replace(/'/g, "\\'")}'})<-[:CONTAINS]-(m:Module)
+      RETURN m.id, m.path, m.language, m.churn_score
+      LIMIT 1
+    `
+    
+    const result = await this.conn.query(query)
+    const rows = result.getAllRows()
+    
+    if (rows.length === 0) {
+      return null
+    }
+
+    const row = rows[0]
+    return {
+      id: row['m.id'],
+      labels: ['Module'],
+      properties: {
+        path: row['m.path'],
+        language: row['m.language'],
+        churn_score: row['m.churn_score'],
+      },
+    }
   }
 }

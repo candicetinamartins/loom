@@ -34,7 +34,7 @@ export class FlowTimelineWidget extends Widget {
     this.update()
   }
 
-  protected update(): void {
+  update(): void {
     const { events, intent } = this._data
 
     const eventPills = events.map(event => {

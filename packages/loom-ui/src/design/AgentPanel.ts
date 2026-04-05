@@ -26,7 +26,7 @@ export class AgentPanelWidget extends Widget {
     this.update()
   }
 
-  protected update(): void {
+  update(): void {
     const { agents } = this._data
 
     this.node.innerHTML = `

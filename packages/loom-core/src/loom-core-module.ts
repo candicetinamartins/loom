@@ -3,6 +3,7 @@ import { LoomMsgHub } from './orchestration/LoomMsgHub'
 import { PipelineRunner } from './orchestration/PipelineRunner'
 import { OrchestrationVerifier } from './orchestration/OrchestrationVerifier'
 import { ToolGroupRegistry, registerBuiltinGroups } from './tools/ToolGroupRegistry'
+import { GraphCypherTool } from './tools/GraphTools'
 import { ContextBudgetManager } from './context/ContextBudgetManager'
 import { ContextCompactor } from './context/ContextCompactor'
 import { ContextProviderRegistry } from './context/ContextProviderRegistry'
@@ -45,6 +46,6 @@ export default new ContainerModule((bind) => {
   bind(TYPES.TOMLParser).to(TOMLParser).inSingletonScope()
 })
 
-export function initializeLoomCore(registry: ToolGroupRegistry): void {
-  registerBuiltinGroups(registry)
+export function initializeLoomCore(registry: ToolGroupRegistry, graphCypherTool?: GraphCypherTool): void {
+  registerBuiltinGroups(registry, graphCypherTool)
 }

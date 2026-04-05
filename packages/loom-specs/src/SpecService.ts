@@ -2,7 +2,17 @@ import { injectable, inject } from 'inversify'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { TOMLParser } from '@loom/core'
-import { GraphService } from '@loom/graph'
+
+// Avoid circular dependency with @loom/graph
+interface GraphService {
+  query(cypher: string): Promise<any[]>
+  findModuleForNode(nodeId: string): Promise<any | null>
+  semanticSearch(label: string, embedding: number[], limit: number): Promise<any[]>
+}
+
+interface EmbeddingService {
+  generateEmbedding(text: string): Promise<number[]>
+}
 
 /**
  * Spec format: TOML + 3 markdown files
@@ -53,15 +63,38 @@ export interface SpecTask {
   assignedTo?: string
 }
 
+interface ParsedSpecManifest {
+  name?: string
+  title?: string
+  description?: string
+  status?: 'draft' | 'in-progress' | 'complete'
+  created_at?: string
+  updated_at?: string
+  context?: {
+    description?: string
+    related_modules?: string[]
+  }
+  assignments?: {
+    requirements?: string
+    design?: string
+    tasks?: string
+  }
+  allowed_agents?: string[]
+}
+
 @injectable()
 export class SpecService {
   private specs: Map<string, SpecContent> = new Map()
-  private parser = new TOMLParser()
+  private parser: TOMLParser
+  private workspaceRoot: string = process.cwd()
 
   constructor(
-    @inject('LOOM_WORKSPACE_ROOT') private workspaceRoot: string,
-    @inject(GraphService) private graphService: GraphService,
-  ) {}
+    @inject(TOMLParser) private tomlParser: TOMLParser,
+    @inject('GraphService') private graphService: GraphService,
+    @inject('EmbeddingService') private embeddingService: EmbeddingService
+  ) {
+    this.parser = tomlParser
+  }
 
   async initialize(): Promise<void> {
     await this.loadAllSpecs()
@@ -140,7 +173,7 @@ export class SpecService {
   async suggestRelatedModules(description: string): Promise<string[]> {
     try {
       // Use vector search to find semantically related functions
-      const embedding = await this.graphService.generateEmbedding(description)
+      const embedding = await this.embeddingService.generateEmbedding(description)
       
       const relatedFunctions = await this.graphService.semanticSearch(
         'Function',
@@ -153,7 +186,7 @@ export class SpecService {
       for (const fn of relatedFunctions) {
         const module = await this.graphService.findModuleForNode(fn.id)
         if (module) {
-          modulePaths.add(module.path)
+          modulePaths.add(module.properties.path)
         }
       }
       
@@ -277,7 +310,7 @@ ${this.formatTasksSummary(this.parseTasks(spec.tasks))}
       fs.readFile(path.join(specDir, 'tasks.md'), 'utf-8').catch(() => ''),
     ])
     
-    const parsed = this.parser.parseSync(manifestContent)
+    const parsed = this.parser.parse<ParsedSpecManifest>(manifestContent)
     
     const manifest: SpecManifest = {
       name: parsed.name || name,

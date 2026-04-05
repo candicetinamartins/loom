@@ -4,7 +4,6 @@
     "module": "commonjs",
     "lib": ["ES2022"],
     "outDir": "./lib",
-    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -18,7 +17,9 @@
     "types": ["node"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "disableSourceOfProjectReferenceRedirect": true
+    "disableSourceOfProjectReferenceRedirect": true,
+    "baseUrl": ".",
+    "typeRoots": ["../../node_modules/@types", "./src/typings"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "lib"],

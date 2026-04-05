@@ -26,7 +26,7 @@ export class GhostTextWidget extends Widget {
     this.update()
   }
 
-  protected update(): void {
+  update(): void {
     const { text, visible } = this._data
 
     if (!visible) {

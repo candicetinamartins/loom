@@ -11,7 +11,7 @@ async function start(): Promise<void> {
   const { BackendApplication } = await import('@theia/core/lib/node')
   const serverModule = await import('@theia/core/lib/node/messaging/ipc-protocol')
 
-  const application = new BackendApplication(serverModule)
+  const application = new BackendApplication(serverModule as any, undefined as any)
   await application.start()
 }
 

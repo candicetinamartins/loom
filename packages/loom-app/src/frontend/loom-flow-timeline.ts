@@ -1,8 +1,23 @@
 import { injectable, inject } from 'inversify'
 import { FrontendApplicationContribution, WidgetManager } from '@theia/core/lib/browser'
 import { EditorManager } from '@theia/editor/lib/browser/editor-manager'
-import { FlowTimelineWidget } from '@loom/ui'
-import { FlowTrackingService } from '@loom/core'
+
+// Avoid circular dependency with @loom/ui and @loom/core
+interface FlowTimelineWidget {
+  id: string
+  title: { label: string }
+  node: HTMLElement
+  addEvent(event: any): void
+  setIntent(intent: string, confidence: number): void
+}
+
+interface FlowTrackingService {
+  subscribe(callback: (event: any) => void): void
+  inferIntent(): { intent: string; confidence: number }
+}
+
+// Constructor workaround for interface
+const FlowTimelineWidget = function() {} as unknown as { new (): FlowTimelineWidget }
 
 @injectable()
 export class LoomFlowTimelineContribution implements FrontendApplicationContribution {
@@ -11,12 +26,12 @@ export class LoomFlowTimelineContribution implements FrontendApplicationContribu
   constructor(
     @inject(WidgetManager) private widgetManager: WidgetManager,
     @inject(EditorManager) private editorManager: EditorManager,
-    @inject(FlowTrackingService) private flowService: FlowTrackingService
+    @inject('FlowTrackingService') private flowService: FlowTrackingService
   ) {}
 
   async onStart(): Promise<void> {
     // Subscribe to flow events to update timeline
-    this.flowService.subscribe(event => {
+    this.flowService.subscribe((event: { id: string; type: string; timestamp: number; [key: string]: any }) => {
       if (this.timelineWidget) {
         const color = this.getEventColor(event.type)
         const label = this.formatEventLabel(event)

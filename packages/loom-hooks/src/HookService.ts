@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { TOMLParser, LoomMsgHub, Channel } from '@loom/core'
+import { TOMLParser, LoomMsgHub, Channel, PipelineRunner } from '@loom/core'
 import { FileService } from '@theia/filesystem/lib/browser/file-service'
 import { TerminalService } from '@theia/terminal/lib/browser/terminal-service'
 
@@ -78,6 +78,7 @@ export class HookService {
     @inject(FileService) private fileService: FileService,
     @inject(TerminalService) private terminalService: TerminalService,
     @inject(LoomMsgHub) private hub: LoomMsgHub,
+    @inject(PipelineRunner) private pipelineRunner: PipelineRunner,
   ) {}
 
   async initialize(): Promise<void> {
@@ -144,7 +145,7 @@ export class HookService {
     // File events
     this.fileService.onDidFilesChange(event => {
       event.changes.forEach(change => {
-        const filePath = change.resource.fsPath
+        const filePath = change.resource.path
         
         switch (change.type) {
           case 1: // UPDATED
@@ -161,7 +162,7 @@ export class HookService {
     })
 
     // Terminal events
-    this.terminalService.onDidWriteData(data => {
+    this.terminalService.onDidWriteData((data: string) => {
       this.trigger('terminalCommand', { output: data.slice(0, 200) })
     })
 
@@ -372,15 +373,8 @@ export class HookService {
   ): Promise<string> {
     const { agent, prompt } = config
     const interpolated = this.interpolateTemplate(prompt, context)
-
-    // Publish ask-agent request to hub for the pipeline to handle
-    await this.hub.publish(LoomMsgHub.msg(Channel.HOOK_TRIGGERED, {
-      action: 'askAgent',
-      agent,
-      prompt: interpolated,
-    }))
-
-    return JSON.stringify({ agent, prompt: interpolated, status: 'dispatched' })
+    const result = await this.pipelineRunner.runSingleAgent(agent, interpolated)
+    return result?.summary ?? JSON.stringify({ agent, status: 'complete' })
   }
 
   /**

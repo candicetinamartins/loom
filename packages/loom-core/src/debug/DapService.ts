@@ -83,7 +83,7 @@ export class DapService {
 
       await this.hub.publish(
         LoomMsgHub.msg(Channel.DEBUG_BREAKPOINT_SET, {
-          breakpointId: bp.id,
+          breakpointId: String(bp.id),
           file,
           line,
         })
@@ -105,14 +105,14 @@ export class DapService {
     cwd?: string
     runtime?: 'node' | 'python' | 'java'
   }): Promise<{ success: boolean; sessionId: string | null; requiresApproval: boolean }> {
-    const { program, args = [], cwd, runtime = 'node' } = args
+    const { program, args: programArgs = [], cwd, runtime = 'node' } = args
 
     // Check if approval is needed
     if (!this.sessionApproval) {
       await this.hub.publish(
         LoomMsgHub.msg(Channel.DEBUG_SESSION_REQUEST, {
           program,
-          args,
+          args: programArgs,
           runtime,
         })
       )
@@ -131,7 +131,7 @@ export class DapService {
         type: runtime,
         request: 'launch',
         program,
-        args,
+        args: programArgs,
         cwd,
       })
 

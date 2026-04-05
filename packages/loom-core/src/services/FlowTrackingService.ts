@@ -32,6 +32,10 @@ export interface FlowContext {
   recentEvents: FlowEvent[]
   summary: string
   tokenEstimate: number
+  // UI state properties used by SystemPromptBuilder
+  activeFile?: string
+  terminalActive?: boolean
+  recentDiagnostics?: string[]
 }
 
 const RING_BUFFER_SIZE = 1000
@@ -91,6 +95,11 @@ export class FlowTrackingService {
     return () => this.subscribers.delete(callback)
   }
 
+  // Get current flow context (used by SystemPromptBuilder)
+  getCurrentContext(): FlowContext | null {
+    return this.inferIntent()
+  }
+
   // Subscribe to events of a specific type
   on(type: FlowEventType, callback: (data: Record<string, unknown>) => void): () => void {
     return this.subscribe(event => {
@@ -118,6 +127,9 @@ export class FlowTrackingService {
           recentEvents: events.slice(0, 10),
           summary: 'Working through test failures and fixing code',
           tokenEstimate: 150,
+          activeFile: fileEditEvents[0]?.filePath,
+          terminalActive: events.some(e => e.type === 'terminal_output'),
+          recentDiagnostics: diagnosticEvents.map(d => d.type),
         }
       }
     }
@@ -132,6 +144,9 @@ export class FlowTrackingService {
           recentEvents: events.slice(0, 10),
           summary: 'Building new functionality across multiple files',
           tokenEstimate: 150,
+          activeFile: fileEditEvents[0]?.filePath,
+          terminalActive: events.some(e => e.type === 'terminal_output'),
+          recentDiagnostics: diagnosticEvents.map(d => d.type),
         }
       }
     }
@@ -144,6 +159,9 @@ export class FlowTrackingService {
         recentEvents: events.slice(0, 10),
         summary: 'Refactoring code structure',
         tokenEstimate: 150,
+        activeFile: fileEditEvents[0]?.filePath,
+        terminalActive: events.some(e => e.type === 'terminal_output'),
+        recentDiagnostics: diagnosticEvents.map(d => d.type),
       }
     }
 
@@ -155,6 +173,9 @@ export class FlowTrackingService {
         recentEvents: events.slice(0, 10),
         summary: 'Debugging and investigating issues',
         tokenEstimate: 150,
+        activeFile: fileEditEvents[0]?.filePath,
+        terminalActive: true,
+        recentDiagnostics: diagnosticEvents.map(d => d.type),
       }
     }
 
@@ -165,6 +186,9 @@ export class FlowTrackingService {
       recentEvents: events.slice(0, 10),
       summary: 'Exploring codebase',
       tokenEstimate: 100,
+      activeFile: fileEditEvents[0]?.filePath,
+      terminalActive: events.some(e => e.type === 'terminal_output'),
+      recentDiagnostics: diagnosticEvents.map(d => d.type),
     }
   }
 

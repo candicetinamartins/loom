@@ -1,5 +1,11 @@
 import { injectable, inject } from 'inversify'
-import { GraphService } from '@loom/graph'
+
+// Avoid circular dependency with @loom/graph
+interface GraphService {
+  query(cypher: string): Promise<any[]>
+  getFunctionNeighborhood(nodeId: string): Promise<{ nodes: any[]; relationships: any[] }>
+  findFunctionByName(name: string): Promise<any[]>
+}
 
 /**
  * Phase 7 — Inline Completion Integration
@@ -30,7 +36,7 @@ export interface InlineCompletion {
 @injectable()
 export class InlineCompletionService {
   constructor(
-    @inject(GraphService) private graph: GraphService,
+    @inject('GraphService') private readonly graphService: GraphService,
   ) {}
 
   /**
@@ -69,7 +75,7 @@ export class InlineCompletionService {
   private async getGraphContext(context: InlineCompletionContext): Promise<string> {
     try {
       // Find the current function in the graph
-      const result = await this.graph.query(`
+      const result = await this.graphService.query(`
         MATCH (f:Function)
         WHERE f.file = '${context.filePath.replace(/'/g, "''")}'
         AND f.line <= ${context.line}
@@ -83,7 +89,7 @@ export class InlineCompletionService {
       const func = result[0].f.properties || result[0].f
 
       // Get neighbourhood: callers, callees, and related types
-      const neighbourhood = await this.graph.query(`
+      const neighbourhood = await this.graphService.query(`
         MATCH (f:Function {name: '${func.name.replace(/'/g, "''")}'})
         OPTIONAL MATCH (f)-[:CALLS]->(callee:Function)
         OPTIONAL MATCH (caller:Function)-[:CALLS]->(f)
@@ -171,7 +177,7 @@ export class InlineCompletionService {
       
       // Try to find method signature from graph
       try {
-        const result = await this.graph.query(`
+        const result = await this.graphService.query(`
           MATCH (f:Function {name: '${method.replace(/'/g, "''")}'})
           RETURN f.params as params
           LIMIT 1

@@ -13,3 +13,4 @@ export * from './context/GraphContextFormatter'
 
 export type { GraphRelationship as GraphEdge } from './GraphService'
 export { GraphService as default } from './GraphService'
+export * from './loom-graph-module'

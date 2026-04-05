@@ -1,5 +1,9 @@
 import { Widget } from '@lumino/widgets'
-import { GraphService } from '@loom/graph'
+
+// Avoid circular dependency with @loom/graph
+interface GraphService {
+  query(cypher: string): Promise<any[]>
+}
 
 /**
  * Phase 7 — Graph-Powered Codemap Widget

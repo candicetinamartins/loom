@@ -1,6 +1,11 @@
 import { injectable, inject } from 'inversify'
 import { MentionContext, ContextProvider } from '../MentionContextProvider'
-import { SkillService } from '@loom/agents'
+
+// Avoid circular dependency with @loom/agents
+interface SkillService {
+  getSkill(name: string): Promise<{ name: string; description?: string; levels?: { prompt: string }[]; [key: string]: any } | null>
+  getAllSkills(): Promise<{ name: string }[]>
+}
 
 @injectable()
 export class SkillContextProvider implements ContextProvider {
@@ -8,7 +13,7 @@ export class SkillContextProvider implements ContextProvider {
   readonly prefix = 'skill:'
 
   constructor(
-    @inject(SkillService) private skillService: SkillService,
+    @inject('SkillService') private skillService: SkillService,
   ) {}
 
   async provideContext(mention: string): Promise<MentionContext> {
@@ -21,7 +26,7 @@ export class SkillContextProvider implements ContextProvider {
       if (!skill) {
         // List available skills
         const allSkills = await this.skillService.getAllSkills()
-        const available = allSkills.slice(0, 10).map(s => `- ${s.name}`).join('\n')
+        const available = allSkills.slice(0, 10).map((s: { name: string }) => `- ${s.name}`).join('\n')
         
         return {
           type: this.type,
@@ -30,8 +35,11 @@ export class SkillContextProvider implements ContextProvider {
         }
       }
 
-      const skillContent = (skill as any).content as string | undefined
-      const content = `[SKILL: ${skill.name}]\n${skill.description || 'No description'}\n\n${skillContent ? skillContent.slice(0, 500) : ''}`
+      const promptContent = skill.levels?.[0]?.prompt || (skill as any).content || 'No prompt content'
+      const content = `[SKILL: ${skill.name}]
+${skill.description || 'No description'}
+
+${(promptContent as string).slice(0, 500)}`
 
       return {
         type: this.type,

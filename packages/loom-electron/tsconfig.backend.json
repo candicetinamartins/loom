@@ -15,8 +15,9 @@
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "typeRoots": ["../../node_modules/@types", "../loom-core/src/typings"]
   },
-  "include": ["src/backend/**/*"],
+  "include": ["src/backend/**/*", "../loom-core/src/typings/theia-stubs.d.ts"],
   "exclude": ["node_modules", "lib"]
 }

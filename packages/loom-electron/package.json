@@ -62,6 +62,7 @@
     "appId": "dev.loom.ide",
     "productName": "Loom",
     "copyright": "Copyright © 2026 Loom Team",
+    "beforePack": "./scripts/before-pack.js",
     "directories": {
       "output": "dist"
     },

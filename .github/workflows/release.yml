@@ -2,7 +2,6 @@ name: Build and Release Loom
 
 on:
   push:
-    branches: [main]
     tags: ['v*']
   workflow_dispatch:
     inputs:

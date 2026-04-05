@@ -45,7 +45,8 @@
     "@loom/ui": "0.1.0",
     "@loom/hooks": "0.1.0",
     "@loom/memory": "0.1.0",
-    "@loom/docs": "0.1.0"
+    "@loom/docs": "0.1.0",
+    "7zip-bin": "~5.2.0"
   },
   "optionalDependencies": {
     "@vela-engineering/kuzu": "file:../../kuzu/tools/nodejs_api"
@@ -69,6 +70,9 @@
     "files": [
       "lib/**/*",
       "node_modules/**/*",
+      "!node_modules/7zip-bin/linux/**",
+      "!node_modules/7zip-bin/mac/**",
+      "!node_modules/7zip-bin/win/**",
       "package.json"
     ],
     "extraResources": [

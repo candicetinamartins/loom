@@ -20,8 +20,6 @@
     "@theia/application-package": "1.70.0",
     "@theia/request": "1.70.0",
     "@types/node": "^20.19.39",
-    "app-builder-bin": "4.0.0",
-    "app-builder-lib": "24.9.1",
     "electron-builder": "24.9.1",
     "typescript": "^5.9.3",
     "webpack": "^5.76.0",

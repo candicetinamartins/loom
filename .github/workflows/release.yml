@@ -65,7 +65,6 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=12288
         run: |
           cd packages/loom-electron
-          npm install
           npm run build:full
           npx electron-builder --mac --${{ matrix.arch }} --publish=never
 
@@ -126,7 +125,6 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=14336
         run: |
           cd packages/loom-electron
-          npm install
           npm run build:full
           npx electron-builder --win --x64 --publish=never
 
@@ -190,7 +188,6 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=10240
         run: |
           cd packages/loom-electron
-          npm install
           npm run build:full
           npx electron-builder --linux --x64 --publish=never
 

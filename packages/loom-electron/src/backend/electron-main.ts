@@ -14,31 +14,31 @@ app.setName('Loom')
 let mainWindow: BrowserWindow | null = null
 
 // ── File logger — writes to %APPDATA%\Loom\loom-debug.log ────────────────────
-let logStream: fs.WriteStream | null = null
+// Uses appendFileSync so every write is on disk immediately, even if we crash.
+let logPath = ''
 
 function initLog (): void {
   try {
     const logDir = app.getPath('userData')
     fs.mkdirSync(logDir, { recursive: true })
-    const logPath = path.join(logDir, 'loom-debug.log')
-    logStream = fs.createWriteStream(logPath, { flags: 'a' })
+    logPath = path.join(logDir, 'loom-debug.log')
     log(`\n${'='.repeat(60)}`)
     log(`Loom startup  ${new Date().toISOString()}`)
     log(`Electron ${process.versions.electron}  Node ${process.versions.node}`)
     log(`Platform: ${process.platform}  Arch: ${process.arch}`)
     log(`appPath: ${app.getAppPath()}`)
-    log(`userData: ${app.getPath('userData')}`)
-    log(`=`.repeat(60))
+    log(`userData: ${logDir}`)
+    log('='.repeat(60))
   } catch (e) {
-    // If we can't open the log, swallow — we'll still get the error dialog
+    // If we can't write the log, swallow — the error dialog will still appear
   }
 }
 
 function log (msg: string): void {
   const line = `[${new Date().toISOString()}] ${msg}`
   console.log(line)
-  if (logStream) {
-    try { logStream.write(line + '\n') } catch (_) { /* ignore */ }
+  if (logPath) {
+    try { fs.appendFileSync(logPath, line + '\n') } catch (_) { /* ignore */ }
   }
 }
 

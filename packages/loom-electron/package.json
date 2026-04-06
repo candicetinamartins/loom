@@ -11,7 +11,7 @@
     "build:full": "npm run build:backend && npm run build:frontend",
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:frontend": "theia build --mode development",
-    "package": "npm run build && electron-builder",
+    "package": "npm run build:full && electron-builder",
     "package:dir": "npm run build && electron-builder --dir",
     "start": "npm run build && electron .",
     "dev": "electron . --inspect",
@@ -75,6 +75,7 @@
     "files": [
       "lib/**/*",
       "src-gen/**/*",
+      "resources/**/*",
       "node_modules/**/*",
       "!node_modules/7zip-bin/linux/**",
       "!node_modules/7zip-bin/mac/**",

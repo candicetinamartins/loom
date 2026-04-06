@@ -58,7 +58,7 @@ function createWindow (port: number): void {
     minWidth: 800,
     minHeight: 600,
     title: 'Loom',
-    icon: path.join(__dirname, '../../resources/icon.ico'),
+    icon: path.join(app.getAppPath(), 'resources', 'icon.ico'),
     backgroundColor: '#1e1e1e',
     show: false,  // show only once ready-to-show fires
     webPreferences: {
@@ -98,9 +98,14 @@ app.whenReady().then(async () => {
     const port = await getFreePort()
     console.log(`[loom] starting backend on port ${port}`)
 
+    // Point Theia at a writable userData dir rather than the read-only ASAR archive.
+    // Must be set before the server module is required.
+    process.env.THEIA_APP_PROJECT_PATH = app.getPath('userData')
+
     // Load and start the generated Theia backend server.
     // Use app.getAppPath() so the path resolves correctly inside an ASAR
     // package, in dev, and in the unpacked dist directory.
+
     const serverPath = path.join(app.getAppPath(), 'src-gen', 'backend', 'server')
     const serverFactory = require(serverPath)
     serverFactory(port, '127.0.0.1').then(() => {

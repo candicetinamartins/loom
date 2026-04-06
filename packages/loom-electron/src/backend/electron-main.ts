@@ -2,6 +2,7 @@
 // Starts the Theia backend then opens the BrowserWindow
 
 import { app, BrowserWindow, shell } from 'electron'
+import * as fs from 'fs'
 import * as http from 'http'
 import * as net from 'net'
 import * as path from 'path'
@@ -9,11 +10,58 @@ import * as path from 'path'
 // Keep a global reference so the window isn't garbage-collected
 let mainWindow: BrowserWindow | null = null
 
-// Surface any unhandled crash as a dialog instead of silent exit
-process.on('uncaughtException', (err) => {
+// ── File logger — writes to %APPDATA%\Loom\loom-debug.log ────────────────────
+let logStream: fs.WriteStream | null = null
+
+function initLog (): void {
+  try {
+    const logDir = app.getPath('userData')
+    fs.mkdirSync(logDir, { recursive: true })
+    const logPath = path.join(logDir, 'loom-debug.log')
+    logStream = fs.createWriteStream(logPath, { flags: 'a' })
+    log(`\n${'='.repeat(60)}`)
+    log(`Loom startup  ${new Date().toISOString()}`)
+    log(`Electron ${process.versions.electron}  Node ${process.versions.node}`)
+    log(`Platform: ${process.platform}  Arch: ${process.arch}`)
+    log(`appPath: ${app.getAppPath()}`)
+    log(`userData: ${app.getPath('userData')}`)
+    log(`=`.repeat(60))
+  } catch (e) {
+    // If we can't open the log, swallow — we'll still get the error dialog
+  }
+}
+
+function log (msg: string): void {
+  const line = `[${new Date().toISOString()}] ${msg}`
+  console.log(line)
+  if (logStream) {
+    try { logStream.write(line + '\n') } catch (_) { /* ignore */ }
+  }
+}
+
+function showFatalError (msg: string): void {
+  log(`FATAL: ${msg}`)
   const { dialog } = require('electron')
-  dialog.showErrorBox('Loom failed to start', err.stack ?? err.message)
+  // Also append the log path so the user knows where to find it
+  const logPath = logStream
+    ? path.join(app.getPath('userData'), 'loom-debug.log')
+    : '(log unavailable)'
+  dialog.showErrorBox(
+    'Loom failed to start',
+    `${msg}\n\nFull log: ${logPath}`
+  )
   app.exit(1)
+}
+
+// Surface uncaught synchronous errors
+process.on('uncaughtException', (err) => {
+  showFatalError(err.stack ?? err.message)
+})
+
+// Surface unhandled promise rejections
+process.on('unhandledRejection', (reason) => {
+  const msg = reason instanceof Error ? (reason.stack ?? reason.message) : String(reason)
+  showFatalError(`Unhandled rejection: ${msg}`)
 })
 
 // ── Find a free TCP port ──────────────────────────────────────────────────────
@@ -29,17 +77,16 @@ function getFreePort (): Promise<number> {
 }
 
 // ── Wait until the backend HTTP server responds ───────────────────────────────
-function waitForBackend (port: number, retries = 30): Promise<void> {
+function waitForBackend (port: number, retries = 40): Promise<void> {
   return new Promise((resolve, reject) => {
     let attempts = 0
     const check = () => {
-      const req = http.get(`http://127.0.0.1:${port}`, (res) => {
-        resolve()
-      })
+      const req = http.get(`http://127.0.0.1:${port}`, () => { resolve() })
       req.on('error', () => {
         attempts++
+        if (attempts % 5 === 0) log(`  still waiting for backend (attempt ${attempts}/${retries})`)
         if (attempts >= retries) {
-          reject(new Error(`Backend did not start on port ${port} after ${retries} attempts`))
+          reject(new Error(`Backend did not respond on port ${port} after ${retries} attempts`))
         } else {
           setTimeout(check, 500)
         }
@@ -52,6 +99,7 @@ function waitForBackend (port: number, retries = 30): Promise<void> {
 
 // ── Create the Electron window ────────────────────────────────────────────────
 function createWindow (port: number): void {
+  log(`Creating BrowserWindow → http://127.0.0.1:${port}`)
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
@@ -60,24 +108,26 @@ function createWindow (port: number): void {
     title: 'Loom',
     icon: path.join(app.getAppPath(), 'resources', 'icon.ico'),
     backgroundColor: '#1e1e1e',
-    show: false,  // show only once ready-to-show fires
+    show: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      webviewTag: true,           // Theia uses <webview> for plugin iframes
+      webviewTag: true,
       allowRunningInsecureContent: false,
     },
   })
 
   mainWindow.loadURL(`http://127.0.0.1:${port}`)
-
-  // Show the window once the page has loaded enough to render
   mainWindow.once('ready-to-show', () => {
+    log('Window ready-to-show → showing')
     mainWindow!.show()
     mainWindow!.focus()
   })
 
-  // Open external links in the OS browser, not inside Electron
+  mainWindow.webContents.on('did-fail-load', (_e, code, desc) => {
+    log(`Page load failed: ${code} ${desc}`)
+  })
+
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (!url.startsWith('http://127.0.0.1')) {
       shell.openExternal(url)
@@ -94,52 +144,57 @@ function createWindow (port: number): void {
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 app.whenReady().then(async () => {
-  try {
-    const port = await getFreePort()
-    console.log(`[loom] starting backend on port ${port}`)
+  initLog()
 
-    // Point Theia at a writable userData dir rather than the read-only ASAR archive.
-    // Set before AND after require: server.js runs the assignment at module-load
-    // time and would overwrite us, so we re-apply it as a backstop.
+  try {
+    log('Step 1: finding free port')
+    const port = await getFreePort()
+    log(`Step 2: port ${port} selected`)
+
     const userData = app.getPath('userData')
     process.env.THEIA_APP_PROJECT_PATH = userData
+    log(`Step 3: THEIA_APP_PROJECT_PATH = ${userData}`)
 
     const serverPath = path.join(app.getAppPath(), 'src-gen', 'backend', 'server')
+    log(`Step 4: loading server module from ${serverPath}`)
     const serverFactory = require(serverPath)
-    process.env.THEIA_APP_PROJECT_PATH = userData  // re-apply after server.js load
-    serverFactory(port, '127.0.0.1').then(() => {
-      console.log(`[loom] backend ready on port ${port}`)
-    }).catch((err: unknown) => {
-      // exit code 0 = clean CLI help/version exit, not a real error
-      if (err !== 0) {
-        console.error('[loom] backend error:', err)
-        app.quit()
-      }
-    })
+    // Re-apply: server.js sets it unconditionally at module-load time
+    process.env.THEIA_APP_PROJECT_PATH = userData
+    log('Step 5: server module loaded OK')
 
-    // Wait up to 15 s for the backend to accept connections
-    await waitForBackend(port)
+    // Start backend; if it fails fast, reject immediately instead of waiting 20 s
+    log('Step 6: starting Theia backend')
+    let serverFailed = false
+    const serverDone = serverFactory(port, '127.0.0.1')
+      .then(() => { log('Step 6a: serverFactory resolved') })
+      .catch((err: unknown) => {
+        if (err === 0) return   // clean Theia CLI exit (--help etc.)
+        serverFailed = true
+        const msg = err instanceof Error ? (err.stack ?? err.message) : String(err)
+        log(`Step 6 FAILED: ${msg}`)
+        throw err               // propagate into Promise.race
+      })
+
+    log('Step 7: polling backend HTTP endpoint')
+    // Race: fail immediately if the server crashes, otherwise wait for HTTP
+    await Promise.race([
+      waitForBackend(port),
+      serverDone,
+    ])
+
+    if (serverFailed) {
+      throw new Error('Backend startup failed (see log)')
+    }
+
+    log('Step 8: backend accepting connections → creating window')
     createWindow(port)
 
   } catch (err) {
     const msg = err instanceof Error ? (err.stack ?? err.message) : String(err)
-    console.error('[loom] startup failed:', msg)
-    const { dialog } = require('electron')
-    dialog.showErrorBox('Loom failed to start', msg)
-    app.exit(1)
+    showFatalError(msg)
   }
 })
 
 app.on('window-all-closed', () => {
-  // On macOS apps stay in the dock until explicitly quit
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
-app.on('activate', () => {
-  // macOS: re-open window when dock icon is clicked
-  if (BrowserWindow.getAllWindows().length === 0) {
-    // port is already known from the running backend — re-read from env if needed
-  }
+  if (process.platform !== 'darwin') app.quit()
 })

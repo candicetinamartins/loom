@@ -18,6 +18,17 @@ const { backendApplicationModule } = require('@theia/core/lib/node/backend-appli
 const { messagingBackendModule } = require('@theia/core/lib/node/messaging/messaging-backend-module');
 const { loggerBackendModule } = require('@theia/core/lib/node/logger-backend-module');
 
+// Must be called before BackendApplication.configure() runs.
+// Normally provided by @theia/electron's backend module, but we set it
+// directly here so the app works without the full electron backend module.
+const { BackendApplicationConfigProvider } = require('@theia/core/lib/node/backend-application-config-provider');
+BackendApplicationConfigProvider.set({
+  applicationName: 'Loom',
+  configDirName: '.loom',
+  defaultTheme: 'dark',
+  defaultIconTheme: 'vs-seti',
+});
+
 const container = new Container();
 container.load(backendApplicationModule);
 container.load(messagingBackendModule);
@@ -52,6 +63,7 @@ async function start(port, host, argv = process.argv) {
 
 module.exports = async (port, host, argv) => {
     try {
+        await load(require('@theia/electron/lib/node/electron-backend-module'));
         await load(require('@theia/core/lib/node/i18n/i18n-backend-module'));
         await load(require('@theia/core/lib/node/hosting/backend-hosting-module'));
         await load(require('@theia/core/lib/node/request/backend-request-module'));

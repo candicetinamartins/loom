@@ -123,8 +123,11 @@ app.whenReady().then(async () => {
     createWindow(port)
 
   } catch (err) {
-    console.error('[loom] startup failed:', err)
-    app.quit()
+    const msg = err instanceof Error ? (err.stack ?? err.message) : String(err)
+    console.error('[loom] startup failed:', msg)
+    const { dialog } = require('electron')
+    dialog.showErrorBox('Loom failed to start', msg)
+    app.exit(1)
   }
 })
 

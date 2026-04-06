@@ -161,6 +161,25 @@ app.whenReady().then(async () => {
     const serverFactory = require(serverPath)
     // Re-apply: server.js sets it unconditionally at module-load time
     process.env.THEIA_APP_PROJECT_PATH = userData
+
+    // Set BackendApplicationConfigProvider BEFORE serverFactory() runs configure().
+    // theia build regenerates server.js on every CI build, so this call must live
+    // here (compiled by tsc) rather than in server.js (overwritten by theia generate).
+    try {
+      const { BackendApplicationConfigProvider } =
+        require('@theia/core/lib/node/backend-application-config-provider')
+      BackendApplicationConfigProvider.set({
+        applicationName: 'Loom',
+        configDirName: '.loom',
+        defaultTheme: 'dark',
+        defaultIconTheme: 'vs-seti',
+      })
+      log('Step 4a: BackendApplicationConfigProvider set')
+    } catch (e: any) {
+      // 'already set' is fine — something else beat us to it
+      if (!e?.message?.includes('already set')) throw e
+      log('Step 4a: BackendApplicationConfigProvider already set (ok)')
+    }
     log('Step 5: server module loaded OK')
 
     // Start backend; if it fails fast, reject immediately instead of waiting 20 s

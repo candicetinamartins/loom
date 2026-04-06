@@ -126,6 +126,7 @@
       "publisherName": "Loom Team"
     },
     "linux": {
+      "icon": "resources/icon.png",
       "target": [
         {
           "target": "deb",

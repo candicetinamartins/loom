@@ -1,22 +1,24 @@
 /**
  * electron-builder beforePack hook
  *
- * electron-builder's "installing production dependencies" step prunes
- * devDependencies from node_modules before packaging.  7zip-bin is a
- * devDependency, so its linux/x64/7za binary gets removed.  This hook
- * runs immediately after that prune step and immediately before the
- * packaging step that needs the binary for compression.
+ * Runs immediately after electron-builder's "installing production
+ * dependencies" step and immediately before packing.  Two jobs:
+ *
+ * 1. Rebuild native .node modules for the target Electron version.
+ *    electron-builder's own npmRebuild silently fails in the npm workspaces
+ *    monorepo layout, so we do it here instead.
+ *
+ * 2. On Linux: restore the 7za binary that the production-deps prune removes
+ *    (7zip-bin is a devDependency so its binary gets stripped).
  *
  * @param {import('electron-builder').BeforePackContext} context
  */
 module.exports = async function beforePack(context) {
+  const fs         = require('fs')
+  const path       = require('path')
   const { execSync } = require('child_process')
-  const path = require('path')
 
-  // ── Rebuild native modules for this Electron version ───────────────────────
-  // electron-builder's own npmRebuild is disabled (it silently fails in the
-  // monorepo workspace setup).  We do it here instead, after the production
-  // deps install, with the exact Electron version baked in.
+  // ── 1. Rebuild native modules for this Electron version ──────────────────
   const electronVersion = context.packager.config.electronVersion
     || require('electron/package.json').version
     || '28.0.0'
@@ -30,16 +32,12 @@ module.exports = async function beforePack(context) {
     console.log('[before-pack] Native module rebuild complete')
   } catch (err) {
     console.error('[before-pack] electron-rebuild failed:', err.message)
-    // Non-fatal: packaging continues; startup will fail if a native module ABI
-    // is wrong, but this gives us a log entry instead of a silent breakage
+    // Non-fatal: log it and continue; a bad ABI will surface at startup
   }
 
+  // ── 2. Restore 7za binary on Linux ───────────────────────────────────────
   // Only needed on Linux — macOS uses a different 7z path, Windows ships it
   if (process.platform !== 'linux') return
-
-  const fs   = require('fs')
-  const path = require('path')
-  const { execSync } = require('child_process')
 
   let p7za
   try {

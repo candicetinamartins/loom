@@ -7,6 +7,9 @@ import * as http from 'http'
 import * as net from 'net'
 import * as path from 'path'
 
+// Ensure app name is "Loom" so userData is %APPDATA%\Loom, not %APPDATA%\loom-electron
+app.setName('Loom')
+
 // Keep a global reference so the window isn't garbage-collected
 let mainWindow: BrowserWindow | null = null
 

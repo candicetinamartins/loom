@@ -46,12 +46,10 @@ function showFatalError (msg: string): void {
   log(`FATAL: ${msg}`)
   const { dialog } = require('electron')
   // Also append the log path so the user knows where to find it
-  const logPath = logStream
-    ? path.join(app.getPath('userData'), 'loom-debug.log')
-    : '(log unavailable)'
+  const logFile = logPath || '(log unavailable)'
   dialog.showErrorBox(
     'Loom failed to start',
-    `${msg}\n\nFull log: ${logPath}`
+    `${msg}\n\nFull log: ${logFile}`
   )
   app.exit(1)
 }

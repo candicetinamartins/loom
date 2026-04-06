@@ -1,6 +1,6 @@
 # Loom Roadmap
 
-## v1.0.0 — Current Release ✅
+## v1.0.0 — Initial Release ✅
 - Eclipse Theia + Electron IDE shell (Windows x64, Linux x64)
 - 12-agent fleet with parallel execution, quarantine & retry
 - Okapi BM25 full-text search over knowledge graph
@@ -13,7 +13,30 @@
 
 ---
 
-## v1.0.1 — Next Release 🔜
+## v1.0.1 — Stability & Launch Fixes ✅
+
+All the fixes needed to get the packaged Electron app actually running on Windows.
+
+### Bug fixes shipped in v1.0.1
+
+| # | Fix | Details |
+|---|-----|---------|
+| 1 | **Missing production deps** | `@theia/file-search`, `@theia/debug`, `reflect-metadata` were required by `server.js` but absent from `package.json` — electron-builder pruned them, causing `MODULE_NOT_FOUND` on every launch |
+| 2 | **Native module ABI mismatch** | `.node` addons (`@vscode/spdlog`, `native-watchdog`, `node-pty`, `@parcel/watcher`) were compiled against Node 22 (CI) instead of Electron 28's Node 18.18.2, causing a hard C-level crash with no JS error |
+| 3 | **electron-builder npmRebuild broken in monorepo** | electron-builder's built-in rebuild silently failed in the npm workspaces layout; fixed by disabling it and adding an explicit `electron-rebuild` step in `beforePack.js` and CI |
+| 4 | **`BackendApplicationConfigProvider` never initialised** | Theia's `WebviewBackendSecurityWarnings.initialize()` calls `.get()` during `BackendApplication.configure()` but `.set()` was never called; added explicit call at server module load time |
+| 5 | **`THEIA_APP_PROJECT_PATH` pointed at read-only ASAR** | `server.js` unconditionally overwrote the env var with `__dirname` (inside ASAR = read-only); guarded the assignment + set it from `app.getPath('userData')` in `electron-main.ts` |
+| 6 | **`src-gen/` not packaged** | `src-gen/**/*` was missing from electron-builder `files` array; added |
+| 7 | **`resources/` not packaged** | Icon files not included in ASAR; added `resources/**/*` to `files` |
+| 8 | **Frontend never built** | `package` script used `build` (TypeScript only) instead of `build:full` (TypeScript + Theia webpack); fixed |
+| 9 | **Icon path wrong in ASAR** | `BrowserWindow` icon used `__dirname` which resolves to virtual ASAR path; changed to `app.getAppPath()` |
+| 10 | **Native addons inside ASAR** | `.node` files must be outside the ASAR to be `dlopen()`'d; added `**/*.node` + all known native packages to `asarUnpack` |
+| 11 | **`app.getName()` returned wrong value** | `app.getName()` defaulted to `loom-electron` (npm name) not `Loom`; added `app.setName('Loom')` so `userData` is `%APPDATA%\Loom` |
+| 12 | **Silent crash on startup failure** | All errors called `app.quit()` with no dialog; rewrote with `dialog.showErrorBox` + synchronous file logger at `%APPDATA%\Loom\loom-debug.log` |
+
+---
+
+## v1.0.2 — Next Release 🔜
 
 ### 🕐 AI Checkpoint / Revert Timeline
 > *"Click to revert to any point, like Windsurf"*
@@ -51,7 +74,7 @@ with one click — no manual `git stash` needed.
 
 ---
 
-### Other v1.0.1 fixes
+### Other v1.0.2 planned fixes
 - [ ] Replace placeholder brand icon with final Loom icon set (`.icns` for macOS)
 - [ ] Suppress `Cannot resolve package electron` webpack warning from `@theia/electron`
 - [ ] Add `postinstall: electron-builder install-app-deps` to match native deps to Electron version

@@ -99,15 +99,14 @@ app.whenReady().then(async () => {
     console.log(`[loom] starting backend on port ${port}`)
 
     // Point Theia at a writable userData dir rather than the read-only ASAR archive.
-    // Must be set before the server module is required.
-    process.env.THEIA_APP_PROJECT_PATH = app.getPath('userData')
-
-    // Load and start the generated Theia backend server.
-    // Use app.getAppPath() so the path resolves correctly inside an ASAR
-    // package, in dev, and in the unpacked dist directory.
+    // Set before AND after require: server.js runs the assignment at module-load
+    // time and would overwrite us, so we re-apply it as a backstop.
+    const userData = app.getPath('userData')
+    process.env.THEIA_APP_PROJECT_PATH = userData
 
     const serverPath = path.join(app.getAppPath(), 'src-gen', 'backend', 'server')
     const serverFactory = require(serverPath)
+    process.env.THEIA_APP_PROJECT_PATH = userData  // re-apply after server.js load
     serverFactory(port, '127.0.0.1').then(() => {
       console.log(`[loom] backend ready on port ${port}`)
     }).catch((err: unknown) => {

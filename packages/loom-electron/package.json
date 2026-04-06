@@ -98,6 +98,7 @@
         "to": "tools/package.json"
       }
     ],
+    "npmRebuild": false,
     "asar": true,
     "asarUnpack": [
       "**/*.node",

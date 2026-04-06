@@ -10,6 +10,30 @@
  * @param {import('electron-builder').BeforePackContext} context
  */
 module.exports = async function beforePack(context) {
+  const { execSync } = require('child_process')
+  const path = require('path')
+
+  // ── Rebuild native modules for this Electron version ───────────────────────
+  // electron-builder's own npmRebuild is disabled (it silently fails in the
+  // monorepo workspace setup).  We do it here instead, after the production
+  // deps install, with the exact Electron version baked in.
+  const electronVersion = context.packager.config.electronVersion
+    || require('electron/package.json').version
+    || '28.0.0'
+  const projectDir = context.packager.projectDir
+  console.log(`[before-pack] Rebuilding native modules for Electron ${electronVersion}`)
+  try {
+    execSync(
+      `npx electron-rebuild --version ${electronVersion} --force`,
+      { stdio: 'inherit', cwd: projectDir }
+    )
+    console.log('[before-pack] Native module rebuild complete')
+  } catch (err) {
+    console.error('[before-pack] electron-rebuild failed:', err.message)
+    // Non-fatal: packaging continues; startup will fail if a native module ABI
+    // is wrong, but this gives us a log entry instead of a silent breakage
+  }
+
   // Only needed on Linux — macOS uses a different 7z path, Windows ships it
   if (process.platform !== 'linux') return
 

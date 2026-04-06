@@ -53,9 +53,15 @@ jobs:
           }
         shell: bash
 
+      - name: Rebuild native modules for Electron
+        env:
+          npm_config_msvs_version: '2022'
+        run: npx electron-rebuild --version ${{ env.ELECTRON_VERSION }} --force
+
       - name: Build Electron (Windows x64)
         env:
           NODE_OPTIONS: --max-old-space-size=14336
+          npm_config_msvs_version: '2022'
         run: |
           cd packages/loom-electron
           npm run build:full
@@ -107,6 +113,9 @@ jobs:
             exit 1
           }
         shell: bash
+
+      - name: Rebuild native modules for Electron
+        run: npx electron-rebuild --version ${{ env.ELECTRON_VERSION }} --force
 
       - name: Build Electron (Linux x64)
         env:

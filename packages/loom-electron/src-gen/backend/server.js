@@ -22,12 +22,17 @@ const { loggerBackendModule } = require('@theia/core/lib/node/logger-backend-mod
 // Normally provided by @theia/electron's backend module, but we set it
 // directly here so the app works without the full electron backend module.
 const { BackendApplicationConfigProvider } = require('@theia/core/lib/node/backend-application-config-provider');
-BackendApplicationConfigProvider.set({
-  applicationName: 'Loom',
-  configDirName: '.loom',
-  defaultTheme: 'dark',
-  defaultIconTheme: 'vs-seti',
-});
+try {
+  BackendApplicationConfigProvider.set({
+    applicationName: 'Loom',
+    configDirName: '.loom',
+    defaultTheme: 'dark',
+    defaultIconTheme: 'vs-seti',
+  });
+} catch (e) {
+  // 'already set' is fine — another module beat us to it
+  if (!e.message || !e.message.includes('already set')) throw e;
+}
 
 const container = new Container();
 container.load(backendApplicationModule);
@@ -63,7 +68,6 @@ async function start(port, host, argv = process.argv) {
 
 module.exports = async (port, host, argv) => {
     try {
-        await load(require('@theia/electron/lib/node/electron-backend-module'));
         await load(require('@theia/core/lib/node/i18n/i18n-backend-module'));
         await load(require('@theia/core/lib/node/hosting/backend-hosting-module'));
         await load(require('@theia/core/lib/node/request/backend-request-module'));

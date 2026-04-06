@@ -16,7 +16,8 @@
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "typeRoots": ["../../node_modules/@types", "../loom-core/src/typings"]
+    "typeRoots": ["../../node_modules/@types", "../loom-core/src/typings"],
+    "types": ["node", "electron"]
   },
   "include": ["src/backend/**/*", "../loom-core/src/typings/theia-stubs.d.ts"],
   "exclude": ["node_modules", "lib"]

@@ -74,6 +74,7 @@
     },
     "files": [
       "lib/**/*",
+      "src-gen/**/*",
       "node_modules/**/*",
       "!node_modules/7zip-bin/linux/**",
       "!node_modules/7zip-bin/mac/**",

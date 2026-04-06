@@ -9,6 +9,13 @@ import * as path from 'path'
 // Keep a global reference so the window isn't garbage-collected
 let mainWindow: BrowserWindow | null = null
 
+// Surface any unhandled crash as a dialog instead of silent exit
+process.on('uncaughtException', (err) => {
+  const { dialog } = require('electron')
+  dialog.showErrorBox('Loom failed to start', err.stack ?? err.message)
+  app.exit(1)
+})
+
 // ── Find a free TCP port ──────────────────────────────────────────────────────
 function getFreePort (): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -91,9 +98,11 @@ app.whenReady().then(async () => {
     const port = await getFreePort()
     console.log(`[loom] starting backend on port ${port}`)
 
-    // Load and start the generated Theia backend server
-    // server.js is at src-gen/backend/server.js → compiled relative path
-    const serverFactory = require('../../src-gen/backend/server')
+    // Load and start the generated Theia backend server.
+    // Use app.getAppPath() so the path resolves correctly inside an ASAR
+    // package, in dev, and in the unpacked dist directory.
+    const serverPath = path.join(app.getAppPath(), 'src-gen', 'backend', 'server')
+    const serverFactory = require(serverPath)
     serverFactory(port, '127.0.0.1').then(() => {
       console.log(`[loom] backend ready on port ${port}`)
     }).catch((err: unknown) => {

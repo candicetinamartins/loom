@@ -6,13 +6,6 @@
   "author": "Loom Team",
   "license": "MIT",
   "homepage": "https://github.com/candicetinamartins/loom",
-  "theia": {
-    "target": "electron",
-    "applicationName": "Loom",
-    "defaultTheme": "dark",
-    "defaultIconTheme": "vs-seti",
-    "configDirName": ".loom"
-  },
   "scripts": {
     "build": "tsc -p tsconfig.backend.json",
     "build:full": "npm run build:backend && npm run build:frontend",

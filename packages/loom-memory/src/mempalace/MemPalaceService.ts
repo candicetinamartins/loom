@@ -1,6 +1,7 @@
-import { injectable, inject } from 'inversify'
+import { injectable, inject, optional } from 'inversify'
 import { MEMORY_TYPES } from '../loom-memory-module'
-import type { SessionStore, RawSessionEvent, SessionEventKind } from '../tier1/SessionStore'
+import type { SessionStore } from '../tier1/SessionStore'
+import type { SessionEventKind, RawSessionEvent } from '../tier1/session-events.schema'
 
 /**
  * MemPalaceService — TypeScript client for the Python MemPalace bridge.
@@ -75,6 +76,60 @@ export class MemPalaceService {
   ) {
     // Python service runs on localhost:8765 by default
     this.baseUrl = 'http://127.0.0.1:8765'
+  }
+
+  /**
+   * Store a memory directly in the vector DB (for explicit memories)
+   */
+  async storeMemory(memory: {
+    id: string
+    key: string
+    content: string
+    tier: number
+    source: string
+    createdAt: Date
+    updatedAt: Date
+    useCount: number
+    sessionId?: string
+    agentName?: string
+    embedding?: number[]
+  }): Promise<boolean> {
+    if (!this.isAvailable) {
+      return false
+    }
+
+    try {
+      // Use the /mine endpoint with a single synthetic event
+      const syntheticEvent = {
+        id: memory.id,
+        kind: 'memory_approved' as const,
+        ts: memory.createdAt.toISOString(),
+        payload: {
+          key: memory.key,
+          content: memory.content,
+          source: memory.source,
+          tier: memory.tier,
+          sessionId: memory.sessionId,
+          agentName: memory.agentName,
+        },
+      }
+
+      const response = await fetch(`${this.baseUrl}/mine`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: memory.sessionId || memory.id,
+          agent_name: memory.agentName || 'memory-service',
+          task: memory.key,
+          events: [syntheticEvent],
+          timestamp: memory.createdAt.toISOString(),
+        }),
+      })
+
+      return response.ok
+    } catch {
+      return false
+    }
   }
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -280,6 +335,3 @@ export class MemPalaceService {
     }
   }
 }
-
-// Helper for optional injection
-declare function optional(): ParameterDecorator

@@ -2,6 +2,7 @@ import { injectable, inject, optional } from 'inversify'
 import { LoomMsgHub, Channel } from '@loom/core'
 import { SessionStore } from './tier1/SessionStore'
 import { MemPalaceService } from './mempalace/MemPalaceService'
+import { Tier2MemoryStore } from './tier2/Tier2MemoryStore'
 import { MEMORY_TYPES } from './loom-memory-module'
 
 // Avoid circular dependency with @loom/graph
@@ -13,18 +14,9 @@ interface GraphService {
  * Phase 6 — Three-Tier Memory System
  *
  * Architecture:
- * - Tier 1: Session/ephemeral (SessionStore — replaces OpenCode dependency)
- * - Tier 2: User memory (SQLite via Kuzu node storage until separate db is added)
- * - Tier 3: Project memory (Kuzu graph nodes)
- * 
- * Commands:
- * - /remember <content> - Store explicit memory
- * - /forget <key> - Delete memory
- * 
- * Features:
- * - Memory Panel widget for browsing memories
- * - MemoryIsolationService for session boundaries
- * - Auto-extraction at session end (Haiku)
+ * - Tier 1: Session/ephemeral (SessionStore)
+ * - Tier 2: User memory (SQLite with FTS search)
+ * - Tier 3: Project memory (Kuzu graph with relationships)
  */
 
 export interface Memory {
@@ -49,19 +41,26 @@ export interface MemorySearchResult {
 @injectable()
 export class MemoryService {
   private tier2Ready = false
+  private tier2Store: Tier2MemoryStore
 
   constructor(
     @inject('GraphService') @optional() private readonly graphService: GraphService,
     @inject(LoomMsgHub) @optional() private hub: LoomMsgHub,
     @inject(MEMORY_TYPES.SessionStore) @optional() private sessionStore: SessionStore,
     @inject(MEMORY_TYPES.MemPalaceService) @optional() private memPalaceService: MemPalaceService,
-  ) {}
+  ) {
+    this.tier2Store = new Tier2MemoryStore()
+  }
 
   async initialize(): Promise<void> {
-    // Tier 2/3 ready when graph service is available
-    if (this.graphService) this.tier2Ready = true
-    // Tier 1 SessionStore is initialized by LoomBackendContribution.onStart()
-    console.log('[MemoryService] Initialized - Tier 1 (SessionStore) + Tier 2/3 (Kuzu)')
+    // Initialize Tier 2 SQLite
+    await this.tier2Store.initialize()
+    this.tier2Ready = true
+    
+    // Tier 3 ready when graph service is available
+    const tier3Ready = !!this.graphService
+    
+    console.log(`[MemoryService] Initialized - Tier 2 (SQLite): ${this.tier2Ready}, Tier 3 (Graph): ${tier3Ready}`)
   }
 
   /**
@@ -104,6 +103,15 @@ export class MemoryService {
       await this.storeTier3(memory)
     }
 
+    // Also store in vector DB for semantic search if available
+    if (this.memPalaceService) {
+      try {
+        await this.memPalaceService.storeMemory(memory)
+      } catch {
+        // Vector DB optional
+      }
+    }
+
     await this.hub.publish(
       LoomMsgHub.msg(Channel.MEMORY_STORED, {
         memoryId: memory.id,
@@ -137,14 +145,14 @@ export class MemoryService {
     // Check Tier 2 first (fast)
     const tier2 = await this.getTier2(key)
     if (tier2) {
-      await this.incrementUseCount(tier2.id)
+      await this.tier2Store.incrementUseCount(tier2.id)
       return tier2
     }
 
     // Check Tier 3 (graph)
     const tier3 = await this.getTier3(key)
     if (tier3) {
-      await this.incrementUseCount(tier3.id)
+      await this.incrementUseCountGraph(tier3.id)
       return tier3
     }
 
@@ -179,8 +187,8 @@ export class MemoryService {
 
   /**
    * Search memories by relevance
-   * Tier 2: Use count ranking
-   * Tier 3: Vector similarity
+   * Tier 2: Full-text search via SQLite FTS
+   * Tier 3: MemPalace vector search (or keyword fallback)
    */
   async searchRelevant(
     query: string,
@@ -228,7 +236,7 @@ export class MemoryService {
     }
 
     // ── Tier 2/3: relevant long-term memories (async, may be unavailable) ────
-    // Try MemPalace first (vector semantic search), fall back to Kuzu keyword search
+    // Try MemPalace first (vector semantic search), fall back to Tier 2 search
     let memPalaceContext = ''
     if (this.memPalaceService) {
       try {
@@ -241,7 +249,7 @@ export class MemoryService {
     if (memPalaceContext) {
       parts.push(memPalaceContext)
     } else if (this.tier2Ready) {
-      // Fallback to Kuzu keyword search
+      // Fallback to Tier 2 full-text search
       try {
         const relevant = await this.searchRelevant(taskDescription, { limit: 4 })
         if (relevant.length > 0) {
@@ -252,7 +260,7 @@ export class MemoryService {
           parts.push(`[MEMORY]\n${memLines.join('\n')}`)
         }
       } catch {
-        // Kuzu unavailable — skip Tier 2/3 gracefully
+        // Tier 2 unavailable — skip gracefully
       }
     }
 
@@ -262,8 +270,52 @@ export class MemoryService {
   // Tier 2: SQLite Implementation
 
   private async storeTier2(memory: Memory): Promise<void> {
-    // In production: INSERT INTO memories ...
-    // For now, store in-memory or use Kuzu as fallback
+    await this.tier2Store.store({
+      id: memory.id,
+      key: memory.key,
+      content: memory.content,
+      tier: memory.tier,
+      source: memory.source,
+      createdAt: memory.createdAt,
+      updatedAt: memory.updatedAt,
+      useCount: memory.useCount,
+      sessionId: memory.sessionId,
+      agentName: memory.agentName,
+      embedding: memory.embedding,
+    })
+  }
+
+  private async getTier2(key: string): Promise<Memory | null> {
+    const row = await this.tier2Store.getByKey(key, 2)
+    if (!row) return null
+    return this.parseMemoryRow(row)
+  }
+
+  private async getAllTier2(options: { source?: string; limit: number }): Promise<Memory[]> {
+    const rows = await this.tier2Store.getAll({ tier: 2, source: options.source, limit: options.limit })
+    return rows.map(r => this.parseMemoryRow(r))
+  }
+
+  private async searchTier2(query: string, limit: number): Promise<MemorySearchResult[]> {
+    const rows = await this.tier2Store.search(query, limit)
+    return rows.map((row, index) => ({
+      memory: this.parseMemoryRow(row),
+      relevance: 1.0 - (index * 0.1),
+    }))
+  }
+
+  private async deleteTier2(key: string): Promise<boolean> {
+    return await this.tier2Store.delete(key, 2)
+  }
+
+  // Tier 3: Kuzu Graph Implementation
+
+  private async storeTier3(memory: Memory): Promise<void> {
+    if (!this.graphService) {
+      await this.storeTier2(memory)
+      return
+    }
+
     await this.graphService.query(`
       CREATE NODE TABLE IF NOT EXISTS Memory (
         id STRING,
@@ -283,8 +335,8 @@ export class MemoryService {
     await this.graphService.query(`
       CREATE (m:Memory {
         id: '${memory.id}',
-        key: '${memory.key.replace(/'/g, "''")}',
-        content: '${memory.content.replace(/'/g, "''")}',
+        key: '${this.escape(memory.key)}',
+        content: '${this.escape(memory.content)}',
         tier: ${memory.tier},
         source: '${memory.source}',
         createdAt: timestamp('${memory.createdAt.toISOString()}'),
@@ -294,80 +346,78 @@ export class MemoryService {
         agentName: '${memory.agentName || ''}'
       })
     `)
+
+    await this.createMemoryRelationships(memory)
   }
 
-  private async getTier2(key: string): Promise<Memory | null> {
-    const result = await this.graphService.query(`
-      MATCH (m:Memory)
-      WHERE m.key = '${key.replace(/'/g, "''")}' AND m.tier = 2
-      RETURN m
-      LIMIT 1
-    `)
+  private async createMemoryRelationships(memory: Memory): Promise<void> {
+    if (!this.graphService) return
 
-    if (result.length === 0) return null
-    return this.parseMemoryNode(result[0].m)
+    const fileRefs = this.extractFileReferences(memory.content)
+    const moduleRefs = this.extractModuleReferences(memory.content)
+
+    for (const fileRef of fileRefs) {
+      try {
+        await this.graphService.query(`
+          MATCH (m:Memory {id: '${memory.id}'}), (f:File {path: '${this.escape(fileRef)}'})
+          CREATE (m)-[:RELATES_TO {type: 'file_reference'}]->(f)
+        `)
+      } catch {}
+    }
+
+    for (const moduleRef of moduleRefs) {
+      try {
+        await this.graphService.query(`
+          MATCH (m:Memory {id: '${memory.id}'}), (mod:Module {name: '${this.escape(moduleRef)}'})
+          CREATE (m)-[:RELATES_TO {type: 'module_reference'}]->(mod)
+        `)
+      } catch {}
+    }
+
+    if (memory.sessionId) {
+      try {
+        await this.graphService.query(`
+          MATCH (m:Memory {id: '${memory.id}'}), (s:Session {id: '${memory.sessionId}'})
+          CREATE (m)-[:SESSION_SOURCE]->(s)
+        `)
+      } catch {}
+    }
   }
 
-  private async getAllTier2(options: { source?: string; limit: number }): Promise<Memory[]> {
-    const whereClause = options.source ? `AND m.source = '${options.source}'` : ''
+  private extractFileReferences(content: string): string[] {
+    const matches = content.match(/(?:\/?[\w.-]+\/)+[\w.-]+\.[\w]+/g) || []
+    return [...new Set(matches)]
+  }
+
+  private extractModuleReferences(content: string): string[] {
+    const importMatches = content.match(/from ['"]([@\w/-]+)['"]/g) || []
+    const requireMatches = content.match(/require\(['"]([@\w/-]+)['"]\)/g) || []
     
-    const result = await this.graphService.query(`
-      MATCH (m:Memory)
-      WHERE m.tier = 2 ${whereClause}
-      RETURN m
-      ORDER BY m.useCount DESC
-      LIMIT ${options.limit}
-    `)
-
-    return result.map((r: any) => this.parseMemoryNode(r.m))
+    const modules = new Set<string>()
+    
+    for (const match of importMatches) {
+      const mod = match.match(/from ['"]([@\w/-]+)['"]/)?.[1]
+      if (mod) modules.add(mod)
+    }
+    
+    for (const match of requireMatches) {
+      const mod = match.match(/require\(['"]([@\w/-]+)['"]\)/)?.[1]
+      if (mod) modules.add(mod)
+    }
+    
+    return [...modules]
   }
 
-  private async searchTier2(query: string, limit: number): Promise<MemorySearchResult[]> {
-    // Simple keyword matching for Tier 2
-    const keywords = query.toLowerCase().split(/\s+/)
-    const all = await this.getAllTier2({ limit: 100 })
-    
-    return all
-      .map(memory => {
-        const contentLower = memory.content.toLowerCase()
-        const keyLower = memory.key.toLowerCase()
-        const matches = keywords.filter(k => contentLower.includes(k) || keyLower.includes(k))
-        return {
-          memory,
-          relevance: matches.length / keywords.length,
-        }
-      })
-      .filter(r => r.relevance > 0)
-      .sort((a, b) => b.relevance - a.relevance)
-      .slice(0, limit)
-  }
-
-  private async deleteTier2(key: string): Promise<boolean> {
-    await this.graphService.query(`
-      MATCH (m:Memory)
-      WHERE m.key = '${key.replace(/'/g, "''")}' AND m.tier = 2
-      DELETE m
-    `)
-    return true
-  }
-
-  // Tier 3: Kuzu Graph Implementation
-
-  private async storeTier3(memory: Memory): Promise<void> {
-    // Tier 3 stores in graph with relationships to files/modules
-    // Memory nodes can be linked to: Modules, Functions, Decisions
-    
-    await this.storeTier2(memory) // Store as node first
-    
-    // In production: Create relationships to relevant graph nodes
-    // MATCH (m:Memory {id: '${memory.id}'}), (mod:Module {name: '...'})
-    // CREATE (m)-[:RELATES_TO]->(mod)
+  private escape(str: string): string {
+    return str.replace(/'/g, "''")
   }
 
   private async getTier3(key: string): Promise<Memory | null> {
+    if (!this.graphService) return null
+
     const result = await this.graphService.query(`
       MATCH (m:Memory)
-      WHERE m.key = '${key.replace(/'/g, "''")}' AND m.tier = 3
+      WHERE m.key = '${this.escape(key)}' AND m.tier = 3
       RETURN m
       LIMIT 1
     `)
@@ -377,6 +427,8 @@ export class MemoryService {
   }
 
   private async getAllTier3(options: { source?: string; limit: number }): Promise<Memory[]> {
+    if (!this.graphService) return []
+
     const whereClause = options.source ? `AND m.source = '${options.source}'` : ''
     
     const result = await this.graphService.query(`
@@ -391,21 +443,80 @@ export class MemoryService {
   }
 
   private async searchTier3(query: string, limit: number): Promise<MemorySearchResult[]> {
-    // In production: Use vector similarity search
-    // For now, use same keyword matching as Tier 2
-    return this.searchTier2(query, limit)
+    // Try MemPalace vector search first
+    if (this.memPalaceService) {
+      try {
+        const results = await this.memPalaceService.search(query, { limit })
+        return results.map(r => ({
+          memory: {
+            id: r.id,
+            key: String(r.metadata?.key || 'memory'),
+            content: r.content,
+            tier: 3,
+            source: String(r.metadata?.source || 'extracted') as 'explicit' | 'extracted' | 'decision',
+            createdAt: new Date(r.timestamp),
+            updatedAt: new Date(r.timestamp),
+            useCount: 0,
+            agentName: String(r.wing || ''),
+            sessionId: r.metadata?.session_id as string | undefined,
+          },
+          relevance: r.score,
+        }))
+      } catch {
+        // Fall back to keyword search
+      }
+    }
+
+    // Fallback: keyword search via graph
+    if (this.graphService) {
+      const keywords = query.toLowerCase().split(/\s+/).filter(k => k.length > 2)
+      if (keywords.length === 0) return []
+
+      const pattern = keywords.join('|')
+      const result = await this.graphService.query(`
+        MATCH (m:Memory)
+        WHERE m.tier = 3 AND (m.content =~ '(?i).*(${pattern}).*' OR m.key =~ '(?i).*(${pattern}).*')
+        RETURN m
+        LIMIT ${limit}
+      `)
+
+      return result.map((r: any, index: number) => ({
+        memory: this.parseMemoryNode(r.m),
+        relevance: 0.7 - (index * 0.1),
+      }))
+    }
+
+    return []
   }
 
   private async deleteTier3(key: string): Promise<boolean> {
+    if (!this.graphService) return false
+
     await this.graphService.query(`
       MATCH (m:Memory)
-      WHERE m.key = '${key.replace(/'/g, "''")}' AND m.tier = 3
-      DELETE m
+      WHERE m.key = '${this.escape(key)}' AND m.tier = 3
+      DETACH DELETE m
     `)
     return true
   }
 
   // Helpers
+
+  private parseMemoryRow(row: any): Memory {
+    return {
+      id: row.id,
+      key: row.key,
+      content: row.content,
+      tier: row.tier as 2 | 3,
+      source: row.source as 'explicit' | 'extracted' | 'decision',
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+      useCount: row.use_count,
+      sessionId: row.session_id || undefined,
+      agentName: row.agent_name || undefined,
+      embedding: row.embedding ? JSON.parse(row.embedding) : undefined,
+    }
+  }
 
   private parseMemoryNode(node: any): Memory {
     return {
@@ -422,12 +533,16 @@ export class MemoryService {
     }
   }
 
-  private async incrementUseCount(memoryId: string): Promise<void> {
+  private async incrementUseCountGraph(memoryId: string): Promise<void> {
+    if (!this.graphService) return
+    
     await this.graphService.query(`
       MATCH (m:Memory {id: '${memoryId}'})
       SET m.useCount = m.useCount + 1
     `)
   }
+
+  // Helpers
 
   private generateKey(content: string): string {
     // Generate a short key from content

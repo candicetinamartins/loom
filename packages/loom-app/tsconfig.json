@@ -14,7 +14,6 @@
     "sourceMap": true,
     "composite": true,
     "moduleResolution": "node",
-    "ignoreDeprecations": "6.0",
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,

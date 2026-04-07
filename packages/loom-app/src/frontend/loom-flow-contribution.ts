@@ -1,6 +1,7 @@
 import { injectable, inject, optional } from 'inversify'
 import { FrontendApplicationContribution } from '@theia/core/lib/browser'
 import { CommandRegistry } from '@theia/core/lib/common/command'
+import type { CommandContribution } from '@theia/core/lib/common/command'
 import { FileService } from '@theia/filesystem/lib/browser/file-service'
 import { TerminalService } from '@theia/terminal/lib/browser/base/terminal-service'
 import { EditorManager } from '@theia/editor/lib/browser/editor-manager'
@@ -9,6 +10,7 @@ import { GitContribution } from '@theia/git/lib/browser/git-contribution'
 import { ProblemManager } from '@theia/markers/lib/browser/problem/problem-manager'
 import { TestService } from '@theia/test/lib/browser/test-service'
 import { FlowTrackingService } from '@loom/core'
+import type { Widget } from '@theia/core/lib/browser'
 
 @injectable()
 export class LoomFlowContribution implements FrontendApplicationContribution {
@@ -35,7 +37,7 @@ export class LoomFlowContribution implements FrontendApplicationContribution {
 
   private subscribeToFileService(): void {
     // Track file open events
-    this.editorManager.onCurrentEditorChanged(editor => {
+    this.editorManager.onCurrentEditorChanged((editor) => {
       if (editor) {
         const uri = editor.editor.document.uri
         this.flowService.trackEvent('file_open', {
@@ -76,8 +78,8 @@ export class LoomFlowContribution implements FrontendApplicationContribution {
 
   private subscribeToTerminalService(): void {
     // Track terminal output
-    this.terminalService.onDidCreateTerminal(terminal => {
-      const onDataDisposable = terminal.onData(data => {
+    this.terminalService.onDidCreateTerminal((terminal) => {
+      const onDataDisposable = terminal.onData((data: string) => {
         // Only track significant output (not keystrokes)
         if (data.length > 10 || data.includes('\n')) {
           this.flowService.trackEvent('terminal_output', {

@@ -1,6 +1,7 @@
 import { injectable } from 'inversify'
 import type { FrontendApplicationContribution } from '@theia/core/lib/browser/frontend-application-contribution'
-import type { CommandContribution, CommandRegistry } from '@theia/core/lib/common/command'
+import { CommandContribution } from '@theia/core/lib/common/command'
+import type { CommandRegistry } from '@theia/core/lib/common/command'
 import { CheckpointTimelineWidget, type CheckpointCard } from '@loom/ui/src/widgets/CheckpointTimelineWidget'
 
 // Loom command IDs — these match LOOM_COMMANDS in loom-keybindings.ts
@@ -94,8 +95,8 @@ export class CheckpointContribution implements FrontendApplicationContribution, 
     this.widget = new CheckpointTimelineWidget()
 
     // Wire the restore handler — calls the backend via a Theia command execution
-    this.widget.setRestoreHandler((checkpointId: string) => {
-      this._restoreCheckpoint(checkpointId)
+    this.editorManager.onCreated((editorWidget: any) => {
+      this._restoreCheckpoint(editorWidget.checkpointId)
     })
   }
 

@@ -50,7 +50,7 @@ export class LoomFlowTimelineContribution implements FrontendApplicationContribu
     })
 
     // Position timeline when editors open
-    this.editorManager.onCreated(editorWidget => {
+    this.editorManager.onCreated((editorWidget: { node: HTMLElement }) => {
       this.positionTimelineAboveEditor(editorWidget)
     })
   }

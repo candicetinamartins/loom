@@ -46,11 +46,22 @@ jobs:
       - name: Build packages
         run: |
           echo "=== Building all packages ==="
-          npm run build --workspaces 2>&1 | tee build.log || {
-            echo "=== BUILD FAILED - Showing last 100 lines of log ==="
-            tail -100 build.log
-            exit 1
-          }
+          # Build packages in dependency order
+          npm run build --workspace=packages/loom-graph
+          npm run build --workspace=packages/loom-core
+          npm run build --workspace=packages/loom-memory
+          npm run build --workspace=packages/loom-hooks
+          npm run build --workspace=packages/loom-tools
+          npm run build --workspace=packages/loom-agents
+          npm run build --workspace=packages/loom-server
+          npm run build --workspace=packages/loom-ui
+          npm run build --workspace=packages/loom-app
+          npm run build --workspace=packages/loom-cli
+          npm run build --workspace=packages/loom-docs
+          npm run build --workspace=packages/loom-electron
+          npm run build --workspace=packages/loom-powers
+          npm run build --workspace=packages/loom-specs
+          echo "=== Build complete ==="
         shell: bash
 
       - name: Rebuild native modules for Electron
@@ -107,11 +118,22 @@ jobs:
       - name: Build packages
         run: |
           echo "=== Building all packages ==="
-          npm run build --workspaces 2>&1 | tee build.log || {
-            echo "=== BUILD FAILED - Showing last 100 lines of log ==="
-            tail -100 build.log
-            exit 1
-          }
+          # Build packages in dependency order
+          npm run build --workspace=packages/loom-graph
+          npm run build --workspace=packages/loom-core
+          npm run build --workspace=packages/loom-memory
+          npm run build --workspace=packages/loom-hooks
+          npm run build --workspace=packages/loom-tools
+          npm run build --workspace=packages/loom-agents
+          npm run build --workspace=packages/loom-server
+          npm run build --workspace=packages/loom-ui
+          npm run build --workspace=packages/loom-app
+          npm run build --workspace=packages/loom-cli
+          npm run build --workspace=packages/loom-docs
+          npm run build --workspace=packages/loom-electron
+          npm run build --workspace=packages/loom-powers
+          npm run build --workspace=packages/loom-specs
+          echo "=== Build complete ==="
         shell: bash
 
       - name: Rebuild native modules for Electron

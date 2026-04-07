@@ -91,6 +91,12 @@ declare module '@theia/core/lib/browser' {
     registerWidgetFactory(factoryId: string, factory: WidgetFactory): Disposable
   }
 
+  export class PreferenceService {
+    get<T>(preferenceName: string): T | undefined
+    set(preferenceName: string, value: unknown): Promise<void>
+    onPreferenceChanged: { event: unknown }
+  }
+
   export class ApplicationShell {
     area: string
     rank: number

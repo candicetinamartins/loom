@@ -1,7 +1,7 @@
-import { injectable } from 'inversify'
+import { injectable, inject } from 'inversify'
 import type { FrontendApplicationContribution } from '@theia/core/lib/browser/frontend-application-contribution'
-import type { CommandContribution } from '@theia/core/lib/common/command'
-import { CommandRegistry } from '@theia/core/lib/common/command'
+import { CommandRegistry, CommandContribution } from '@theia/core/lib/common/command'
+import { PreferenceService } from '@theia/core/lib/browser'
 import { CheckpointTimelineWidget, type CheckpointCard } from '@loom/ui/src/widgets/CheckpointTimelineWidget'
 
 // Loom command IDs — these match LOOM_COMMANDS in loom-keybindings.ts
@@ -12,7 +12,9 @@ export const OPEN_CHECKPOINT_TIMELINE_COMMAND = 'loom.openCheckpointTimeline'
  * CheckpointContribution — wires the CheckpointTimelineWidget into the Theia shell.
  */
 @injectable()
-export class CheckpointContribution implements FrontendApplicationContribution {
+export class CheckpointContribution implements FrontendApplicationContribution, CommandContribution {
+  @inject(CommandRegistry) protected readonly commandRegistry!: CommandRegistry
+  @inject(PreferenceService) protected readonly preferenceService!: PreferenceService
   private widget: CheckpointTimelineWidget | null = null
   private shell: { addWidget?: (w: unknown, opts?: unknown) => void; activateWidget?: (id: string) => Promise<unknown> } | null = null
 

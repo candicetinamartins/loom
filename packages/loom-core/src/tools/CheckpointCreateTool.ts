@@ -1,12 +1,14 @@
+import { injectable, inject } from 'inversify'
+import { MEMORY_TYPES } from '@loom/memory/src/loom-memory-module'
+import type { CheckpointService } from '@loom/memory/src/checkpoints/CheckpointService'
+import type { SessionStore } from '@loom/memory/src/tier1/SessionStore'
+
 /**
  * CheckpointCreateTool — agent-callable tool to explicitly create a named checkpoint.
  *
  * Normally checkpoints are auto-created by WriteFileTool / EditFileTool on every
  * agent write. This tool lets an agent explicitly mark a checkpoint with a name
  * (e.g. "before_refactor", "after_tests_pass") so it is easy to find in the timeline.
- *
- * Logs the request; full implementation delegates to CheckpointService in @loom/memory
- * once the DI container is wired (the tool is usable as a standalone class too).
  */
 
 export interface CheckpointCreateInput {
@@ -21,6 +23,7 @@ export interface CheckpointCreateOutput {
   success: boolean
 }
 
+@injectable()
 export class CheckpointCreateTool {
   readonly name = 'checkpoint_create'
   readonly description =
@@ -28,15 +31,29 @@ export class CheckpointCreateTool {
     'Snapshots all files modified so far in this session. ' +
     'Use before risky refactors or large rewrites.'
 
+  constructor(
+    @inject(MEMORY_TYPES.CheckpointService) private checkpointService: CheckpointService,
+    @inject(MEMORY_TYPES.SessionStore) private sessionStore: SessionStore,
+  ) {}
+
   async execute(input: CheckpointCreateInput): Promise<CheckpointCreateOutput> {
-    const id = `cp-named-${Date.now()}`
-    console.log(`[CheckpointCreateTool] Created named checkpoint: "${input.name}" (${id})`)
+    const session = this.sessionStore.getActiveSession()
+    if (!session) {
+      throw new Error('No active session - cannot create checkpoint')
+    }
 
-    // In full DI context, CheckpointService is injected via loom-memory module and
-    // WriteFileTool/EditFileTool already snapshot each file as it is written.
-    // This tool simply creates a label record in the NDJSON store.
-    // TODO: wire to CheckpointService.createNamedCheckpoint() when DI is available.
+    const record = await this.checkpointService.createNamedCheckpoint({
+      sessionId: session.sessionId,
+      name: input.name,
+      description: input.description,
+      agentName: session.agentName,
+    })
 
-    return { id, name: input.name, timestamp: Date.now(), success: true }
+    return {
+      id: record.id,
+      name: input.name,
+      timestamp: record.timestamp,
+      success: true,
+    }
   }
 }

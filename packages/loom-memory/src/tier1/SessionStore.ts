@@ -12,6 +12,7 @@ import type {
   FileWritePayload,
   FileDeletePayload,
   BashExecPayload,
+  CheckpointCreatedPayload,
 } from './session-events.schema'
 
 /**
@@ -201,6 +202,19 @@ export class SessionStore {
       output: opts.output.slice(0, 2000), // cap at 2KB
       exitCode: opts.exitCode,
     } satisfies BashExecPayload)
+  }
+
+  recordCheckpoint(opts: {
+    sessionId: string
+    checkpointId: string
+    name: string
+    agentName: string
+  }): void {
+    this._append(opts.sessionId, 'checkpoint_created', {
+      checkpointId: opts.checkpointId,
+      label: opts.name,
+      files: [],
+    } satisfies CheckpointCreatedPayload)
   }
 
   // ── Reading ───────────────────────────────────────────────────────────────────

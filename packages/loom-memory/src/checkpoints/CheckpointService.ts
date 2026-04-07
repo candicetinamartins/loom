@@ -144,6 +144,74 @@ export class CheckpointService {
     return this.store.findById(id)
   }
 
+  // ── Named Checkpoints ──────────────────────────────────────────────────────────
+
+  /**
+   * Create a named checkpoint of the current session state.
+   * Called by CheckpointCreateTool when agent explicitly requests a checkpoint.
+   * Captures all files modified in this session.
+   */
+  async createNamedCheckpoint(opts: {
+    sessionId: string
+    name: string
+    description?: string
+    agentName: string
+  }): Promise<CheckpointRecord> {
+    // Get all file write events from this session
+    const journal = this.sessionStore.getSessionJournal(opts.sessionId)
+    const fileWriteEvents = journal.filter(e => e.kind === 'file_write')
+    
+    // Get unique files (most recent state per file)
+    const fileMap = new Map<string, { path: string; content: string }>()
+    
+    for (const event of fileWriteEvents) {
+      const payload = JSON.parse(event.payload) as { path: string; after?: string }
+      const filePath = payload.path
+      const content = payload.after
+      if (content !== undefined) {
+        fileMap.set(filePath, { path: filePath, content })
+      }
+    }
+    
+    // Read current state of all modified files
+    const files: CheckpointFile[] = []
+    for (const { path: filePath } of fileMap.values()) {
+      try {
+        const currentContent = await fs.readFile(filePath, 'utf-8')
+        files.push({
+          path: filePath,
+          before: currentContent, // Named checkpoint captures current as "before" for restore
+          after: currentContent,
+        })
+      } catch {
+        // File may have been deleted since - skip
+      }
+    }
+    
+    const record: CheckpointRecord = {
+      id: `cp-named-${Date.now()}-${randomUUID().slice(0, 8)}`,
+      sessionId: opts.sessionId,
+      agentName: opts.agentName,
+      label: opts.name,
+      description: opts.description,
+      timestamp: Date.now(),
+      files,
+    }
+    
+    // Persist to NDJSON store
+    this.store.append(record)
+    
+    // Record in session journal
+    this.sessionStore.recordCheckpoint({
+      sessionId: opts.sessionId,
+      checkpointId: record.id,
+      name: opts.name,
+      agentName: opts.agentName,
+    })
+    
+    return record
+  }
+
   // ── Private helpers ───────────────────────────────────────────────────────────
 
   private _deriveLabel(agentName: string, filePath: string, before: string | null, after: string): string {

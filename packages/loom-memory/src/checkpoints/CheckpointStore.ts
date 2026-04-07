@@ -11,6 +11,7 @@ export interface CheckpointRecord {
   sessionId: string
   agentName: string
   label: string                // "CodeSmith · fixed retry throw"
+  description?: string         // Optional longer description for named checkpoints
   timestamp: number            // Date.now()
   files: CheckpointFile[]
 }

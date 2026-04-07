@@ -1,7 +1,8 @@
 import { injectable, inject } from 'inversify'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { TOMLParser, LoomMsgHub, Channel, PipelineRunner } from '@loom/core'
+import { TOMLParser, PipelineRunner } from '@loom/core'
+import { LoomMsgHub, Channel } from '@loom/graph'
 import { FileService } from '@theia/filesystem/lib/browser/file-service'
 import { TerminalService } from '@theia/terminal/lib/browser/terminal-service'
 

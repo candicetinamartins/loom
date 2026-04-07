@@ -2,7 +2,7 @@ import { injectable } from 'inversify'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { randomUUID } from 'node:crypto'
-import Database from 'better-sqlite3'
+import type Database from 'better-sqlite3'
 import type {
   SessionEventKind,
   RawSessionEvent,

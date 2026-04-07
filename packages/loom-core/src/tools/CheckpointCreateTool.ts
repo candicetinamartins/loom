@@ -1,8 +1,8 @@
 import { injectable, inject } from 'inversify'
 import { optional } from 'inversify'
 import { MEMORY_TYPES } from '@loom/memory'
-import type { CheckpointService } from '@loom/memory/src/checkpoints/CheckpointService'
-import type { SessionStore } from '@loom/memory/src/tier1/SessionStore'
+import type { CheckpointService } from '@loom/memory'
+import type { SessionStore } from '@loom/memory'
 
 /**
  * CheckpointCreateTool — agent-callable tool to explicitly create a named checkpoint.

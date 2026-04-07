@@ -236,7 +236,7 @@ export class SkillService {
       }
       
       // Check if any keyword matches
-      return skill.activation.keywords.some(kw => 
+      return skill.activation.keywords.some((kw: string) => 
         contextLower.includes(kw.toLowerCase())
       )
     })
@@ -284,7 +284,7 @@ export class SkillService {
         const files = await this.fetchGitHubContents(skillsUrl)
         
         // Import first skill file found
-        const skillFile = files.find((f: any) => f.name.endsWith('.yaml') || f.name.endsWith('.yml'))
+        const skillFile = files.find((f: { name: string }) => f.name.endsWith('.yaml') || f.name.endsWith('.yml'))
         if (!skillFile) {
           throw new Error(`No skill files found in ${source}`)
         }
@@ -313,7 +313,7 @@ export class SkillService {
       } else {
         // List and import first skill
         const files = await this.fetchGitHubContents(url)
-        const skillFile = files.find((f: any) => f.name.endsWith('.yaml'))
+        const skillFile = files.find((f: { name: string }) => f.name.endsWith('.yaml'))
         if (!skillFile) {
           throw new Error(`No skill files found in ${source}`)
         }

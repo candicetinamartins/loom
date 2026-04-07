@@ -7,8 +7,12 @@
     "frontend": {
       "config": {
         "applicationName": "Loom",
-        "defaultTheme": "loom-dark"
-      }
+        "defaultTheme": "dark"
+      },
+      "module": "lib/frontend/index"
+    },
+    "backend": {
+      "module": "lib/backend/index"
     }
   },
   "dependencies": {

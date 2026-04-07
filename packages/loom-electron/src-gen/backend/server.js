@@ -83,6 +83,10 @@ module.exports = async (port, host, argv) => {
         await load(require('@theia/search-in-workspace/lib/node/search-in-workspace-backend-module'));
         await load(require('@theia/plugin-ext/lib/plugin-ext-backend-module'));
         await load(require('@theia/plugin-ext-vscode/lib/node/plugin-vscode-backend-module'));
+        // ── Loom backend modules ──────────────────────────────────────────
+        // Loaded here as a fallback for local dev; in CI, theia generate
+        // produces a fresh server.js that includes these automatically.
+        try { await load(require('@loom/app/lib/backend/index')); } catch(e) { console.warn('[Loom] @loom/app backend not found:', e.message); }
         return await start(port, host, argv);
     } catch (error) {
         if (typeof error !== 'number') {

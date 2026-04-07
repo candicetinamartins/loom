@@ -36,7 +36,21 @@ All the fixes needed to get the packaged Electron app actually running on Window
 
 ---
 
-## v1.0.2 — Next Release 🔜
+## v1.0.2 — Loom Features Wired ✅ (in progress)
+
+### 🔌 Full Feature Wiring (this release)
+
+All Loom-specific panels and agents are now connected to the Theia IDE shell.
+
+| # | Fix | Details |
+|---|-----|---------|
+| 1 | **`@loom/app` missing from loom-electron deps** | `theia generate` never discovered loom-app so none of its modules were included in the frontend/backend bundles |
+| 2 | **`theia.frontend.module` / `theia.backend.module` not declared** | `loom-app/package.json` had only config in its `"theia"` section; module paths added so `theia generate` includes the ContainerModules |
+| 3 | **Wrong DI symbol (`Symbol.for` vs Theia symbol)** | `loom-frontend-module.ts` used `Symbol.for('FrontendApplicationContribution')` which is a different symbol from Theia's `Symbol('FrontendApplicationContribution')`; fixed by obtaining the symbol via `require()` from the definitive sub-module path |
+| 4 | **Backend sub-modules never loaded** | `loom-app/src/backend/index.ts` only registered `LoomBackendContribution`; rewrote to load all sub-modules (core, agents, tools, graph, hooks, memory, docs) using `ContainerModule.registry()` with safe fallbacks |
+| 5 | **`@theia/ai-*` packages missing from loom-electron** | Added @theia/ai-core, @theia/ai-chat, @theia/ai-ide, @theia/ai-anthropic, @theia/ai-openai, @theia/ai-ollama, @theia/notebook — electron-builder now packages them |
+| 6 | **`better-sqlite3` / `web-tree-sitter` not in asarUnpack** | Native addons used by loom-memory and loom-graph were inside ASAR and couldn't be dlopen'd |
+| 7 | **`FrontendApplicationConfigProvider` showed "Eclipse Theia"** | Committed `src-gen/frontend/index.js` had wrong applicationName; updated to "Loom" |
 
 ### 🕐 AI Checkpoint / Revert Timeline
 > *"Click to revert to any point, like Windsurf"*

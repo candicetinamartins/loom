@@ -10,7 +10,7 @@ export interface GitLogInput {
   author?: string
 }
 
-export interface GitCommit {
+export interface GitLogCommit {
   hash: string
   shortHash: string
   author: string
@@ -19,7 +19,7 @@ export interface GitCommit {
 }
 
 export interface GitLogOutput {
-  commits: GitCommit[]
+  commits: GitLogCommit[]
 }
 
 export class GitLogTool {
@@ -42,7 +42,7 @@ export class GitLogTool {
 
     const { stdout } = await execAsync(command, { cwd })
 
-    const commits: GitCommit[] = stdout
+    const commits: GitLogCommit[] = stdout
       .split('\n')
       .filter(line => line.trim())
       .map(line => {

@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { TOMLParser } from '../utils/TOMLParser'
+import { TOMLParser } from '@loom/core'
 
 export interface SkillManifest {
   name: string

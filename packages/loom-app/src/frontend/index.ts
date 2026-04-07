@@ -19,6 +19,11 @@ import { LoomKeybindingContribution, LoomCommandContribution, LoomMenuContributi
 import { LoomAgentPanelContribution } from './loom-agent-panel-contribution'
 import { LoomOpenHandler } from './loom-open-handler'
 import { LoomOnboardingWizard } from './loom-onboarding'
+import { LoomCodemapContribution } from './loom-codemap-contribution'
+import { LoomVerifierStatusContribution } from './loom-verifier-status-contribution'
+import { LoomGraphStatsContribution } from './loom-graph-stats-contribution'
+import { LoomGhostTextContribution } from './loom-ghost-text-contribution'
+import { LoomComponentBrowserContribution } from './loom-component-browser-contribution'
 
 // Runtime-only: get the actual Theia DI symbols from their definitive file paths.
 // These are unique symbols (not Symbol.for) so they must be obtained via require().
@@ -48,6 +53,11 @@ export default new ContainerModule((bind) => {
   bindTo(FrontendApplicationContribution, LoomStatusBarContribution)
   bindTo(FrontendApplicationContribution, LoomThemeContribution)
   bindTo(FrontendApplicationContribution, LoomAgentPanelContribution)
+  bindTo(FrontendApplicationContribution, LoomCodemapContribution)
+  bindTo(FrontendApplicationContribution, LoomVerifierStatusContribution)
+  bindTo(FrontendApplicationContribution, LoomGraphStatsContribution)
+  bindTo(FrontendApplicationContribution, LoomGhostTextContribution)
+  bindTo(FrontendApplicationContribution, LoomComponentBrowserContribution)
 
   // ── CommandContribution ──────────────────────────────────────────────────
   // Registers all Loom commands in Theia's command palette and menu system.

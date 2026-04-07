@@ -4,6 +4,13 @@ import * as path from 'node:path'
 import { randomUUID } from 'node:crypto'
 import Database from 'better-sqlite3'
 
+// Define Statement type to match better-sqlite3 API
+type SqliteStatement = {
+  run(...params: unknown[]): { lastInsertRowid: number | bigint; changes: number }
+  all(...params: unknown[]): unknown[]
+  get(...params: unknown[]): unknown | undefined
+}
+
 import type {
   SessionEventKind,
   RawSessionEvent,
@@ -33,10 +40,10 @@ import type {
 @injectable()
 export class SessionStore {
   private db!: InstanceType<typeof Database>
-  private stmtInsert!: ReturnType<InstanceType<typeof Database>['prepare']>
-  private stmtBySession!: ReturnType<InstanceType<typeof Database>['prepare']>
-  private stmtByKind!: ReturnType<InstanceType<typeof Database>['prepare']>
-  private stmtCleanOld!: ReturnType<InstanceType<typeof Database>['prepare']>
+  private stmtInsert!: SqliteStatement
+  private stmtBySession!: SqliteStatement
+  private stmtByKind!: SqliteStatement
+  private stmtCleanOld!: SqliteStatement
   private hotLayer: Map<string, ActiveSession> = new Map()
   private recentTools: Map<string, string[]> = new Map() // sessionId → last 5 tool names
   private initialised = false

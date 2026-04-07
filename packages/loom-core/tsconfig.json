@@ -24,6 +24,7 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules", "lib"],
   "references": [
-    { "path": "../loom-graph" }
+    { "path": "../loom-graph" },
+    { "path": "../loom-memory" }
   ]
 }

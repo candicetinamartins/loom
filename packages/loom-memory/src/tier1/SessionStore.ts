@@ -2,7 +2,9 @@ import { injectable } from 'inversify'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { randomUUID } from 'node:crypto'
-import type Database from 'better-sqlite3'
+import Database from 'better-sqlite3'
+
+type DatabaseType = Database
 import type {
   SessionEventKind,
   RawSessionEvent,
@@ -31,11 +33,11 @@ import type {
  */
 @injectable()
 export class SessionStore {
-  private db!: Database
-  private stmtInsert!: ReturnType<Database['prepare']>
-  private stmtBySession!: ReturnType<Database['prepare']>
-  private stmtByKind!: ReturnType<Database['prepare']>
-  private stmtCleanOld!: ReturnType<Database['prepare']>
+  private db!: DatabaseType
+  private stmtInsert!: ReturnType<DatabaseType['prepare']>
+  private stmtBySession!: ReturnType<DatabaseType['prepare']>
+  private stmtByKind!: ReturnType<DatabaseType['prepare']>
+  private stmtCleanOld!: ReturnType<DatabaseType['prepare']>
   private hotLayer: Map<string, ActiveSession> = new Map()
   private recentTools: Map<string, string[]> = new Map() // sessionId → last 5 tool names
   private initialised = false
@@ -52,7 +54,7 @@ export class SessionStore {
     // (useful in frontend bundles that tree-shake this file away)
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const BetterSqlite3 = require('better-sqlite3') as typeof Database
-    this.db = new BetterSqlite3(path.join(dataDir, 'tier1.db'))
+    this.db = new BetterSqlite3(path.join(dataDir, 'tier1.db')) as DatabaseType
 
     // WAL mode: concurrent reads don't block writes; safe for single writer
     this.db.pragma('journal_mode = WAL')

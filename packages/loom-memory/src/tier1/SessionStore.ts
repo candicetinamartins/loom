@@ -3,15 +3,15 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { randomUUID } from 'node:crypto'
 import type Database from 'better-sqlite3'
-import {
-  type SessionEventKind,
-  type RawSessionEvent,
-  type ActiveSession,
-  type SessionContextSummary,
-  type ToolCallPayload,
-  type FileWritePayload,
-  type FileDeletePayload,
-  type BashExecPayload,
+import type {
+  SessionEventKind,
+  RawSessionEvent,
+  ActiveSession,
+  SessionContextSummary,
+  ToolCallPayload,
+  FileWritePayload,
+  FileDeletePayload,
+  BashExecPayload,
 } from './session-events.schema'
 
 /**

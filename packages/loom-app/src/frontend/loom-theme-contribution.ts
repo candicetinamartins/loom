@@ -1,6 +1,10 @@
 import { injectable, inject } from 'inversify'
 import { ThemeService } from '@theia/core/lib/browser/theming'
 
+// Import Loom design system CSS
+import '@loom/ui/src/design/tokens.css'
+import '@loom/ui/src/design/components.css'
+
 @injectable()
 export class LoomThemeContribution {
   constructor(@inject(ThemeService) private themeService: ThemeService) {}
@@ -22,7 +26,4 @@ export class LoomThemeContribution {
       await this.themeService.setCurrentTheme('loom-dark')
     }
   }
-
-  // CSS variables are loaded from tokens.css via the application's CSS imports
-  // The theme registration connects the CSS class 'loom-dark' to Theia's theme system
 }

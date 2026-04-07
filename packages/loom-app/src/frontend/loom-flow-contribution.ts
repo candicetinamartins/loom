@@ -9,7 +9,7 @@ import { GitContribution } from '@theia/git/lib/browser/git-contribution'
 import { ProblemManager } from '@theia/markers/lib/browser/problem/problem-manager'
 import { TestService } from '@theia/test/lib/browser/test-service'
 import { FlowTrackingService } from '@loom/core'
-import { MEMORY_TYPES } from '../loom-memory-module'
+import { MEMORY_TYPES } from './loom-memory-module'
 
 @injectable()
 export class LoomFlowContribution implements FrontendApplicationContribution {

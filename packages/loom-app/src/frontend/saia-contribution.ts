@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify'
 import type { FrontendApplicationContribution } from '@theia/core/lib/browser/frontend-application-contribution'
-import { CommandContribution } from '@theia/core/lib/common/command'
-import type { CommandRegistry } from '@theia/core/lib/common/command'
+import type { CommandContribution } from '@theia/core/lib/common/command'
+import { CommandRegistry } from '@theia/core/lib/common/command'
 import { Widget } from '@lumino/widgets'
 
 /**

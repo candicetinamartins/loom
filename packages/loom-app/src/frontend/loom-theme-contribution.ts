@@ -23,7 +23,7 @@ export class LoomThemeContribution {
     // Set as default if no theme is set
     const currentTheme = this.themeService.getCurrentTheme()
     if (!currentTheme || currentTheme.id === 'theia-dark') {
-      this.themeService.setCurrentTheme('loom-dark')
+      await (this.themeService as any).setActiveTheme('loom-dark')
     }
   }
 }

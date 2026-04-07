@@ -1,7 +1,7 @@
 import { injectable } from 'inversify'
 import type { FrontendApplicationContribution } from '@theia/core/lib/browser/frontend-application-contribution'
-import { CommandContribution } from '@theia/core/lib/common/command'
-import type { CommandRegistry } from '@theia/core/lib/common/command'
+import type { CommandContribution } from '@theia/core/lib/common/command'
+import { CommandRegistry } from '@theia/core/lib/common/command'
 import { CheckpointTimelineWidget, type CheckpointCard } from '@loom/ui/src/widgets/CheckpointTimelineWidget'
 
 // Loom command IDs — these match LOOM_COMMANDS in loom-keybindings.ts
@@ -10,20 +10,13 @@ export const OPEN_CHECKPOINT_TIMELINE_COMMAND = 'loom.openCheckpointTimeline'
 
 /**
  * CheckpointContribution — wires the CheckpointTimelineWidget into the Theia shell.
- *
- * Responsibilities:
- *   1. Create the CheckpointTimelineWidget and add it to the right panel (below SCM)
- *   2. Register a restore handler that calls the backend via a Theia service call
- *   3. Subscribe to checkpoint events from the backend (via the flow tracking channel)
- *      and push new cards to the widget
- *   4. Register Ctrl+Shift+Z to open the timeline panel
  */
 @injectable()
-export class CheckpointContribution implements FrontendApplicationContribution, CommandContribution {
+export class CheckpointContribution implements FrontendApplicationContribution {
   private widget: CheckpointTimelineWidget | null = null
   private shell: { addWidget?: (w: unknown, opts?: unknown) => void; activateWidget?: (id: string) => Promise<unknown> } | null = null
 
-  // ── CommandContribution ────────────────────────────────────────────────────
+  // ── Commands ─────────────────────────────────────────────────────────────
 
   registerCommands(registry: CommandRegistry): void {
     // Open / reveal the Checkpoint Timeline side panel
@@ -145,6 +138,17 @@ export class CheckpointContribution implements FrontendApplicationContribution, 
       `Your current changes will be overwritten.`
     )
     if (!confirmed) return
+
+    // Set as default if no theme is set
+    const currentTheme = this.preferenceService.get('workbench.colorTheme');
+    if (!currentTheme || currentTheme === 'theia-dark') {
+      // Try to set theme via preference service
+      try {
+        await this.preferenceService.set('workbench.colorTheme', 'loom-dark')
+      } catch {
+        // Theme setting not available
+      }
+    }
 
     try {
       // Call the backend checkpoint service via a Theia HTTP call

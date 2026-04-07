@@ -1,7 +1,6 @@
 import { injectable, inject, optional } from 'inversify'
 import * as path from 'node:path'
 import * as os from 'node:os'
-import { MEMORY_TYPES } from './loom-memory-module'
 
 /**
  * Tier 2 SQLite Memory Storage

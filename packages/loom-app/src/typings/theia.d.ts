@@ -175,7 +175,7 @@ declare module '@theia/core/lib/browser/theming' {
   export class ThemeService {
     register(theme: Theme): void
     getCurrentTheme(): Theme | undefined
-    setCurrentTheme(id: string): Promise<void>
+    setActiveTheme(id: string): Promise<void>
   }
 }
 

@@ -6,6 +6,7 @@ import type { MemoryService } from '@loom/memory/src/MemoryService'
 import type { MemoryIsolationService } from '@loom/memory/src/MemoryIsolationService'
 import type { CheckpointService } from '@loom/memory/src/checkpoints/CheckpointService'
 import { TYPES as CORE_TYPES } from '@loom/core/src/loom-core-module'
+import { SAIA_BASE_URL } from '@loom/core/src/services/SAIAProvider'
 import type { SAIAProvider } from '@loom/core/src/services/SAIAProvider'
 import * as path from 'node:path'
 // Express types are available because @theia/core depends on express
@@ -270,7 +271,6 @@ export class LoomBackendContribution implements BackendApplicationContribution {
           const apiKey = await this.saiaProvider.getApiKey()
           if (!apiKey) { res.status(503).json({ error: 'SAIA API key not configured' }); return }
 
-          const { SAIA_BASE_URL } = await import('@loom/core/src/services/SAIAProvider')
           const targetUrl = `${SAIA_BASE_URL}${subPath}`
           const isStream = (req.body as Record<string, unknown>)?.stream === true
 

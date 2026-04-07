@@ -32,11 +32,11 @@ import type {
  */
 @injectable()
 export class SessionStore {
-  private db!: Database
-  private stmtInsert!: ReturnType<Database['prepare']>
-  private stmtBySession!: ReturnType<Database['prepare']>
-  private stmtByKind!: ReturnType<Database['prepare']>
-  private stmtCleanOld!: ReturnType<Database['prepare']>
+  private db!: InstanceType<typeof Database>
+  private stmtInsert!: ReturnType<InstanceType<typeof Database>['prepare']>
+  private stmtBySession!: ReturnType<InstanceType<typeof Database>['prepare']>
+  private stmtByKind!: ReturnType<InstanceType<typeof Database>['prepare']>
+  private stmtCleanOld!: ReturnType<InstanceType<typeof Database>['prepare']>
   private hotLayer: Map<string, ActiveSession> = new Map()
   private recentTools: Map<string, string[]> = new Map() // sessionId → last 5 tool names
   private initialised = false
@@ -53,7 +53,7 @@ export class SessionStore {
     // (useful in frontend bundles that tree-shake this file away)
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const BetterSqlite3 = require('better-sqlite3') as typeof Database
-    this.db = new BetterSqlite3(path.join(dataDir, 'tier1.db'))
+    this.db = new BetterSqlite3(path.join(dataDir, 'tier1.db')) as InstanceType<typeof Database>
 
     // WAL mode: concurrent reads don't block writes; safe for single writer
     this.db.pragma('journal_mode = WAL')

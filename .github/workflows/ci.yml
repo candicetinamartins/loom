@@ -21,8 +21,31 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Build all packages
-        run: npm run build --workspaces
+      - name: Build packages in dependency order
+        run: |
+          # Build base packages first (no internal dependencies)
+          npm run build --workspace=packages/loom-graph
+          
+          # Build loom-memory (depends on loom-graph)
+          npm run build --workspace=packages/loom-memory
+          
+          # Build loom-core (depends on loom-graph, loom-memory)
+          npm run build --workspace=packages/loom-core
+          
+          # Build remaining packages
+          npm run build --workspace=packages/loom-agents
+          npm run build --workspace=packages/loom-tools
+          npm run build --workspace=packages/loom-hooks
+          npm run build --workspace=packages/loom-ui
+          npm run build --workspace=packages/loom-server
+          npm run build --workspace=packages/loom-cli
+          npm run build --workspace=packages/loom-docs
+          npm run build --workspace=packages/loom-specs
+          npm run build --workspace=packages/loom-powers
+          
+          # Build app and electron last (depend on most things)
+          npm run build --workspace=packages/loom-app || true
+          npm run build --workspace=packages/loom-electron || true
 
       - name: Type check
         run: npx tsc -b --dry

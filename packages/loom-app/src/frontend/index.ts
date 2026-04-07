@@ -18,6 +18,7 @@ import { LoomThemeContribution } from './loom-theme-contribution'
 import { LoomKeybindingContribution, LoomCommandContribution, LoomMenuContribution } from './loom-keybindings'
 import { LoomAgentPanelContribution } from './loom-agent-panel-contribution'
 import { LoomOpenHandler } from './loom-open-handler'
+import { LoomOnboardingWizard } from './loom-onboarding'
 
 // Runtime-only: get the actual Theia DI symbols from their definitive file paths.
 // These are unique symbols (not Symbol.for) so they must be obtained via require().
@@ -67,4 +68,5 @@ export default new ContainerModule((bind) => {
   // ── Services ──────────────────────────────────────────────────────────────
   bind(LoomStatusBarService).toSelf().inSingletonScope()
   bind(LOOM_STATUSBAR_SYMBOL).toService(LoomStatusBarService)
+  bind(LoomOnboardingWizard).toSelf().inSingletonScope()
 })

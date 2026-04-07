@@ -1,5 +1,7 @@
-import { injectable, inject } from 'inversify'
+import { injectable, inject, optional } from 'inversify'
 import { LoomMsgHub, Channel } from '@loom/core'
+import { SessionStore } from './tier1/SessionStore'
+import { MEMORY_TYPES } from './loom-memory-module'
 
 // Avoid circular dependency with @loom/graph
 interface GraphService {
@@ -8,10 +10,10 @@ interface GraphService {
 
 /**
  * Phase 6 — Three-Tier Memory System
- * 
+ *
  * Architecture:
- * - Tier 1: Session/ephemeral (handled by OpenCode)
- * - Tier 2: User memory (SQLite with Drizzle ORM)
+ * - Tier 1: Session/ephemeral (SessionStore — replaces OpenCode dependency)
+ * - Tier 2: User memory (SQLite via Kuzu node storage until separate db is added)
  * - Tier 3: Project memory (Kuzu graph nodes)
  * 
  * Commands:
@@ -45,32 +47,19 @@ export interface MemorySearchResult {
 
 @injectable()
 export class MemoryService {
-  private db: any // Drizzle database instance
   private tier2Ready = false
 
   constructor(
-    @inject('GraphService') private readonly graphService: GraphService,
-    @inject(LoomMsgHub) private hub: LoomMsgHub,
+    @inject('GraphService') @optional() private readonly graphService: GraphService,
+    @inject(LoomMsgHub) @optional() private hub: LoomMsgHub,
+    @inject(MEMORY_TYPES.SessionStore) @optional() private sessionStore: SessionStore,
   ) {}
 
   async initialize(): Promise<void> {
-    await this.initTier2()
-    console.log('[MemoryService] Initialized - Tier 2 (SQLite) + Tier 3 (Kuzu)')
-  }
-
-  /**
-   * Initialize Tier 2: SQLite with Drizzle ORM
-   */
-  private async initTier2(): Promise<void> {
-    // In production, this would:
-    // 1. Initialize better-sqlite3
-    // 2. Run migrations with Drizzle
-    // 3. Set up schema
-    
-    // For now, mark as ready when Kuzu is available
-    if (this.graphService) {
-      this.tier2Ready = true
-    }
+    // Tier 2/3 ready when graph service is available
+    if (this.graphService) this.tier2Ready = true
+    // Tier 1 SessionStore is initialized by LoomBackendContribution.onStart()
+    console.log('[MemoryService] Initialized - Tier 1 (SessionStore) + Tier 2/3 (Kuzu)')
   }
 
   /**
@@ -217,22 +206,42 @@ export class MemoryService {
   }
 
   /**
-   * Format memories for agent context
+   * Format memories for agent context injection.
+   * Always starts with Tier 1 (current session summary) for zero-latency context.
+   * Then appends Tier 2/3 relevant long-term memories if available.
    */
   async formatForContext(
     taskDescription: string,
-    budget: number
+    _budget: number
   ): Promise<string> {
-    const relevant = await this.searchRelevant(taskDescription, { limit: 5 })
-    
-    if (relevant.length === 0) return ''
+    const parts: string[] = []
 
-    const parts = relevant.map(({ memory }) => {
-      const age = this.formatAge(memory.createdAt)
-      return `- ${memory.key}: ${memory.content.slice(0, 100)}${memory.content.length > 100 ? '...' : ''} (${age})`
-    })
+    // ── Tier 1: current session context (synchronous, always fast) ───────────
+    if (this.sessionStore) {
+      const activeSession = this.sessionStore.getActiveSession()
+      if (activeSession) {
+        const t1 = this.sessionStore.formatContextForLLM(activeSession.sessionId)
+        if (t1) parts.push(t1)
+      }
+    }
 
-    return `[MEMORY CONTEXT]\n${parts.join('\n')}`
+    // ── Tier 2/3: relevant long-term memories (async, may be unavailable) ────
+    if (this.tier2Ready) {
+      try {
+        const relevant = await this.searchRelevant(taskDescription, { limit: 4 })
+        if (relevant.length > 0) {
+          const memLines = relevant.map(({ memory }) => {
+            const age = this.formatAge(memory.createdAt)
+            return `- ${memory.key}: ${memory.content.slice(0, 100)}${memory.content.length > 100 ? '...' : ''} (${age})`
+          })
+          parts.push(`[MEMORY]\n${memLines.join('\n')}`)
+        }
+      } catch {
+        // Kuzu unavailable — skip Tier 2/3 gracefully
+      }
+    }
+
+    return parts.join('\n\n')
   }
 
   // Tier 2: SQLite Implementation

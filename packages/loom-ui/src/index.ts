@@ -1,3 +1,5 @@
 export * from './design'
 export { default as LoomUIModule } from './loom-ui-module'
 export { initializeLoomUI } from './loom-ui-module'
+export { CheckpointTimelineWidget } from './widgets/CheckpointTimelineWidget'
+export type { CheckpointCard, CheckpointRestoreHandler } from './widgets/CheckpointTimelineWidget'

@@ -23,6 +23,10 @@ export const LOOM_COMMANDS = {
 
   // Agent panel
   TOGGLE_AGENT_PANEL: { id: 'loom.toggleAgentPanel', label: 'Loom: Toggle Agent Panel', category: 'Loom' },
+
+  // Checkpoint / Revert Timeline
+  OPEN_CHECKPOINT_TIMELINE: { id: 'loom.openCheckpointTimeline', label: 'Loom: Open Checkpoint Timeline', category: 'Loom' },
+  REVERT_TO_CHECKPOINT: { id: 'loom.revertToCheckpoint', label: 'Loom: Revert to Checkpoint…', category: 'Loom' },
 }
 
 // Menu paths
@@ -81,13 +85,27 @@ export class LoomKeybindingContribution implements KeybindingContribution {
       command: LOOM_COMMANDS.TOGGLE_AGENT_PANEL.id,
       keybinding: 'ctrl+shift+p',
     })
+
+    // Open Checkpoint Timeline
+    keybindings.registerKeybinding({
+      command: LOOM_COMMANDS.OPEN_CHECKPOINT_TIMELINE.id,
+      keybinding: 'ctrl+shift+z',
+    })
   }
 }
+
+// Commands that are registered by their own CommandContribution classes and must
+// NOT be duplicated here (Theia throws on duplicate command IDs).
+const EXTERNALLY_REGISTERED_COMMAND_IDS = new Set([
+  LOOM_COMMANDS.OPEN_CHECKPOINT_TIMELINE.id,
+  LOOM_COMMANDS.REVERT_TO_CHECKPOINT.id,
+])
 
 @injectable()
 export class LoomCommandContribution implements CommandContribution {
   registerCommands(registry: CommandRegistry): void {
     Object.values(LOOM_COMMANDS).forEach(cmd => {
+      if (EXTERNALLY_REGISTERED_COMMAND_IDS.has(cmd.id)) return
       registry.registerCommand({
         id: cmd.id,
         label: cmd.label,
@@ -166,6 +184,12 @@ export class LoomMenuContribution implements MenuContribution {
       commandId: LOOM_COMMANDS.TOGGLE_MODE.id,
       label: LOOM_COMMANDS.TOGGLE_MODE.label,
       order: '3',
+    })
+
+    menus.registerMenuAction(LOOM_MENU_BAR_VIEW, {
+      commandId: LOOM_COMMANDS.OPEN_CHECKPOINT_TIMELINE.id,
+      label: LOOM_COMMANDS.OPEN_CHECKPOINT_TIMELINE.label,
+      order: '4',
     })
   }
 }

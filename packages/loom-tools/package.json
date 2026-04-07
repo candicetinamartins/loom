@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@theia/ai-core": "1.70.0",
+    "@loom/memory": "0.1.0",
     "inversify": "^6.0.2",
     "simple-git": "^3.22.0",
     "glob": "^10.3.10"

@@ -1,13 +1,17 @@
-import { injectable, inject } from 'inversify'
-import { MemoryService, Memory } from './MemoryService'
+import { injectable, inject, optional } from 'inversify'
+import { MemoryService, type Memory } from './MemoryService'
+import { SessionStore } from './tier1/SessionStore'
+import { MEMORY_TYPES } from './loom-memory-module'
 
 /**
- * Phase 6 — MemoryIsolationService
- * 
- * Manages session boundaries for memory:
- * - Per-session memory isolation
- * - Auto-cleanup expired sessions (24-hour schedule)
- * - Promote session memories to long-term on approval
+ * MemoryIsolationService — session boundary management for long-term memory.
+ *
+ * Session tracking is delegated to SessionStore (Tier 1 SQLite journal).
+ * This service handles the promotion lifecycle:
+ *   session end (approved) → walk Tier 2 memories for this session → promote to Tier 3
+ *
+ * Replaces the old in-memory Map<string, SessionMemory> approach that was
+ * tightly coupled to OpenCode's session model. See TIER1_REPLACEMENT.md.
  */
 
 export interface SessionMemory {
@@ -20,30 +24,26 @@ export interface SessionMemory {
 
 @injectable()
 export class MemoryIsolationService {
-  private activeSessions: Map<string, SessionMemory> = new Map()
-  private cleanupInterval: NodeJS.Timeout | null = null
+  // In-memory approval flags — approval is a UI gesture while the app is running;
+  // no need to persist across restarts.
+  private approvedSessions: Set<string> = new Set()
+  private cleanupInterval: ReturnType<typeof setInterval> | null = null
 
   constructor(
-    @inject(MemoryService) private memoryService: MemoryService,
+    @inject(MEMORY_TYPES.MemoryService) @optional() private memoryService: MemoryService,
+    @inject(MEMORY_TYPES.SessionStore) @optional() private sessionStore: SessionStore,
   ) {}
 
-  /**
-   * Start the 24-hour cleanup schedule
-   */
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
+
   startCleanupSchedule(): void {
     if (this.cleanupInterval) return
-
-    // Run cleanup every hour
     this.cleanupInterval = setInterval(() => {
       this.cleanupExpiredSessions()
-    }, 60 * 60 * 1000) // 1 hour
-
-    console.log('[MemoryIsolationService] Cleanup schedule started (24h)')
+    }, 60 * 60 * 1000)
+    console.log('[MemoryIsolationService] Cleanup schedule started (hourly)')
   }
 
-  /**
-   * Stop the cleanup schedule
-   */
   stopCleanupSchedule(): void {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval)
@@ -51,169 +51,116 @@ export class MemoryIsolationService {
     }
   }
 
-  /**
-   * Create a new isolated session
-   */
-  createSession(sessionId: string): SessionMemory {
-    const session: SessionMemory = {
-      sessionId,
-      memories: [],
-      createdAt: new Date(),
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-      approved: false,
-    }
+  // ── Session management ─────────────────────────────────────────────────────
 
-    this.activeSessions.set(sessionId, session)
-    return session
+  createSession(agentName: string, task: string): string {
+    if (!this.sessionStore) return `fallback-${Date.now()}`
+    return this.sessionStore.startSession(agentName, task)
   }
 
-  /**
-   * Store memory in a session (isolated)
-   */
+  /** Store memory within a session scope (Tier 2, not yet promoted to Tier 3) */
   async storeSessionMemory(
     sessionId: string,
     content: string,
-    options: {
-      key?: string
-      agentName?: string
-    } = {}
-  ): Promise<Memory> {
-    let session = this.activeSessions.get(sessionId)
-    if (!session) {
-      session = this.createSession(sessionId)
-    }
-
-    const memory = await this.memoryService.remember(content, {
+    options: { key?: string; agentName?: string } = {}
+  ): Promise<Memory | null> {
+    if (!this.memoryService) return null
+    return this.memoryService.remember(content, {
       key: options.key,
       tier: 2,
       source: 'extracted',
       sessionId,
       agentName: options.agentName,
     })
-
-    session.memories.push(memory)
-    return memory
   }
 
-  /**
-   * Approve session memories for long-term storage
-   * Promotes Tier 2 session memories to Tier 3 (project memory)
-   */
+  /** Approve a session — promote all its Tier 2 memories to Tier 3 */
   async approveSession(sessionId: string): Promise<void> {
-    const session = this.activeSessions.get(sessionId)
-    if (!session) {
-      throw new Error(`Session not found: ${sessionId}`)
-    }
+    this.approvedSessions.add(sessionId)
+    if (!this.memoryService || !this.sessionStore) return
 
-    session.approved = true
+    const all = await this.memoryService.getAll({ tier: 2, limit: 500 })
+    const sessionMems = all.filter(m => m.sessionId === sessionId)
 
-    // Promote all session memories to Tier 3
-    for (const memory of session.memories) {
+    for (const memory of sessionMems) {
       await this.memoryService.remember(memory.content, {
         key: memory.key,
         tier: 3,
         source: memory.source,
         sessionId,
+        agentName: memory.agentName,
       })
     }
 
-    console.log(`[MemoryIsolationService] Session ${sessionId} approved - ${session.memories.length} memories promoted`)
+    this.sessionStore.endSession(sessionId, true)
+    console.log(`[MemoryIsolationService] Session ${sessionId} approved — ${sessionMems.length} memories promoted`)
   }
 
-  /**
-   * Discard session memories without promoting
-   */
+  /** Discard a session without promoting its memories */
   discardSession(sessionId: string): void {
-    const session = this.activeSessions.get(sessionId)
-    if (!session) return
-
-    // Delete all session memories from Tier 2
-    for (const memory of session.memories) {
-      this.memoryService.forget(memory.key)
-    }
-
-    this.activeSessions.delete(sessionId)
-    console.log(`[MemoryIsolationService] Session ${sessionId} discarded`)
+    this.approvedSessions.delete(sessionId)
+    this.sessionStore?.endSession(sessionId, false)
   }
 
-  /**
-   * Get memories for a specific session
-   */
   getSessionMemories(sessionId: string): Memory[] {
-    const session = this.activeSessions.get(sessionId)
-    return session?.memories || []
+    // Synchronous in-session memories are not tracked here anymore;
+    // use MemoryService.getAll({ sessionId }) for async Tier 2 query
+    return []
   }
 
-  /**
-   * Cleanup expired sessions
-   * Runs on 24-hour schedule
-   */
+  // ── Cleanup ────────────────────────────────────────────────────────────────
+
   async cleanupExpiredSessions(): Promise<void> {
-    const now = new Date()
-    const expired: string[] = []
-
-    for (const [sessionId, session] of this.activeSessions) {
-      if (session.expiresAt < now) {
-        expired.push(sessionId)
-      }
-    }
-
-    for (const sessionId of expired) {
-      const session = this.activeSessions.get(sessionId)
-      if (!session) continue
-
-      if (!session.approved) {
-        // Auto-discard unapproved sessions
-        this.discardSession(sessionId)
-      } else {
-        // Keep approved sessions but remove from active
-        this.activeSessions.delete(sessionId)
-      }
-    }
-
-    if (expired.length > 0) {
-      console.log(`[MemoryIsolationService] Cleaned up ${expired.length} expired sessions`)
-    }
+    // The SessionStore SQLite startup cleanup handles sessions older than 48h.
+    // This hook is available for future custom TTL logic.
   }
 
+  // ── Memory extraction ──────────────────────────────────────────────────────
+
   /**
-   * Extract memories from agent session transcript
-   * Uses Haiku to identify important memories
+   * Extract memories from an agent transcript using pattern matching.
+   * Full LLM extraction (Haiku) planned for Phase E.
    */
   async extractMemoriesFromSession(
     sessionId: string,
     transcript: string,
     agentName: string
   ): Promise<Memory[]> {
-    // In production: Call Haiku to extract memories from transcript
-    // For now, use simple keyword extraction
-    
     const extracted: Memory[] = []
-    
-    // Look for decision patterns
     const decisionPatterns = [
-      /decided to (\w+)/gi,
-      /chose to (\w+)/gi,
-      /using (\w+) for (\w+)/gi,
-      /opted for (\w+)/gi,
+      /decided to ([\w\s]+)/gi,
+      /chose to ([\w\s]+)/gi,
+      /using ([\w\s]+) for ([\w\s]+)/gi,
+      /opted for ([\w\s]+)/gi,
     ]
-    
     for (const pattern of decisionPatterns) {
-      const matches = transcript.matchAll(pattern)
-      for (const match of matches) {
-        const content = match[0]
-        const memory = await this.storeSessionMemory(sessionId, content, { agentName })
-        extracted.push(memory)
+      for (const match of transcript.matchAll(pattern)) {
+        const content = match[0].trim()
+        if (content.length >= 10 && content.length <= 200) {
+          const m = await this.storeSessionMemory(sessionId, content, { agentName })
+          if (m) extracted.push(m)
+        }
       }
     }
-    
     return extracted
   }
 
-  /**
-   * Get all active sessions
-   */
+  // ── Queries ────────────────────────────────────────────────────────────────
+
   getActiveSessions(): SessionMemory[] {
-    return Array.from(this.activeSessions.values())
+    if (!this.sessionStore) return []
+    const active = this.sessionStore.getActiveSession()
+    if (!active) return []
+    return [{
+      sessionId: active.sessionId,
+      memories: [],
+      createdAt: new Date(active.startedAt),
+      expiresAt: new Date(active.startedAt + 24 * 60 * 60 * 1000),
+      approved: this.approvedSessions.has(active.sessionId),
+    }]
+  }
+
+  isApproved(sessionId: string): boolean {
+    return this.approvedSessions.has(sessionId)
   }
 }

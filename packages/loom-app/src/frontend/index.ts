@@ -24,6 +24,7 @@ import { LoomVerifierStatusContribution } from './loom-verifier-status-contribut
 import { LoomGraphStatsContribution } from './loom-graph-stats-contribution'
 import { LoomGhostTextContribution } from './loom-ghost-text-contribution'
 import { LoomComponentBrowserContribution } from './loom-component-browser-contribution'
+import { CheckpointContribution } from './checkpoint-contribution'
 
 // Runtime-only: get the actual Theia DI symbols from their definitive file paths.
 // These are unique symbols (not Symbol.for) so they must be obtained via require().
@@ -58,6 +59,15 @@ export default new ContainerModule((bind) => {
   bindTo(FrontendApplicationContribution, LoomGraphStatsContribution)
   bindTo(FrontendApplicationContribution, LoomGhostTextContribution)
   bindTo(FrontendApplicationContribution, LoomComponentBrowserContribution)
+
+  // ── CheckpointContribution — dual-bound (FrontendApp + Command) ───────────
+  // Must use toSelf().inSingletonScope() first, then toService() for secondary
+  // bindings, so Theia creates exactly one instance.
+  bind(CheckpointContribution).toSelf().inSingletonScope()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(bind as any)(FrontendApplicationContribution).toService(CheckpointContribution)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(bind as any)(CommandContribution).toService(CheckpointContribution)
 
   // ── CommandContribution ──────────────────────────────────────────────────
   // Registers all Loom commands in Theia's command palette and menu system.

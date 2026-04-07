@@ -25,6 +25,7 @@ import { LoomGraphStatsContribution } from './loom-graph-stats-contribution'
 import { LoomGhostTextContribution } from './loom-ghost-text-contribution'
 import { LoomComponentBrowserContribution } from './loom-component-browser-contribution'
 import { CheckpointContribution } from './checkpoint-contribution'
+import { SessionEndContribution } from './session-end-contribution'
 
 // Runtime-only: get the actual Theia DI symbols from their definitive file paths.
 // These are unique symbols (not Symbol.for) so they must be obtained via require().
@@ -59,6 +60,11 @@ export default new ContainerModule((bind) => {
   bindTo(FrontendApplicationContribution, LoomGraphStatsContribution)
   bindTo(FrontendApplicationContribution, LoomGhostTextContribution)
   bindTo(FrontendApplicationContribution, LoomComponentBrowserContribution)
+
+  // ── Session-end approval prompt ───────────────────────────────────────────
+  // Polls /loom/session/pending-approval and shows an Approve/Discard dialog
+  // when Haiku-extracted memories are waiting for user promotion to Tier 3.
+  bindTo(FrontendApplicationContribution, SessionEndContribution)
 
   // ── CheckpointContribution — dual-bound (FrontendApp + Command) ───────────
   // Must use toSelf().inSingletonScope() first, then toService() for secondary

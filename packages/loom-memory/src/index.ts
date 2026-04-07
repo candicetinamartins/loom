@@ -1,7 +1,7 @@
 // Loom Three-Tier Memory System
 
 export * from './MemoryService'
-export * from './MemoryIsolationService'
+export * from './MemoryIsolationService'  // incl. PendingApprovalSession
 export * from './MemoryPanelWidget'
 export * from './MemoryCommands'
 export * from './loom-memory-module'

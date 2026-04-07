@@ -104,6 +104,47 @@ export class LoomBackendContribution implements BackendApplicationContribution {
     })
 
     console.log('[Loom] Checkpoint HTTP endpoints registered')
+
+    // ── Session approval endpoints ──────────────────────────────────────────
+    // GET /loom/session/pending-approval
+    // Returns sessions that have had memories extracted but not yet approved/discarded
+    app.get('/loom/session/pending-approval', (_req: Request, res: Response) => {
+      if (!this.isolationService) {
+        res.json({ sessions: [] })
+        return
+      }
+      res.json({ sessions: this.isolationService.getPendingApprovalSessions() })
+    })
+
+    // POST /loom/session/approve  { sessionId }
+    app.post('/loom/session/approve', (req: Request, res: Response) => {
+      void (async () => {
+        try {
+          const { sessionId } = req.body as { sessionId?: string }
+          if (!sessionId) { res.status(400).json({ error: 'sessionId required' }); return }
+          if (!this.isolationService) { res.status(503).json({ error: 'IsolationService unavailable' }); return }
+          await this.isolationService.approveSession(sessionId)
+          res.json({ ok: true })
+        } catch (e) {
+          res.status(500).json({ error: e instanceof Error ? e.message : String(e) })
+        }
+      })()
+    })
+
+    // POST /loom/session/discard  { sessionId }
+    app.post('/loom/session/discard', (req: Request, res: Response) => {
+      try {
+        const { sessionId } = req.body as { sessionId?: string }
+        if (!sessionId) { res.status(400).json({ error: 'sessionId required' }); return }
+        if (!this.isolationService) { res.status(503).json({ error: 'IsolationService unavailable' }); return }
+        this.isolationService.discardSession(sessionId)
+        res.json({ ok: true })
+      } catch (e) {
+        res.status(500).json({ error: e instanceof Error ? e.message : String(e) })
+      }
+    })
+
+    console.log('[Loom] Session approval HTTP endpoints registered')
   }
 
   onStop(): void {

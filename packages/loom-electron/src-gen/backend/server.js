@@ -1,4 +1,27 @@
 // @ts-check
+
+// ── Node 18 / Electron 28 compatibility polyfills ────────────────────────────
+// 'File' is not a global in Node <20. undici (used by @theia/ai-* packages and
+// @modelcontextprotocol/sdk) references File at module load time and crashes
+// with "ReferenceError: File is not defined" without this polyfill.
+if (typeof globalThis.File === 'undefined') {
+    globalThis.File = class File extends Blob {
+        constructor(fileBits, name, options) {
+            super(fileBits, options);
+            this.name = name ?? '';
+            this.lastModified = options?.lastModified ?? Date.now();
+        }
+        get [Symbol.toStringTag]() { return 'File'; }
+    };
+}
+if (typeof globalThis.FormData === 'undefined') {
+    globalThis.FormData = class FormData {
+        constructor() { this._data = []; }
+        append(name, value) { this._data.push([name, value]); }
+        get(name) { return this._data.find(([k]) => k === name)?.[1] ?? null; }
+    };
+}
+
 require('reflect-metadata');
 
 // Erase the ELECTRON_RUN_AS_NODE variable from the environment, else Electron apps started using Theia will pick it up.

@@ -1,6 +1,35 @@
 // Loom Electron Main Process
 // Starts the Theia backend then opens the BrowserWindow
 
+// ── Node 18 / Electron 28 compatibility polyfills ────────────────────────────
+// 'File' is not a global in Node <20. undici (used by @theia/ai-* and
+// @modelcontextprotocol/sdk) references File at *module load time*, so the
+// backend crashes with "ReferenceError: File is not defined" unless we polyfill
+// it before any require() calls. Blob IS available in Node 18 as a global.
+/* eslint-disable */
+if (typeof (globalThis as any).File === 'undefined') {
+  (globalThis as any).File = class File extends Blob {
+    public readonly name: string
+    public readonly lastModified: number
+    constructor(fileBits: BlobPart[], name: string, options?: FilePropertyBag) {
+      super(fileBits, options)
+      this.name = name ?? ''
+      this.lastModified = (options as any)?.lastModified ?? Date.now()
+    }
+    get [Symbol.toStringTag](): string { return 'File' }
+  }
+}
+// FormData is also referenced by undici; Electron 28 exposes it on globalThis
+// via its Chromium runtime, so it should already exist — guard just in case.
+if (typeof (globalThis as any).FormData === 'undefined') {
+  ;(globalThis as any).FormData = class FormData {
+    private _data: [string, string][] = []
+    append(name: string, value: string): void { this._data.push([name, value]) }
+    get(name: string): string | null { return this._data.find(([k]) => k === name)?.[1] ?? null }
+  }
+}
+/* eslint-enable */
+
 import { app, BrowserWindow, shell } from 'electron'
 import * as fs from 'fs'
 import * as http from 'http'

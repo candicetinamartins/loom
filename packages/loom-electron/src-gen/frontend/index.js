@@ -73,6 +73,7 @@ module.exports = (async () => {
     try {
         await load(container, require('@theia/core/lib/browser/i18n/i18n-frontend-module'));
         await load(container, require('@theia/core/lib/browser/menu/browser-menu-module'));
+        await load(container, require('@theia/core/lib/electron-browser/menu/electron-menu-module'));
         await load(container, require('@theia/core/lib/browser/window/browser-window-module'));
         await load(container, require('@theia/core/lib/browser/keyboard/browser-keyboard-module'));
         await load(container, require('@theia/core/lib/browser/request/browser-request-module'));

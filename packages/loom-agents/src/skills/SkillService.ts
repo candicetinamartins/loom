@@ -143,14 +143,26 @@ export class SkillService {
     
     // Parse frontmatter as TOML
     const frontmatter = frontmatterLines.join('\n')
-    const parsed = this.parser.parseSync(frontmatter)
+    const parsed = this.parser.parseSync<{
+      name?: string
+      title?: string
+      description?: string
+      version?: string
+      author?: string
+      activation?: { keywords: string[]; agents: string[] }
+      tools?: string[]
+      tags?: string[]
+      category?: string
+    }>(frontmatter)
     
     // Parse body for levels
     const levels = this.parseLevels(bodyLines.join('\n'))
     
+    const name = parsed.name || path.basename(filePath, '.yaml')
+    
     return {
-      name: parsed.name || path.basename(filePath, '.yaml'),
-      title: parsed.title || parsed.name,
+      name,
+      title: parsed.title || name,
       description: parsed.description || '',
       version: parsed.version || '1.0.0',
       author: parsed.author || 'Loom',

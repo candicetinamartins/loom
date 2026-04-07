@@ -46,6 +46,11 @@ export class TOMLParser {
     }
   }
 
+  parseSync<T>(content: string): T {
+    // smol-toml parse is already synchronous, this is an alias for compatibility
+    return this.parse<T>(content)
+  }
+
   stringify(data: unknown): string {
     try {
       return smol.stringify(data)

@@ -1,8 +1,26 @@
 import { injectable, inject } from 'inversify'
 import { optional } from 'inversify'
-import { MEMORY_TYPES } from '@loom/memory'
-import type { CheckpointService } from '@loom/memory'
-import type { SessionStore } from '@loom/memory'
+
+// Dynamic import to break circular dependency: loom-core → @loom/memory → loom-core
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const MEMORY_TYPES = require('@loom/memory').MEMORY_TYPES as {
+  CheckpointService: symbol
+  SessionStore: symbol
+}
+
+// Type definitions (forward declarations to avoid runtime imports)
+interface CheckpointService {
+  createNamedCheckpoint(opts: {
+    sessionId: string
+    name: string
+    description?: string
+    agentName: string
+  }): Promise<{ id: string; timestamp: number }>
+}
+
+interface SessionStore {
+  getActiveSession(): { sessionId: string; agentName: string } | null
+}
 
 /**
  * CheckpointCreateTool — agent-callable tool to explicitly create a named checkpoint.

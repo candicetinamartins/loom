@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { LoomMsgHub, Channel } from './LoomMsgHub'
+import { LoomMsgHub, Channel } from '@loom/graph'
 import { AgentResultSchema, AgentResult, AgentCompletePayload } from '../agents/AgentResultSchema'
 
 export { AgentResultSchema, AgentResult, AgentCompletePayload } from '../agents/AgentResultSchema'

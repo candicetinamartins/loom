@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify'
 import { CoreMessage } from 'ai'
-import { LoomMsgHub, Channel } from '../orchestration/LoomMsgHub'
+import { LoomMsgHub, Channel } from '@loom/graph'
 import { TokenUsageTracker } from './TokenUsageTracker'
 import { ContextCompactor } from '../context/ContextCompactor'
 import {

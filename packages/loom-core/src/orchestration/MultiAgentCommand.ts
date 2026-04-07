@@ -3,7 +3,7 @@ import { AgentService } from '@theia/ai-core/lib/browser/agent-service'
 import { ChatAgentService } from '@theia/ai-chat/lib/browser/chat-agent-service'
 import { PipelineRunner, Wave, WaveAgent } from './PipelineRunner'
 import { OrchestrationVerifier, AgentResult } from './OrchestrationVerifier'
-import { LoomMsgHub, Channel } from './LoomMsgHub'
+import { LoomMsgHub, Channel } from '@loom/graph'
 import { AgentCompletePayload } from '../agents/AgentResultSchema'
 
 export interface MultiAgentConfig {

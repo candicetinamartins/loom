@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import { LoomMsgHub, Channel } from '../orchestration/LoomMsgHub'
+import { LoomMsgHub, Channel } from '@loom/graph'
 
 /**
  * Phase 7 — DAP (Debug Adapter Protocol) Integration
@@ -359,7 +359,7 @@ export class DapService {
 }
 
 // Extend ChannelMap for debug events
-declare module '../orchestration/LoomMsgHub' {
+declare module '@loom/graph' {
   interface ChannelMap {
     DEBUG_BREAKPOINT_SET: { breakpointId: number; file: string; line: number }
     DEBUG_SESSION_REQUEST: { program: string; args: string[]; runtime: string }

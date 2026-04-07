@@ -1,4 +1,4 @@
-import { LoomMsgHub, Channel } from './LoomMsgHub'
+import { LoomMsgHub, Channel } from '@loom/graph'
 import { OrchestrationVerifier } from './OrchestrationVerifier'
 import { AgentSession } from '../agents/AgentSession'
 import { TokenUsageTracker } from '../agents/TokenUsageTracker'

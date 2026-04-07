@@ -2,7 +2,7 @@ import { injectable, inject } from 'inversify'
 import * as crypto from 'crypto'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { LoomMsgHub, Channel } from '../orchestration/LoomMsgHub'
+import { LoomMsgHub, Channel } from '@loom/graph'
 
 /**
  * Phase 8 — Conversation Sharing

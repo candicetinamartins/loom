@@ -1,5 +1,5 @@
 import { ContainerModule } from 'inversify'
-import { LoomMsgHub } from './orchestration/LoomMsgHub'
+import { LoomMsgHub } from '@loom/graph'
 import { PipelineRunner } from './orchestration/PipelineRunner'
 import { OrchestrationVerifier } from './orchestration/OrchestrationVerifier'
 import { ToolGroupRegistry, registerBuiltinGroups } from './tools/ToolGroupRegistry'

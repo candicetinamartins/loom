@@ -94,9 +94,9 @@ export class CheckpointContribution implements FrontendApplicationContribution, 
   private _createWidget(): void {
     this.widget = new CheckpointTimelineWidget()
 
-    // Wire the restore handler — calls the backend via a Theia command execution
-    this.editorManager.onCreated((editorWidget: any) => {
-      this._restoreCheckpoint(editorWidget.checkpointId)
+    // Wire the restore handler — calls the backend via HTTP POST
+    this.widget.setRestoreHandler((checkpointId: string) => {
+      void this._restoreCheckpoint(checkpointId)
     })
   }
 

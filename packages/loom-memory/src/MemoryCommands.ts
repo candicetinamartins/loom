@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import { LoomMsgHub, Channel } from '@loom/core'
+import { LoomMsgHub, Channel } from '@loom/graph'
 import { MemoryService } from './MemoryService'
 import { MemoryIsolationService } from './MemoryIsolationService'
 

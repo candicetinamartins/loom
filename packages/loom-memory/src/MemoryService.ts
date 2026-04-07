@@ -1,5 +1,5 @@
 import { injectable, inject, optional } from 'inversify'
-import { LoomMsgHub, Channel } from '@loom/core'
+import { LoomMsgHub, Channel } from '@loom/graph'
 import { SessionStore } from './tier1/SessionStore'
 import { MemPalaceService } from './mempalace/MemPalaceService'
 import { Tier2MemoryStore } from './tier2/Tier2MemoryStore'

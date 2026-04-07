@@ -10,6 +10,7 @@ export * from './CrossLayerLinker'
 export * from './EmbeddingService'
 export * from './BM25Search'
 export * from './context/GraphContextFormatter'
+export * from './LoomMsgHub'
 
 export type { GraphRelationship as GraphEdge } from './GraphService'
 export { GraphService as default } from './GraphService'

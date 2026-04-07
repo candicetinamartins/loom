@@ -1,5 +1,6 @@
 import { injectable, inject } from 'inversify'
-import { MEMORY_TYPES } from '@loom/memory/src/loom-memory-module'
+import { optional } from 'inversify'
+import { MEMORY_TYPES } from '@loom/memory'
 import type { CheckpointService } from '@loom/memory/src/checkpoints/CheckpointService'
 import type { SessionStore } from '@loom/memory/src/tier1/SessionStore'
 
@@ -32,11 +33,15 @@ export class CheckpointCreateTool {
     'Use before risky refactors or large rewrites.'
 
   constructor(
-    @inject(MEMORY_TYPES.CheckpointService) private checkpointService: CheckpointService,
-    @inject(MEMORY_TYPES.SessionStore) private sessionStore: SessionStore,
+    @inject(MEMORY_TYPES.CheckpointService) @optional() private checkpointService?: CheckpointService,
+    @inject(MEMORY_TYPES.SessionStore) @optional() private sessionStore?: SessionStore,
   ) {}
 
   async execute(input: CheckpointCreateInput): Promise<CheckpointCreateOutput> {
+    if (!this.sessionStore || !this.checkpointService) {
+      throw new Error('CheckpointCreateTool dependencies not available')
+    }
+
     const session = this.sessionStore.getActiveSession()
     if (!session) {
       throw new Error('No active session - cannot create checkpoint')

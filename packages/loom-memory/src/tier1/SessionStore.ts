@@ -2,7 +2,7 @@ import { injectable } from 'inversify'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { randomUUID } from 'node:crypto'
-import type Database from 'better-sqlite3'
+import Database from 'better-sqlite3'
 import type {
   SessionEventKind,
   RawSessionEvent,
@@ -31,11 +31,11 @@ import type {
  */
 @injectable()
 export class SessionStore {
-  private db!: Database.Database
-  private stmtInsert!: Database.Statement
-  private stmtBySession!: Database.Statement
-  private stmtByKind!: Database.Statement
-  private stmtCleanOld!: Database.Statement
+  private db!: Database
+  private stmtInsert!: ReturnType<Database['prepare']>
+  private stmtBySession!: ReturnType<Database['prepare']>
+  private stmtByKind!: ReturnType<Database['prepare']>
+  private stmtCleanOld!: ReturnType<Database['prepare']>
   private hotLayer: Map<string, ActiveSession> = new Map()
   private recentTools: Map<string, string[]> = new Map() // sessionId → last 5 tool names
   private initialised = false

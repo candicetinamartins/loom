@@ -1,29 +1,35 @@
 import { injectable, inject } from 'inversify'
 import { KeybindingRegistry, KeybindingContribution } from '@theia/core/lib/browser/keybinding'
-import { CommandRegistry } from '@theia/core'
+import { CommandRegistry, CommandContribution, MenuModelRegistry, MenuContribution, MenuPath } from '@theia/core'
 
 export const LOOM_COMMANDS = {
   // Agent commands
-  ORCHESTRATE: { id: 'loom.orchestrate', label: 'Loom: Orchestrate Multi-Agent Task' },
-  ASK_AGENT: { id: 'loom.askAgent', label: 'Loom: Ask Specific Agent' },
-  
+  ORCHESTRATE: { id: 'loom.orchestrate', label: 'Loom: Orchestrate Multi-Agent Task', category: 'Loom' },
+  ASK_AGENT: { id: 'loom.askAgent', label: 'Loom: Ask Specific Agent', category: 'Loom' },
+
   // Chat commands
-  NEW_CHAT: { id: 'loom.newChat', label: 'Loom: New Chat' },
-  CLEAR_CHAT: { id: 'loom.clearChat', label: 'Loom: Clear Chat' },
-  
+  NEW_CHAT: { id: 'loom.newChat', label: 'Loom: New Chat', category: 'Loom' },
+  CLEAR_CHAT: { id: 'loom.clearChat', label: 'Loom: Clear Chat', category: 'Loom' },
+
   // Context commands
-  ADD_CONTEXT: { id: 'loom.addContext', label: 'Loom: Add Context' },
-  REMOVE_CONTEXT: { id: 'loom.removeContext', label: 'Loom: Remove Context' },
-  
+  ADD_CONTEXT: { id: 'loom.addContext', label: 'Loom: Add Context', category: 'Loom' },
+  REMOVE_CONTEXT: { id: 'loom.removeContext', label: 'Loom: Remove Context', category: 'Loom' },
+
   // Mode commands
-  TOGGLE_MODE: { id: 'loom.toggleMode', label: 'Loom: Toggle CODE/ASK Mode' },
-  
+  TOGGLE_MODE: { id: 'loom.toggleMode', label: 'Loom: Toggle CODE/ASK Mode', category: 'Loom' },
+
   // Flow commands
-  TOGGLE_TIMELINE: { id: 'loom.toggleTimeline', label: 'Loom: Toggle Flow Timeline' },
-  
+  TOGGLE_TIMELINE: { id: 'loom.toggleTimeline', label: 'Loom: Toggle Flow Timeline', category: 'Loom' },
+
   // Agent panel
-  TOGGLE_AGENT_PANEL: { id: 'loom.toggleAgentPanel', label: 'Loom: Toggle Agent Panel' },
+  TOGGLE_AGENT_PANEL: { id: 'loom.toggleAgentPanel', label: 'Loom: Toggle Agent Panel', category: 'Loom' },
 }
+
+// Menu paths
+export const LOOM_MENU_BAR: MenuPath = ['loom_menu_bar']
+export const LOOM_MENU_BAR_AGENT: MenuPath = ['loom_menu_bar', 'agent']
+export const LOOM_MENU_BAR_CHAT: MenuPath = ['loom_menu_bar', 'chat']
+export const LOOM_MENU_BAR_VIEW: MenuPath = ['loom_menu_bar', 'view']
 
 @injectable()
 export class LoomKeybindingContribution implements KeybindingContribution {
@@ -33,43 +39,43 @@ export class LoomKeybindingContribution implements KeybindingContribution {
       command: LOOM_COMMANDS.ORCHESTRATE.id,
       keybinding: 'ctrl+shift+o',
     })
-    
+
     // Ask specific agent
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.ASK_AGENT.id,
       keybinding: 'ctrl+shift+a',
     })
-    
+
     // New chat
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.NEW_CHAT.id,
       keybinding: 'ctrl+shift+n',
     })
-    
+
     // Clear chat
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.CLEAR_CHAT.id,
       keybinding: 'ctrl+shift+delete',
     })
-    
+
     // Add context
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.ADD_CONTEXT.id,
       keybinding: 'ctrl+shift+plus',
     })
-    
+
     // Toggle CODE/ASK mode
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.TOGGLE_MODE.id,
       keybinding: 'ctrl+shift+m',
     })
-    
+
     // Toggle flow timeline
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.TOGGLE_TIMELINE.id,
       keybinding: 'ctrl+shift+t',
     })
-    
+
     // Toggle agent panel
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.TOGGLE_AGENT_PANEL.id,
@@ -79,20 +85,87 @@ export class LoomKeybindingContribution implements KeybindingContribution {
 }
 
 @injectable()
-export class LoomCommandContribution {
-  constructor(@inject(CommandRegistry) private commandRegistry: CommandRegistry) {}
-
-  registerCommands(): void {
+export class LoomCommandContribution implements CommandContribution {
+  registerCommands(registry: CommandRegistry): void {
     Object.values(LOOM_COMMANDS).forEach(cmd => {
-      this.commandRegistry.registerCommand({
+      registry.registerCommand({
         id: cmd.id,
         label: cmd.label,
+        category: cmd.category,
       }, {
         execute: () => {
           // Commands will be implemented by respective services
           console.log(`Loom command executed: ${cmd.id}`)
         },
       })
+    })
+  }
+}
+
+@injectable()
+export class LoomMenuContribution implements MenuContribution {
+  registerMenus(menus: MenuModelRegistry): void {
+    // Register Loom main menu
+    menus.registerSubmenu(LOOM_MENU_BAR, 'Loom', {
+      order: '5', // After View menu
+    })
+
+    // Agent submenu
+    menus.registerSubmenu(LOOM_MENU_BAR_AGENT, 'Agent', {
+      order: '1',
+    })
+
+    // Chat submenu
+    menus.registerSubmenu(LOOM_MENU_BAR_CHAT, 'Chat', {
+      order: '2',
+    })
+
+    // View submenu
+    menus.registerSubmenu(LOOM_MENU_BAR_VIEW, 'View', {
+      order: '3',
+    })
+
+    // Register menu actions
+    menus.registerMenuAction(LOOM_MENU_BAR_AGENT, {
+      commandId: LOOM_COMMANDS.ORCHESTRATE.id,
+      label: LOOM_COMMANDS.ORCHESTRATE.label,
+      order: '1',
+    })
+
+    menus.registerMenuAction(LOOM_MENU_BAR_AGENT, {
+      commandId: LOOM_COMMANDS.ASK_AGENT.id,
+      label: LOOM_COMMANDS.ASK_AGENT.label,
+      order: '2',
+    })
+
+    menus.registerMenuAction(LOOM_MENU_BAR_CHAT, {
+      commandId: LOOM_COMMANDS.NEW_CHAT.id,
+      label: LOOM_COMMANDS.NEW_CHAT.label,
+      order: '1',
+    })
+
+    menus.registerMenuAction(LOOM_MENU_BAR_CHAT, {
+      commandId: LOOM_COMMANDS.CLEAR_CHAT.id,
+      label: LOOM_COMMANDS.CLEAR_CHAT.label,
+      order: '2',
+    })
+
+    menus.registerMenuAction(LOOM_MENU_BAR_VIEW, {
+      commandId: LOOM_COMMANDS.TOGGLE_AGENT_PANEL.id,
+      label: LOOM_COMMANDS.TOGGLE_AGENT_PANEL.label,
+      order: '1',
+    })
+
+    menus.registerMenuAction(LOOM_MENU_BAR_VIEW, {
+      commandId: LOOM_COMMANDS.TOGGLE_TIMELINE.id,
+      label: LOOM_COMMANDS.TOGGLE_TIMELINE.label,
+      order: '2',
+    })
+
+    menus.registerMenuAction(LOOM_MENU_BAR_VIEW, {
+      commandId: LOOM_COMMANDS.TOGGLE_MODE.id,
+      label: LOOM_COMMANDS.TOGGLE_MODE.label,
+      order: '3',
     })
   }
 }

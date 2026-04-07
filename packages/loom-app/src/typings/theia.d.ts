@@ -6,9 +6,41 @@ declare module '@theia/core' {
     dispose(): void
   }
 
+  export interface Command {
+    id: string
+    label?: string
+    category?: string
+    iconClass?: string
+  }
+
   export class CommandRegistry {
     executeCommand(commandId: string, ...args: unknown[]): Promise<unknown>
-    registerCommand(command: { id: string; label?: string }, handler: { execute(...args: unknown[]): unknown }): Disposable
+    registerCommand(command: Command, handler: { execute(...args: unknown[]): unknown }): Disposable
+  }
+
+  // Menu types
+  export type MenuPath = string[]
+
+  export interface MenuAction {
+    commandId: string
+    label?: string
+    order?: string
+  }
+
+  export class MenuModelRegistry {
+    registerSubmenu(menuPath: MenuPath, label: string, options?: { order?: string }): void
+    registerMenuAction(menuPath: MenuPath, action: MenuAction): void
+  }
+
+  // Contribution interfaces
+  export const CommandContribution: unique symbol
+  export interface CommandContribution {
+    registerCommands(commands: CommandRegistry): void
+  }
+
+  export const MenuContribution: unique symbol
+  export interface MenuContribution {
+    registerMenus(menus: MenuModelRegistry): void
   }
 }
 
@@ -23,11 +55,12 @@ declare module '@theia/core/lib/browser' {
   export interface FrontendApplicationContribution {
     onStart?(): void | Promise<void>
     onStop?(): void
+    initializeLayout?(): void | Promise<void>
   }
 
   export class CommandRegistry {
     executeCommand(commandId: string, ...args: unknown[]): Promise<unknown>
-    registerCommand(command: { id: string; label?: string }, handler: { execute(...args: unknown[]): unknown }): Disposable
+    registerCommand(command: { id: string; label?: string; category?: string }, handler: { execute(...args: unknown[]): unknown }): Disposable
   }
 
   export enum StatusBarAlignment {
@@ -39,9 +72,69 @@ declare module '@theia/core/lib/browser' {
     dispose(): void
   }
 
+  export interface WidgetFactory {
+    createWidget(options?: object): Promise<Widget>
+  }
+
+  export interface Widget {
+    id: string
+    title: {
+      label: string
+      caption?: string
+      closable?: boolean
+    }
+  }
+
   export class WidgetManager {
     getOrCreateWidget<T>(factoryId: string, options?: object): Promise<T>
     tryGetWidget<T>(factoryId: string, options?: object): T | undefined
+    registerWidgetFactory(factoryId: string, factory: WidgetFactory): Disposable
+  }
+
+  export class ApplicationShell {
+    area: string
+    rank: number
+  }
+
+  export interface ViewContributionOptions {
+    widgetId: string
+    widgetName: string
+    defaultWidgetOptions: {
+      area: string
+      rank?: number
+    }
+    toggleCommandId?: string
+  }
+
+  export abstract class AbstractViewContribution<T extends Widget> implements FrontendApplicationContribution {
+    constructor(options: ViewContributionOptions)
+    readonly widgetId: string
+    readonly viewLabel: string
+    readonly defaultViewOptions: object
+    openView(args?: object): Promise<T>
+    protected widgetManager: WidgetManager
+    protected shell: ApplicationShell
+  }
+
+  // OpenHandler types
+  export interface OpenerOptions {
+    [key: string]: unknown
+  }
+
+  export const OpenHandler: unique symbol
+  export interface OpenHandler {
+    readonly id: string
+    canHandle(uri: URI, options?: OpenerOptions): number
+    open(uri: URI, options?: OpenerOptions): Promise<void>
+  }
+
+  export class URI {
+    scheme: string
+    authority: string
+    path: {
+      toString(): string
+      ext: string
+    }
   }
 }
 

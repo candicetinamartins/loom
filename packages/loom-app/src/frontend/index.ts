@@ -15,13 +15,18 @@ import { LoomFlowContextContributor } from './loom-flow-context'
 import { LoomStatusBarContribution } from './loom-status-bar'
 import { LoomStatusBarService, LOOM_STATUSBAR_SYMBOL } from './loom-status-bar-service'
 import { LoomThemeContribution } from './loom-theme-contribution'
-import { LoomKeybindingContribution } from './loom-keybindings'
+import { LoomKeybindingContribution, LoomCommandContribution, LoomMenuContribution } from './loom-keybindings'
+import { LoomAgentPanelContribution } from './loom-agent-panel-contribution'
+import { LoomOpenHandler } from './loom-open-handler'
 
 // Runtime-only: get the actual Theia DI symbols from their definitive file paths.
 // These are unique symbols (not Symbol.for) so they must be obtained via require().
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment */
 const { FrontendApplicationContribution } = require('@theia/core/lib/browser/frontend-application-contribution') as { FrontendApplicationContribution: symbol }
 const { KeybindingContribution } = require('@theia/core/lib/browser/keybinding') as { KeybindingContribution: symbol }
+const { CommandContribution } = require('@theia/core/lib/common/command') as { CommandContribution: symbol }
+const { MenuContribution } = require('@theia/core/lib/common/menu/menu-model-registry') as { MenuContribution: symbol }
+const { OpenHandler } = require('@theia/core/lib/browser/opener-service') as { OpenHandler: symbol }
 /* eslint-enable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment */
 
 export default new ContainerModule((bind) => {
@@ -39,13 +44,25 @@ export default new ContainerModule((bind) => {
   bindTo(FrontendApplicationContribution, LoomFlowContribution)
   bindTo(FrontendApplicationContribution, LoomFlowTimelineContribution)
   bindTo(FrontendApplicationContribution, LoomFlowContextContributor)
-  // These two have onStart() that is structurally compatible with the interface:
   bindTo(FrontendApplicationContribution, LoomStatusBarContribution)
   bindTo(FrontendApplicationContribution, LoomThemeContribution)
+  bindTo(FrontendApplicationContribution, LoomAgentPanelContribution)
+
+  // ── CommandContribution ──────────────────────────────────────────────────
+  // Registers all Loom commands in Theia's command palette and menu system.
+  bindTo(CommandContribution, LoomCommandContribution)
+
+  // ── MenuContribution ───────────────────────────────────────────────────────
+  // Registers Loom menu structure in Theia's menu bar.
+  bindTo(MenuContribution, LoomMenuContribution)
 
   // ── KeybindingContribution ────────────────────────────────────────────────
   // Theia's KeybindingRegistry calls registerKeybindings() on every bound instance.
   bindTo(KeybindingContribution, LoomKeybindingContribution)
+
+  // ── OpenHandler ───────────────────────────────────────────────────────────
+  // Handles opening loom:// URIs and .loom files.
+  bindTo(OpenHandler, LoomOpenHandler)
 
   // ── Services ──────────────────────────────────────────────────────────────
   bind(LoomStatusBarService).toSelf().inSingletonScope()

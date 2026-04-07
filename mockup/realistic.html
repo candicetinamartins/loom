@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loom IDE — Realistic Theia Layout</title>
+<style>
+  :root {
+    --bg-primary: #1e1e1e;
+    --bg-panel: #252526;
+    --bg-raised: #2d2d2d;
+    --bg-header: #2c2c2c;
+    --bg-statusbar: #16162a;
+    --bg-activitybar: #333333;
+    --bg-sidebar: #252526;
+    --bg-tab-active: #1e1e1e;
+    --bg-tab-inactive: #2d2d2d;
+    --border-dim: #303030;
+    --border: #3c3c3c;
+    --border-em: #4a4a4a;
+    --text-primary: #d4d4d4;
+    --text-secondary: #a0a0a0;
+    --text-muted: #6b6b6b;
+    --text-dim: #464646;
+    --accent: #7c86f0;
+    --accent-dim: rgba(124,134,240,0.12);
+    --green: #4ec9b0;
+    --green-done: #66bb6a;
+    --red: #f48771;
+    --amber: #e2c08d;
+    --blue: #569cd6;
+    --blue-token: #89b4fa;
+    --cost-green: #a6da95;
+    --font-mono: 'Cascadia Code','Consolas','Courier New',monospace;
+    --font-ui: -apple-system,'Segoe UI',system-ui,sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ══ ELECTRON TITLE BAR ══ */
+  .titlebar {
+    height: 30px;
+    background: #252526;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    border-bottom: 1px solid #191919;
+  }
+  .titlebar-dots {
+    display: flex;
+    gap: 6px;
+    padding: 0 12px;
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+  .titlebar-menus {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .tmenu {
+    padding: 4px 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  .tmenu:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+  .titlebar-center {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .titlebar-winbtns {
+    display: flex;
+    margin-left: auto;
+  }
+  .winbtn {
+    width: 46px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .winbtn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+  .winbtn-close:hover { background: #e81123; color: white; }
+
+  /* ══ MAIN LAYOUT ══ */
+  .app-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ══ ACTIVITY BAR (VS Code icon strip) ══ */
+  .activity-bar {
+    width: 48px;
+    background: var(--bg-activitybar);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px 0;
+    flex-shrink: 0;
+    border-right: 1px solid #191919;
+  }
+  .ab-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #858585;
+    font-size: 22px;
+    position: relative;
+    border-left: 2px solid transparent;
+  }
+  .ab-icon:hover { color: #d4d4d4; }
+  .ab-icon.active {
+    color: #d4d4d4;
+    border-left: 2px solid var(--accent);
+  }
+  .ab-icon.loom-active { color: var(--accent); border-left: 2px solid var(--accent); }
+  .ab-bottom { margin-top: auto; }
+  .ab-badge {
+    position: absolute;
+    top: 8px; right: 6px;
+    background: var(--accent);
+    color: white;
+    font-size: 9px;
+    font-family: var(--font-ui);
+    border-radius: 9999px;
+    min-width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+  }
+
+  /* ══ PRIMARY SIDEBAR ══ */
+  .sidebar-primary {
+    width: 260px;
+    background: var(--bg-sidebar);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border-dim);
+    overflow: hidden;
+  }
+  .sidebar-section-title {
+    height: 35px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-dim);
+    flex-shrink: 0;
+  }
+  .sidebar-section-title span { flex: 1; }
+  .ss-actions { display: flex; gap: 4px; }
+  .ss-btn {
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 14px;
+  }
+  .ss-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+
+  /* Agent list in sidebar */
+  .agent-list { flex: 1; overflow-y: auto; }
+  .agent-list::-webkit-scrollbar { width: 4px; }
+  .agent-list::-webkit-scrollbar-thumb { background: var(--border-em); border-radius:2px; }
+
+  .agent-section-hdr {
+    padding: 6px 12px 4px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .agent-section-hdr::after { content:''; flex:1; height:1px; background:var(--border-dim); }
+
+  .agent-row {
+    padding: 6px 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+  }
+  .agent-row:hover { background: rgba(255,255,255,0.04); }
+  .agent-row.selected { background: rgba(124,134,240,0.08); border-left-color: var(--accent); }
+
+  .ar-dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+  .ar-running { background: #4db6ac; animation: pulse 2s ease-in-out infinite; }
+  .ar-done    { background: var(--green-done); }
+  .ar-waiting { background: #555; }
+  .ar-quarantine { background: var(--amber); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  .ar-info { flex: 1; min-width: 0; }
+  .ar-name { font-size: 12px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ar-sub  { font-size: 11px; color: var(--text-muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ar-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+  .ar-state {
+    font-size: 10px; padding: 1px 5px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .ars-running    { background:rgba(77,182,172,0.15); color:#4db6ac; }
+  .ars-done       { background:rgba(102,187,106,0.15); color:var(--green-done); }
+  .ars-waiting    { background:rgba(90,90,90,0.25); color:#777; }
+  .ars-quarantine { background:rgba(226,192,141,0.15); color:var(--amber); }
+  .ar-cost { font-size: 10px; color: var(--text-dim); }
+
+  /* Progress mini bar */
+  .ar-progress { height: 2px; background: var(--border-em); border-radius: 1px; margin-top: 4px; overflow: hidden; }
+  .ar-progress-fill { height: 100%; border-radius: 1px; }
+
+  /* ══ EDITOR + SECONDARY AREA ══ */
+  .editor-and-secondary {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ══ FLOW TIMELINE (Loom contribution above editor) ══ */
+  .flow-timeline {
+    height: 26px;
+    background: #1a1a2e;
+    border-bottom: 1px solid rgba(124,134,240,0.2);
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 6px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .ft-label { font-size: 10px; color: rgba(124,134,240,0.6); text-transform:uppercase; letter-spacing:0.5px; flex-shrink:0; }
+  .ft-pills { display:flex; align-items:center; gap:3px; overflow:hidden; flex:1; }
+  .fp { padding:1px 6px; border-radius:9999px; font-size:10px; font-family:var(--font-mono); white-space:nowrap; }
+  .fp-edit { background:rgba(86,156,214,0.18); color:#569cd6; }
+  .fp-save { background:rgba(78,201,176,0.18); color:#4ec9b0; }
+  .fp-test { background:rgba(244,135,113,0.18); color:#f48771; }
+  .fp-term { background:rgba(226,192,141,0.18); color:#e2c08d; }
+  .fp-git  { background:rgba(124,134,240,0.18); color:#7c86f0; }
+  .fp-arr  { color:var(--text-dim); font-size:10px; }
+  .ft-intent { margin-left:auto; font-size:10px; flex-shrink:0; }
+  .ft-intent-text { color:var(--accent); font-style:italic; }
+  .ft-intent-conf { color:var(--text-muted); margin-left:4px; }
+
+  /* ══ EDITOR SPLIT (editor + secondary sidebar) ══ */
+  .editor-split { flex:1; display:flex; overflow:hidden; }
+
+  /* ══ EDITOR ══ */
+  .editor-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Theia-style tab bar */
+  .editor-tabbar {
+    height: 35px;
+    background: var(--bg-panel);
+    display: flex;
+    align-items: flex-end;
+    border-bottom: 1px solid var(--border-dim);
+    padding: 0;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .etab {
+    height: 34px;
+    min-width: 100px;
+    max-width: 180px;
+    padding: 0 10px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg-tab-inactive);
+    cursor: pointer;
+    white-space: nowrap;
+    border-right: 1px solid var(--border-dim);
+    border-top: 2px solid transparent;
+    flex-shrink: 0;
+  }
+  .etab.active {
+    background: var(--bg-tab-active);
+    color: var(--text-primary);
+    border-top-color: var(--accent);
+  }
+  .etab .tab-dot { width:6px; height:6px; border-radius:50%; background:var(--amber); flex-shrink:0; }
+  .etab .tab-x { margin-left:auto; color:var(--text-dim); font-size:11px; padding:2px; border-radius:2px; }
+  .etab .tab-x:hover { background:rgba(255,255,255,0.1); color:var(--text-primary); }
+  .etab-spacer { flex:1; background:var(--bg-panel); border-bottom:1px solid var(--border-dim); height:34px; }
+
+  /* Breadcrumb */
+  .breadcrumb {
+    height: 24px;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-dim);
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .bc-sep { color: var(--text-dim); }
+  .bc-file { color: var(--text-secondary); }
+  .bc-cur { color: var(--text-primary); }
+
+  /* Code */
+  .editor-scroll {
+    flex: 1;
+    display: flex;
+    overflow: auto;
+    background: var(--bg-primary);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 20px;
+  }
+  .editor-scroll::-webkit-scrollbar { width:10px; height:10px; }
+  .editor-scroll::-webkit-scrollbar-track { background:var(--bg-primary); }
+  .editor-scroll::-webkit-scrollbar-thumb { background:#424242; border-radius:5px; border:2px solid var(--bg-primary); }
+
+  .gutter {
+    width: 58px;
+    padding: 0 8px 0 0;
+    text-align: right;
+    color: #4d4d4d;
+    font-size: 12px;
+    line-height: 20px;
+    user-select: none;
+    flex-shrink: 0;
+    padding-top: 0;
+  }
+  .gn { height: 20px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+  .gn.cur { color: var(--text-primary); }
+  .gn.bp  { padding-right: 4px; }
+  .bp-dot { width:8px; height:8px; border-radius:50%; background:#c84031; margin-right:4px; }
+
+  .code-body { flex:1; padding: 0 0 200px 0; }
+  .cl { height: 20px; white-space: pre; display: flex; align-items: center; padding: 0 16px; }
+  .cl.hl { background: rgba(124,134,240,0.07); }
+  .cl.hl-cursor { background: rgba(124,134,240,0.12); }
+  .cl.err-line { background: rgba(244,135,113,0.06); border-left: 2px solid #f48771; padding-left: 14px; }
+
+  .kw  { color:#569cd6; }
+  .fn  { color:#dcdcaa; }
+  .tp  { color:#4ec9b0; }
+  .str { color:#ce9178; }
+  .num { color:#b5cea8; }
+  .cm  { color:#6a9955; }
+  .dec { color:#c586c0; }
+  .v   { color:#9cdcfe; }
+  .op  { color:#d4d4d4; }
+  .p   { color:#d4d4d4; }
+
+  .ghost { color:rgba(124,134,240,0.5); font-style:italic; }
+  .inline-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(124,134,240,0.12);
+    border: 1px solid rgba(124,134,240,0.28);
+    border-radius: 3px;
+    padding: 0 5px;
+    font-size: 11px;
+    color: var(--accent);
+    margin-left: 8px;
+    font-style: normal;
+    vertical-align: middle;
+  }
+  .squiggle { text-decoration: underline wavy #f48771; }
+  .cursor { display:inline-block; width:2px; height:15px; background:var(--text-primary); vertical-align:middle; animation:blink 1s step-end infinite; margin-left:1px; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* ══ SECONDARY SIDEBAR (right) ══ */
+  .sidebar-secondary {
+    width: 300px;
+    background: var(--bg-sidebar);
+    border-left: 1px solid var(--border-dim);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  /* Theia panel tabs */
+  .panel-tab-bar {
+    height: 35px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border-dim);
+    display: flex;
+    align-items: flex-end;
+    padding: 0 6px;
+    gap: 1px;
+    flex-shrink: 0;
+  }
+  .ptab {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-top: 2px solid transparent;
+    white-space: nowrap;
+  }
+  .ptab.active { color:var(--text-primary); border-top-color:var(--accent); background:var(--bg-sidebar); }
+  .ptab:hover:not(.active) { color:var(--text-secondary); }
+
+  /* Chat */
+  .chat-panel { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .chat-context {
+    padding: 5px 10px;
+    background: rgba(124,134,240,0.06);
+    border-bottom: 1px solid rgba(124,134,240,0.14);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  .ctx-lbl { font-size: 10px; color: var(--text-muted); }
+  .ctx-chip {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 9999px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(124,134,240,0.22);
+    color: var(--accent);
+  }
+  .chat-msgs {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .chat-msgs::-webkit-scrollbar { width:4px; }
+  .chat-msgs::-webkit-scrollbar-thumb { background:var(--border-em); border-radius:2px; }
+
+  .msg { display:flex; flex-direction:column; gap:4px; }
+  .msg-hdr { display:flex; align-items:center; gap:7px; }
+  .msg-av {
+    width:20px; height:20px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:700; flex-shrink:0;
+  }
+  .av-u { background:#2d2d4a; color:var(--accent); }
+  .av-l { background:rgba(124,134,240,0.15); color:var(--accent); border:1px solid rgba(124,134,240,0.3); }
+  .msg-name { font-size:11px; font-weight:600; }
+  .n-u { color:var(--text-secondary); }
+  .n-l { color:var(--accent); }
+  .msg-ts { font-size:10px; color:var(--text-dim); margin-left:auto; }
+  .msg-bubble {
+    margin-left: 27px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+  .bubble-u { background:#252538; border:1px solid rgba(124,134,240,0.18); color:var(--text-primary); }
+  .bubble-l { background:var(--bg-raised); border:1px solid var(--border); color:var(--text-primary); }
+  .bubble-code {
+    display:block;
+    background:#161622;
+    border:1px solid var(--border-dim);
+    border-radius:4px;
+    padding:5px 8px;
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:#ce9178;
+    margin-top:5px;
+    white-space:pre;
+  }
+  ic { color:#4ec9b0; background:rgba(78,201,176,0.1); padding:1px 4px; border-radius:3px; font-family:var(--font-mono); font-size:11px; }
+  .dispatch-card {
+    margin-left:27px; margin-top:4px;
+    background:#1a241a;
+    border:1px solid rgba(78,201,176,0.22);
+    border-radius:6px;
+    padding:7px 9px;
+  }
+  .dc-hdr { font-size:11px; color:var(--green); margin-bottom:5px; display:flex; align-items:center; gap:5px; }
+  .dc-row { display:flex; align-items:center; gap:7px; font-size:11px; margin-bottom:2px; }
+  .dc-name { flex:1; color:var(--text-primary); }
+  .dc-st { font-size:10px; }
+  .dc-running { color:#4db6ac; }
+  .dc-wait { color:var(--text-muted); }
+  .msg-actions { display:flex; gap:6px; margin-left:27px; margin-top:3px; }
+  .ma-btn {
+    padding:2px 9px; border-radius:4px; font-size:11px; cursor:pointer;
+    border:1px solid var(--border); color:var(--text-secondary); background:transparent;
+    font-family:var(--font-ui);
+  }
+  .ma-btn:hover { border-color:var(--border-em); color:var(--text-primary); }
+
+  .typing { display:flex; align-items:center; gap:8px; padding:0 0 0 27px; }
+  .tdots { display:flex; gap:3px; }
+  .td { width:5px; height:5px; border-radius:50%; background:var(--accent); animation:tb 1.2s ease-in-out infinite; }
+  .td:nth-child(2){ animation-delay:.2s; }
+  .td:nth-child(3){ animation-delay:.4s; }
+  @keyframes tb { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-4px);opacity:1} }
+  .typing-lbl { font-size:11px; color:var(--text-muted); font-style:italic; }
+
+  .chat-input {
+    padding: 8px;
+    border-top: 1px solid var(--border-dim);
+    background: var(--bg-panel);
+    flex-shrink: 0;
+  }
+  .input-box {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 10px;
+    transition: border-color 150ms;
+  }
+  .input-box:focus-within { border-color: rgba(124,134,240,0.5); }
+  .input-ta {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    line-height: 1.5;
+    resize: none;
+    min-height: 44px;
+    max-height: 100px;
+  }
+  .input-ta::placeholder { color:var(--text-dim); }
+  .input-footer { display:flex; align-items:center; gap:5px; margin-top:5px; }
+  .ctx-toggles { display:flex; gap:4px; flex:1; }
+  .ct { padding:2px 7px; border-radius:9999px; font-size:10px; border:1px solid var(--border); color:var(--text-muted); cursor:pointer; }
+  .ct.on { background:var(--accent-dim); border-color:rgba(124,134,240,0.3); color:var(--accent); }
+  .send-btn {
+    width:26px; height:26px; border-radius:5px;
+    background:var(--accent); border:none; color:white;
+    font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .send-btn:hover { background:#6b76e8; }
+
+  /* ══ BOTTOM PANEL ══ */
+  .bottom-panel {
+    height: 175px;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--border-dim);
+    background: var(--bg-panel);
+    flex-shrink: 0;
+  }
+  .bp-tabbar {
+    height: 30px;
+    background: var(--bg-header);
+    border-bottom: 1px solid var(--border-dim);
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    gap: 1px;
+    flex-shrink: 0;
+  }
+  .bptab {
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-top: 2px solid transparent;
+  }
+  .bptab.active { color:var(--text-primary); border-top-color:var(--accent); }
+  .bptab:hover:not(.active) { color:var(--text-secondary); }
+  .bp-cnt { font-size:11px; font-weight:700; }
+  .bp-cnt-err { color:var(--red); }
+  .bp-cnt-warn { color:var(--amber); }
+  .bp-spacer { flex:1; }
+  .bp-actions { display:flex; gap:4px; padding-right:4px; }
+  .bp-act { padding:2px 8px; font-size:11px; color:var(--text-muted); cursor:pointer; border-radius:3px; border:1px solid transparent; }
+  .bp-act:hover { background:rgba(255,255,255,0.06); color:var(--text-primary); }
+
+  .terminal {
+    flex: 1;
+    padding: 6px 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 18px;
+    overflow-y: auto;
+    color: var(--text-secondary);
+    background: var(--bg-primary);
+  }
+  .terminal::-webkit-scrollbar { width:6px; }
+  .terminal::-webkit-scrollbar-thumb { background:#424242; border-radius:3px; }
+  .t-ps1  { color:#4ec9b0; }
+  .t-cmd  { color:var(--text-primary); }
+  .t-out  { color:var(--text-muted); }
+  .t-ok   { color:var(--green-done); }
+  .t-err  { color:var(--red); }
+  .t-info { color:var(--blue); }
+  .t-cursor { display:inline-block; width:7px; height:13px; background:var(--text-primary); vertical-align:middle; animation:blink 1s step-end infinite; }
+
+  .verifier-strip {
+    height: 26px;
+    background: var(--bg-header);
+    border-top: 1px solid var(--border-dim);
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .vs-item { display:flex; align-items:center; gap:5px; font-size:11px; }
+  .vsdot { width:7px; height:7px; border-radius:50%; }
+
+  /* ══ STATUS BAR ══ */
+  .statusbar {
+    height: 24px;
+    background: var(--bg-statusbar);
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    flex-shrink: 0;
+    border-top: 1px solid #0d0d1a;
+  }
+  .sb-l { display:flex; align-items:center; flex:1; }
+  .sb-r { display:flex; align-items:center; }
+  .si {
+    padding: 0 8px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .si:hover { background:rgba(255,255,255,0.1); }
+  .si-brand  { color:var(--accent); font-weight:700; letter-spacing:.5px; }
+  .si-branch { color:var(--blue); }
+  .si-agents { color:var(--green); }
+  .si-graph  { color:var(--accent); }
+  .si-cost   { color:var(--cost-green); }
+  .si-model  { color:var(--text-muted); font-size:10px; }
+  .si-err    { color:var(--red); }
+  .si-warn   { color:var(--amber); }
+  .mode-pill {
+    padding: 1px 9px;
+    border-radius: 9999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    border: 1px solid;
+  }
+  .mp-code { background:rgba(102,187,106,0.15); color:var(--green-done); border-color:rgba(102,187,106,0.28); }
+</style>
+</head>
+<body>
+
+<!-- ══ TITLE BAR ══ -->
+<div class="titlebar">
+  <div class="titlebar-dots">
+    <div class="dot dot-r"></div>
+    <div class="dot dot-y"></div>
+    <div class="dot dot-g"></div>
+  </div>
+  <div class="titlebar-menus">
+    <div class="tmenu">File</div>
+    <div class="tmenu">Edit</div>
+    <div class="tmenu">Selection</div>
+    <div class="tmenu">View</div>
+    <div class="tmenu">Go</div>
+    <div class="tmenu">Run</div>
+    <div class="tmenu">Terminal</div>
+    <div class="tmenu">Agents</div>
+    <div class="tmenu">Help</div>
+  </div>
+  <div class="titlebar-center">FleetCoordinator.ts — loom-core — Loom</div>
+  <div class="titlebar-winbtns">
+    <div class="winbtn">─</div>
+    <div class="winbtn">□</div>
+    <div class="winbtn winbtn-close">✕</div>
+  </div>
+</div>
+
+<!-- ══ APP BODY ══ -->
+<div class="app-body">
+
+  <!-- ══ ACTIVITY BAR ══ -->
+  <div class="activity-bar">
+    <!-- Explorer -->
+    <div class="ab-icon" title="Explorer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+    </div>
+    <!-- Search -->
+    <div class="ab-icon" title="Search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+    </div>
+    <!-- Source Control -->
+    <div class="ab-icon" title="Source Control">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M6 8.5v7M8.5 6h7M8.5 18H12a6 6 0 006-6v-3.5"/></svg>
+    </div>
+    <!-- Run/Debug -->
+    <div class="ab-icon" title="Run and Debug">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M10 8l6 4-6 4V8z" fill="currentColor"/></svg>
+    </div>
+    <!-- Loom Agents (active) -->
+    <div class="ab-icon loom-active" title="Loom Agents">
+      <span style="font-size:18px;line-height:1">◈</span>
+      <div class="ab-badge">7</div>
+    </div>
+    <!-- Extensions -->
+    <div class="ab-icon" title="Extensions" style="margin-top:12px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 7h-4V3a1 1 0 00-1-1h-6a1 1 0 00-1 1v4H4a1 1 0 00-1 1v6a1 1 0 001 1h4v4a1 1 0 001 1h6a1 1 0 001-1v-4h4a1 1 0 001-1V8a1 1 0 00-1-1z"/></svg>
+    </div>
+    <!-- Settings bottom -->
+    <div class="ab-icon ab-bottom" title="Settings">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+    </div>
+  </div>
+
+  <!-- ══ PRIMARY SIDEBAR (Agents) ══ -->
+  <div class="sidebar-primary">
+    <div class="sidebar-section-title">
+      <span>Loom Agents</span>
+      <div class="ss-actions">
+        <div class="ss-btn" title="New agent task">+</div>
+        <div class="ss-btn" title="Stop all">⏹</div>
+        <div class="ss-btn" title="More">…</div>
+      </div>
+    </div>
+    <div class="agent-list">
+      <div class="agent-section-hdr">Active</div>
+
+      <div class="agent-row selected">
+        <div class="ar-dot ar-running"></div>
+        <div class="ar-info">
+          <div class="ar-name">SpecWriter</div>
+          <div class="ar-sub">Writing spec for FleetCoordinator…</div>
+          <div class="ar-progress"><div class="ar-progress-fill" style="width:50%;background:#4db6ac"></div></div>
+        </div>
+        <div class="ar-right">
+          <div class="ar-state ars-running">3/6</div>
+          <div class="ar-cost">$0.0038</div>
+        </div>
+      </div>
+
+      <div class="agent-row">
+        <div class="ar-dot ar-running"></div>
+        <div class="ar-info">
+          <div class="ar-name">CodeSmith</div>
+          <div class="ar-sub">Adding FleetExhaustedError throw…</div>
+          <div class="ar-progress"><div class="ar-progress-fill" style="width:62%;background:#4db6ac"></div></div>
+        </div>
+        <div class="ar-right">
+          <div class="ar-state ars-running">5/8</div>
+          <div class="ar-cost">$0.0082</div>
+        </div>
+      </div>
+
+      <div class="agent-row">
+        <div class="ar-dot ar-quarantine"></div>
+        <div class="ar-info">
+          <div class="ar-name">Verifier-2</div>
+          <div class="ar-sub">⚠ result flagged — safe default used</div>
+          <div class="ar-progress"><div class="ar-progress-fill" style="width:100%;background:var(--amber)"></div></div>
+        </div>
+        <div class="ar-right">
+          <div class="ar-state ars-quarantine">Q</div>
+          <div class="ar-cost">$0.0061</div>
+        </div>
+      </div>
+
+      <div class="agent-row">
+        <div class="ar-dot ar-running"></div>
+        <div class="ar-info">
+          <div class="ar-name">GraphIndexer</div>
+          <div class="ar-sub">Indexing knowledge graph…</div>
+          <div class="ar-progress"><div class="ar-progress-fill" style="width:50%;background:#4db6ac"></div></div>
+        </div>
+        <div class="ar-right">
+          <div class="ar-state ars-running">2/4</div>
+          <div class="ar-cost">$0.0017</div>
+        </div>
+      </div>
+
+      <div class="agent-section-hdr">Waiting</div>
+
+      <div class="agent-row">
+        <div class="ar-dot ar-waiting"></div>
+        <div class="ar-info">
+          <div class="ar-name">TestRunner</div>
+          <div class="ar-sub">Waiting for CodeSmith…</div>
+          <div class="ar-progress"><div class="ar-progress-fill" style="width:0%;background:#4db6ac"></div></div>
+        </div>
+        <div class="ar-right">
+          <div class="ar-state ars-waiting">0/5</div>
+          <div class="ar-cost">—</div>
+        </div>
+      </div>
+
+      <div class="agent-section-hdr">Done</div>
+
+      <div class="agent-row">
+        <div class="ar-dot ar-done"></div>
+        <div class="ar-info">
+          <div class="ar-name">DocGen</div>
+          <div class="ar-sub">Documented 6 files</div>
+          <div class="ar-progress"><div class="ar-progress-fill" style="width:100%;background:var(--green-done)"></div></div>
+        </div>
+        <div class="ar-right">
+          <div class="ar-state ars-done">5/5</div>
+          <div class="ar-cost">$0.0031</div>
+        </div>
+      </div>
+
+      <div class="agent-row">
+        <div class="ar-dot ar-done"></div>
+        <div class="ar-info">
+          <div class="ar-name">BM25Indexer</div>
+          <div class="ar-sub">Index ready (3,291 fns)</div>
+          <div class="ar-progress"><div class="ar-progress-fill" style="width:100%;background:var(--green-done)"></div></div>
+        </div>
+        <div class="ar-right">
+          <div class="ar-state ars-done">3/3</div>
+          <div class="ar-cost">$0.0019</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ EDITOR + SECONDARY ══ -->
+  <div class="editor-and-secondary">
+
+    <!-- Flow Timeline -->
+    <div class="flow-timeline">
+      <span class="ft-label">flow</span>
+      <div class="ft-pills">
+        <span class="fp fp-edit">edit: FleetCoordinator.ts</span>
+        <span class="fp-arr">→</span>
+        <span class="fp fp-save">save</span>
+        <span class="fp-arr">→</span>
+        <span class="fp fp-test">test-fail: fleet.spec</span>
+        <span class="fp-arr">→</span>
+        <span class="fp fp-term">tsc --watch</span>
+        <span class="fp-arr">→</span>
+        <span class="fp fp-git">stage 3 hunks</span>
+        <span class="fp-arr">→</span>
+        <span class="fp fp-edit">edit: AgentPool.ts</span>
+        <span class="fp-arr">→</span>
+        <span class="fp fp-save">save</span>
+      </div>
+      <div class="ft-intent">
+        <span style="color:var(--text-muted)">intent:</span>
+        <span class="ft-intent-text">fixing fleet retry logic</span>
+        <span class="ft-intent-conf">87%</span>
+      </div>
+    </div>
+
+    <div class="editor-split">
+      <!-- Editor Pane -->
+      <div class="editor-pane">
+        <!-- Tab bar -->
+        <div class="editor-tabbar">
+          <div class="etab">AgentPool.ts <span class="tab-dot"></span><span class="tab-x">×</span></div>
+          <div class="etab active">FleetCoordinator.ts <span class="tab-x">×</span></div>
+          <div class="etab">fleet.spec.ts <span class="tab-x">×</span></div>
+          <div class="etab">GraphTools.ts <span class="tab-x">×</span></div>
+          <div class="etab-spacer"></div>
+        </div>
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+          <span>loom-core</span>
+          <span class="bc-sep">›</span>
+          <span>src</span>
+          <span class="bc-sep">›</span>
+          <span>agent</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-cur">FleetCoordinator.ts</span>
+        </div>
+        <!-- Code -->
+        <div class="editor-scroll">
+          <div class="gutter">
+            <div class="gn">42</div><div class="gn">43</div><div class="gn">44</div>
+            <div class="gn">45</div><div class="gn">46</div><div class="gn">47</div>
+            <div class="gn cur">48</div><div class="gn">49</div><div class="gn">50</div>
+            <div class="gn">51</div><div class="gn">52</div><div class="gn">53</div>
+            <div class="gn">54</div><div class="gn">55</div><div class="gn">56</div>
+            <div class="gn">57</div><div class="gn">58</div><div class="gn">59</div>
+            <div class="gn">60</div><div class="gn">61</div><div class="gn">62</div>
+            <div class="gn">63</div>
+          </div>
+          <div class="code-body">
+            <div class="cl"><span class="cm">  /** Coordinate fleet with retry logic */</span></div>
+            <div class="cl"><span class="dec">  @injectable</span><span class="p">()</span></div>
+            <div class="cl"><span class="kw">  export class </span><span class="tp">FleetCoordinator</span><span class="p"> {</span></div>
+            <div class="cl"></div>
+            <div class="cl"><span class="kw">    private readonly </span><span class="v">MAX_RETRIES</span><span class="op"> = </span><span class="num">3</span><span class="p">;</span></div>
+            <div class="cl"><span class="kw">    private </span><span class="v">agents</span><span class="op">: </span><span class="tp">Map</span><span class="p">&lt;</span><span class="tp">string</span><span class="p">, </span><span class="tp">AgentInstance</span><span class="p">&gt; = </span><span class="kw">new </span><span class="fn">Map</span><span class="p">();</span></div>
+            <div class="cl"></div>
+            <div class="cl hl-cursor"><span class="kw">    async </span><span class="fn">dispatch</span><span class="p">(</span><span class="v">task</span><span class="op">: </span><span class="tp">AgentTask</span><span class="p">): </span><span class="tp">Promise</span><span class="p">&lt;</span><span class="tp">TaskResult</span><span class="p">&gt; {</span><span class="inline-hint">⬡ add timeout</span></div>
+            <div class="cl"><span class="kw">      let </span><span class="v">attempts</span><span class="op"> = </span><span class="num">0</span><span class="p">;</span></div>
+            <div class="cl"></div>
+            <div class="cl"><span class="kw">      while </span><span class="p">(</span><span class="v">attempts</span><span class="op"> &lt; </span><span class="kw">this</span><span class="p">.</span><span class="v">MAX_RETRIES</span><span class="p">) {</span></div>
+            <div class="cl"><span class="kw">        try </span><span class="p">{</span></div>
+            <div class="cl"><span class="kw">          const </span><span class="v">agent</span><span class="op"> = </span><span class="kw">await this</span><span class="p">.</span><span class="v">pool</span><span class="p">.</span><span class="fn">acquire</span><span class="p">(</span><span class="v">task</span><span class="p">.</span><span class="v">type</span><span class="p">);</span></div>
+            <div class="cl"><span class="kw">          const </span><span class="v">result</span><span class="op"> = </span><span class="kw">await </span><span class="v">agent</span><span class="p">.</span><span class="fn">execute</span><span class="p">(</span><span class="v">task</span><span class="p">);</span></div>
+            <div class="cl"></div>
+            <div class="cl"><span class="kw">          if </span><span class="p">(</span><span class="v">result</span><span class="p">.</span><span class="v">quarantined</span><span class="p">) {</span></div>
+            <div class="cl"><span class="kw">            return this</span><span class="p">.</span><span class="fn">safeDefault</span><span class="p">(</span><span class="v">task</span><span class="p">);</span></div>
+            <div class="cl"><span class="p">          }</span></div>
+            <div class="cl"><span class="kw">          return </span><span class="v">result</span><span class="p">;</span></div>
+            <div class="cl err-line"><span class="kw">        } </span><span class="kw">catch </span><span class="p">(</span><span class="v">err</span><span class="p">) {</span></div>
+            <div class="cl"><span class="v">          attempts</span><span class="op">++</span><span class="p">;</span></div>
+            <div class="cl"><span class="ghost">          <span class="inline-hint">⬡</span> if (attempts &gt;= this.MAX_RETRIES) throw new FleetExhaustedError(task, err);<span class="cursor"></span></span></div>
+            <div class="cl"><span class="p">        }</span></div>
+            <div class="cl"><span class="p">      }</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secondary Sidebar: Chat -->
+      <div class="sidebar-secondary">
+        <div class="panel-tab-bar">
+          <div class="ptab active">💬 Chat</div>
+          <div class="ptab">🗺 Code Map</div>
+        </div>
+        <div class="chat-panel">
+          <div class="chat-context">
+            <span class="ctx-lbl">ctx</span>
+            <span class="ctx-chip">FleetCoordinator.ts:48</span>
+            <span class="ctx-chip">fleet.spec · 1 fail</span>
+            <span class="ctx-chip">7 agents</span>
+          </div>
+          <div class="chat-msgs">
+            <div class="msg">
+              <div class="msg-hdr">
+                <div class="msg-av av-u">C</div>
+                <span class="msg-name n-u">You</span>
+                <span class="msg-ts">2m ago</span>
+              </div>
+              <div class="msg-bubble bubble-u">The retry logic isn't throwing when all retries are exhausted. Fix it and add a test.</div>
+            </div>
+            <div class="msg">
+              <div class="msg-hdr">
+                <div class="msg-av av-l">◈</div>
+                <span class="msg-name n-l">Loom</span>
+                <span class="msg-ts">2m ago</span>
+              </div>
+              <div class="msg-bubble bubble-l">Found the gap — the <ic>catch</ic> block increments <ic>attempts</ic> but never re-throws after MAX_RETRIES. Dispatching two agents:<span class="bubble-code">• CodeSmith  → add FleetExhaustedError throw
+• SpecWriter → write exhaustion test</span></div>
+              <div class="dispatch-card">
+                <div class="dc-hdr">⚡ Dispatching 2 agents</div>
+                <div class="dc-row"><span style="color:#4db6ac">●</span><span class="dc-name">CodeSmith</span><span class="dc-st dc-running">running · 5/8</span></div>
+                <div class="dc-row"><span style="color:#4db6ac">●</span><span class="dc-name">SpecWriter</span><span class="dc-st dc-running">running · 3/6</span></div>
+              </div>
+              <div class="msg-actions">
+                <button class="ma-btn">View diff</button>
+                <button class="ma-btn">Stop agents</button>
+              </div>
+            </div>
+            <div class="msg">
+              <div class="msg-hdr">
+                <div class="msg-av av-u">C</div>
+                <span class="msg-name n-u">You</span>
+                <span class="msg-ts">just now</span>
+              </div>
+              <div class="msg-bubble bubble-u">Include the task ID and retry count in the error message.</div>
+            </div>
+            <div class="typing">
+              <div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div>
+              <span class="typing-lbl">Loom is thinking…</span>
+            </div>
+          </div>
+          <div class="chat-input">
+            <div class="input-box">
+              <textarea class="input-ta" placeholder="Ask Loom to write, fix, explain, or refactor…"></textarea>
+              <div class="input-footer">
+                <div class="ctx-toggles">
+                  <span class="ct on">@codebase</span>
+                  <span class="ct on">@agents</span>
+                  <span class="ct">@docs</span>
+                </div>
+                <button class="send-btn">↑</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /editor-split -->
+
+    <!-- Bottom Panel -->
+    <div class="bottom-panel">
+      <div class="bp-tabbar">
+        <div class="bptab">Problems <span class="bp-cnt bp-cnt-err">2</span></div>
+        <div class="bptab active">Terminal</div>
+        <div class="bptab">Output</div>
+        <div class="bptab">Debug Console</div>
+        <div class="bptab">Agent Log</div>
+        <div class="bp-spacer"></div>
+        <div class="bp-actions">
+          <div class="bp-act">⊕ New Terminal</div>
+          <div class="bp-act">✕</div>
+        </div>
+      </div>
+      <div class="terminal">
+        <div><span class="t-ps1">~/loom $</span> <span class="t-cmd">npm run build --workspace=packages/loom-core</span></div>
+        <div><span class="t-info">info</span> <span class="t-out">Running tsc -p tsconfig.json…</span></div>
+        <div><span class="t-out">packages/loom-core/src/agent/FleetCoordinator.ts(59,9): error TS2345</span></div>
+        <div><span class="t-err">✗ 1 error</span></div>
+        <div>&nbsp;</div>
+        <div><span class="t-ps1">~/loom $</span> <span class="t-cmd">npm run build --workspace=packages/loom-core</span></div>
+        <div><span class="t-ok">✓ compiled successfully in 1.2s</span></div>
+        <div><span class="t-ps1">~/loom $</span> <span class="t-cursor"></span></div>
+      </div>
+      <div class="verifier-strip">
+        <div class="vs-item"><div class="vsdot" style="background:var(--green-done)"></div><span style="color:var(--text-muted)">Verifier:</span><span style="color:var(--green-done)"> 11 passed</span></div>
+        <div class="vs-item"><div class="vsdot" style="background:var(--amber)"></div><span style="color:var(--amber)">1 quarantined</span></div>
+        <div class="vs-item"><div class="vsdot" style="background:var(--blue)"></div><span style="color:var(--blue)">2 retried</span></div>
+        <span style="flex:1"></span>
+        <span style="font-size:10px;color:var(--text-muted)">last run 3s ago</span>
+      </div>
+    </div>
+
+  </div><!-- /editor-and-secondary -->
+
+</div><!-- /app-body -->
+
+<!-- ══ STATUS BAR ══ -->
+<div class="statusbar">
+  <div class="sb-l">
+    <div class="si si-brand">◈ Loom</div>
+    <div class="si si-branch">⎇ feature/fleet-retry</div>
+    <div class="si si-err">✕ 2</div>
+    <div class="si si-warn">⚠ 1</div>
+    <div class="si si-agents">● 7/12 agents</div>
+    <div class="si si-graph">◈ 12,847 nodes</div>
+    <div class="si si-cost">$ $0.0248</div>
+    <div class="si si-model">↑↓ claude-sonnet-4-5</div>
+  </div>
+  <div class="sb-r">
+    <div class="si" style="color:var(--text-muted);font-size:11px">Ln 48, Col 7</div>
+    <div class="si" style="color:var(--text-muted);font-size:11px">UTF-8</div>
+    <div class="si" style="color:var(--text-muted);font-size:11px">TypeScript</div>
+    <div class="si"><span class="mode-pill mp-code">CODE</span></div>
+  </div>
+</div>
+
+</body>
+</html>

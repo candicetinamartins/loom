@@ -27,6 +27,9 @@ export const LOOM_COMMANDS = {
   // Checkpoint / Revert Timeline
   OPEN_CHECKPOINT_TIMELINE: { id: 'loom.openCheckpointTimeline', label: 'Loom: Open Checkpoint Timeline', category: 'Loom' },
   REVERT_TO_CHECKPOINT: { id: 'loom.revertToCheckpoint', label: 'Loom: Revert to Checkpoint…', category: 'Loom' },
+
+  // SAIA (Academic Cloud LLM)
+  SAIA_OPEN_SETTINGS: { id: 'loom.saia.openSettings', label: 'Loom: SAIA Settings', category: 'Loom' },
 }
 
 // Menu paths
@@ -91,6 +94,12 @@ export class LoomKeybindingContribution implements KeybindingContribution {
       command: LOOM_COMMANDS.OPEN_CHECKPOINT_TIMELINE.id,
       keybinding: 'ctrl+shift+z',
     })
+
+    // SAIA settings
+    keybindings.registerKeybinding({
+      command: LOOM_COMMANDS.SAIA_OPEN_SETTINGS.id,
+      keybinding: 'ctrl+shift+s',
+    })
   }
 }
 
@@ -99,6 +108,7 @@ export class LoomKeybindingContribution implements KeybindingContribution {
 const EXTERNALLY_REGISTERED_COMMAND_IDS = new Set([
   LOOM_COMMANDS.OPEN_CHECKPOINT_TIMELINE.id,
   LOOM_COMMANDS.REVERT_TO_CHECKPOINT.id,
+  LOOM_COMMANDS.SAIA_OPEN_SETTINGS.id,   // registered by SaiaContribution
 ])
 
 @injectable()
@@ -190,6 +200,12 @@ export class LoomMenuContribution implements MenuContribution {
       commandId: LOOM_COMMANDS.OPEN_CHECKPOINT_TIMELINE.id,
       label: LOOM_COMMANDS.OPEN_CHECKPOINT_TIMELINE.label,
       order: '4',
+    })
+
+    menus.registerMenuAction(LOOM_MENU_BAR_VIEW, {
+      commandId: LOOM_COMMANDS.SAIA_OPEN_SETTINGS.id,
+      label: 'SAIA Settings',
+      order: '5',
     })
   }
 }

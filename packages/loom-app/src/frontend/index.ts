@@ -26,6 +26,7 @@ import { LoomGhostTextContribution } from './loom-ghost-text-contribution'
 import { LoomComponentBrowserContribution } from './loom-component-browser-contribution'
 import { CheckpointContribution } from './checkpoint-contribution'
 import { SessionEndContribution } from './session-end-contribution'
+import { SaiaContribution } from './saia-contribution'
 
 // Runtime-only: get the actual Theia DI symbols from their definitive file paths.
 // These are unique symbols (not Symbol.for) so they must be obtained via require().
@@ -60,6 +61,13 @@ export default new ContainerModule((bind) => {
   bindTo(FrontendApplicationContribution, LoomGraphStatsContribution)
   bindTo(FrontendApplicationContribution, LoomGhostTextContribution)
   bindTo(FrontendApplicationContribution, LoomComponentBrowserContribution)
+
+  // ── SAIA (Academic Cloud LLM) — dual-bound (FrontendApp + Command) ────────
+  bind(SaiaContribution).toSelf().inSingletonScope()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(bind as any)(FrontendApplicationContribution).toService(SaiaContribution)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(bind as any)(CommandContribution).toService(SaiaContribution)
 
   // ── Session-end approval prompt ───────────────────────────────────────────
   // Polls /loom/session/pending-approval and shows an Approve/Discard dialog

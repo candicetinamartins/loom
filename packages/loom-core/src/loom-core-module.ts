@@ -13,6 +13,7 @@ import { RateLimiter } from './services/RateLimiter'
 import { FlowTrackingService } from './services/FlowTrackingService'
 import { ConversationHistoryService } from './services/ConversationHistoryService'
 import { TOMLParser } from './config/TOMLParser'
+import { SAIAProvider } from './services/SAIAProvider'
 
 export const TYPES = {
   LoomMsgHub: Symbol.for('LoomMsgHub'),
@@ -28,6 +29,7 @@ export const TYPES = {
   ConversationHistoryService: Symbol.for('ConversationHistoryService'),
   FlowTrackingService: Symbol.for('FlowTrackingService'),
   TOMLParser: Symbol.for('TOMLParser'),
+  SAIAProvider: Symbol.for('SAIAProvider'),
 } as const
 
 export default new ContainerModule((bind) => {
@@ -44,6 +46,7 @@ export default new ContainerModule((bind) => {
   bind(TYPES.ConversationHistoryService).to(ConversationHistoryService).inSingletonScope()
   bind(TYPES.FlowTrackingService).to(FlowTrackingService).inSingletonScope()
   bind(TYPES.TOMLParser).to(TOMLParser).inSingletonScope()
+  bind(TYPES.SAIAProvider).to(SAIAProvider).inSingletonScope()
 })
 
 export function initializeLoomCore(registry: ToolGroupRegistry, graphCypherTool?: GraphCypherTool): void {

@@ -19,12 +19,18 @@
     "emitDecoratorMetadata": true,
     "disableSourceOfProjectReferenceRedirect": true,
     "typeRoots": ["../../node_modules/@types", "../loom-core/src/typings"],
-    "types": ["node"]
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@loom/memory": ["../loom-memory/src"],
+      "@loom/memory/*": ["../loom-memory/src/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "lib"],
   "references": [
     { "path": "../loom-core" },
-    { "path": "../loom-ui" }
+    { "path": "../loom-ui" },
+    { "path": "../loom-memory" }
   ]
 }

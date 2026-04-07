@@ -44,6 +44,18 @@ declare module '@theia/core' {
   }
 }
 
+declare module '@theia/core/lib/common/command' {
+  export class CommandRegistry {
+    executeCommand(commandId: string, ...args: unknown[]): Promise<unknown>
+    registerCommand(command: { id: string; label?: string; category?: string }, handler: { execute(...args: unknown[]): unknown }): Disposable
+  }
+  
+  export const CommandContribution: unique symbol
+  export interface CommandContribution {
+    registerCommands(commands: CommandRegistry): void
+  }
+}
+
 declare module '@theia/core/lib/node' {
   export interface BackendApplicationContribution {
     onStart?(): void | Promise<void>

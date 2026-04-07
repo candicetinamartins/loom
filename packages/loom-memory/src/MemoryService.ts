@@ -1,6 +1,7 @@
 import { injectable, inject, optional } from 'inversify'
 import { LoomMsgHub, Channel } from '@loom/core'
 import { SessionStore } from './tier1/SessionStore'
+import { MemPalaceService } from './mempalace/MemPalaceService'
 import { MEMORY_TYPES } from './loom-memory-module'
 
 // Avoid circular dependency with @loom/graph
@@ -53,6 +54,7 @@ export class MemoryService {
     @inject('GraphService') @optional() private readonly graphService: GraphService,
     @inject(LoomMsgHub) @optional() private hub: LoomMsgHub,
     @inject(MEMORY_TYPES.SessionStore) @optional() private sessionStore: SessionStore,
+    @inject(MEMORY_TYPES.MemPalaceService) @optional() private memPalaceService: MemPalaceService,
   ) {}
 
   async initialize(): Promise<void> {
@@ -226,7 +228,20 @@ export class MemoryService {
     }
 
     // ── Tier 2/3: relevant long-term memories (async, may be unavailable) ────
-    if (this.tier2Ready) {
+    // Try MemPalace first (vector semantic search), fall back to Kuzu keyword search
+    let memPalaceContext = ''
+    if (this.memPalaceService) {
+      try {
+        memPalaceContext = await this.memPalaceService.queryForContext(taskDescription)
+      } catch {
+        // MemPalace unavailable — continue to fallback
+      }
+    }
+    
+    if (memPalaceContext) {
+      parts.push(memPalaceContext)
+    } else if (this.tier2Ready) {
+      // Fallback to Kuzu keyword search
       try {
         const relevant = await this.searchRelevant(taskDescription, { limit: 4 })
         if (relevant.length > 0) {

@@ -1,6 +1,7 @@
 import { injectable, inject, optional } from 'inversify'
 import { MemoryService, type Memory } from './MemoryService'
 import { SessionStore } from './tier1/SessionStore'
+import { MemPalaceService } from './mempalace/MemPalaceService'
 import { MEMORY_TYPES } from './loom-memory-module'
 
 /**
@@ -41,6 +42,7 @@ export class MemoryIsolationService {
   constructor(
     @inject(MEMORY_TYPES.MemoryService) @optional() private memoryService: MemoryService,
     @inject(MEMORY_TYPES.SessionStore) @optional() private sessionStore: SessionStore,
+    @inject(MEMORY_TYPES.MemPalaceService) @optional() private memPalaceService: MemPalaceService,
   ) {}
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -166,6 +168,14 @@ export class MemoryIsolationService {
         memoriesExtracted: extracted.length,
         endedAt: Date.now(),
       })
+    }
+
+    // ── Mine session to MemPalace Tier 2 (async, non-blocking) ─────────────────
+    if (this.sessionStore) {
+      const session = this.sessionStore.getActiveSession()
+      if (session && session.sessionId === sessionId) {
+        void this.memPalaceService?.mineSession(sessionId, agentName, session.task)
+      }
     }
 
     return extracted

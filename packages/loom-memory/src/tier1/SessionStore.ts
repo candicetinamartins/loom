@@ -272,3 +272,6 @@ export class SessionStore {
     return `${Math.floor(m / 60)}h`
   }
 }
+
+// Re-export types for consumers
+export type { SessionEventKind, RawSessionEvent, ActiveSession } from './session-events.schema'

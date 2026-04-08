@@ -27,6 +27,7 @@ import { LoomComponentBrowserContribution } from './loom-component-browser-contr
 import { CheckpointContribution } from './checkpoint-contribution'
 import { SessionEndContribution } from './session-end-contribution'
 import { SaiaContribution } from './saia-contribution'
+import { LoomChatContribution, CHAT_WIDGET_ID } from './loom-chat-contribution'
 
 // Runtime-only: get the actual Theia DI symbols from their definitive file paths.
 // These are unique symbols (not Symbol.for) so they must be obtained via require().
@@ -98,6 +99,11 @@ export default new ContainerModule((bind) => {
   // ── OpenHandler ───────────────────────────────────────────────────────────
   // Handles opening loom:// URIs and .loom files.
   bindTo(OpenHandler, LoomOpenHandler)
+
+  // ── LoomChat ──────────────────────────────────────────────────────────────
+  // Custom chat panel replacing Theia's built-in AI chat
+  bind(LoomChatContribution).toSelf().inSingletonScope()
+  ;(bind as any)(FrontendApplicationContribution).toService(LoomChatContribution)
 
   // ── Services ──────────────────────────────────────────────────────────────
   bind(LoomStatusBarService).toSelf().inSingletonScope()

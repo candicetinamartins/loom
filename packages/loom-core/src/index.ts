@@ -1,5 +1,6 @@
 export * from './orchestration/PipelineRunner'
 export * from './orchestration/OrchestrationVerifier'
+export * from './tools/ToolExecutor'
 export * from './tools/ToolGroupRegistry'
 export * from './tools/FileReadTool'
 export * from './tools/FileWriteTool'

@@ -3,6 +3,7 @@ import { OrchestrationVerifier } from './OrchestrationVerifier'
 import { AgentSession } from '../agents/AgentSession'
 import { TokenUsageTracker } from '../agents/TokenUsageTracker'
 import { ContextCompactor } from '../context/ContextCompactor'
+import { ToolExecutor } from '../tools/ToolExecutor'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { exec } from 'child_process'
@@ -50,6 +51,7 @@ export class PipelineRunner {
     private verifier: OrchestrationVerifier,
     private tokenTracker: TokenUsageTracker,
     private compactor: ContextCompactor,
+    private toolExecutor: ToolExecutor,
   ) {}
 
   async execute(plan: PipelinePlan): Promise<void> {
@@ -300,25 +302,8 @@ export class PipelineRunner {
   }
 
   private getToolsForAgent(agentDef: any): Record<string, any> {
-    // Return tools based on agent's toolGroups
-    const tools: Record<string, any> = {}
-    
-    for (const group of agentDef.toolGroups || []) {
-      switch (group) {
-        case 'file_ops':
-          tools.read_file = { name: 'read_file', execute: async (args: any) => ({ content: 'file content' }) }
-          tools.write_file = { name: 'write_file', execute: async (args: any) => ({ success: true }) }
-          break
-        case 'code_search':
-          tools.search_code = { name: 'search_code', execute: async (args: any) => ({ results: [] }) }
-          break
-        case 'graph':
-          tools.graph_query = { name: 'graph_query', execute: async (args: any) => ({ nodes: [] }) }
-          break
-      }
-    }
-    
-    return tools
+    // Use real ToolExecutor for tool implementations
+    return this.toolExecutor.getToolsForAgent(agentDef.toolGroups || [])
   }
 
   /**

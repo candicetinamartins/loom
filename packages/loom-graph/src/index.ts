@@ -3,6 +3,8 @@
 
 export * from './GraphService'
 export * from './ASTParser'
+export * from './TreeSitterService'
+export * from './IndexerService'
 export * from './GitHistoryAnalyzer'
 export * from './PageIndex'
 export * from './LspCrossReferenceIndexer'

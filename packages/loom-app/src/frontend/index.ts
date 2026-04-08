@@ -28,6 +28,7 @@ import { CheckpointContribution } from './checkpoint-contribution'
 import { SessionEndContribution } from './session-end-contribution'
 import { SaiaContribution } from './saia-contribution'
 import { LoomChatContribution, CHAT_WIDGET_ID } from './loom-chat-contribution'
+import { LoomChatWidget } from './loom-chat-widget'
 
 // Runtime-only: get the actual Theia DI symbols from their definitive file paths.
 // These are unique symbols (not Symbol.for) so they must be obtained via require().
@@ -37,6 +38,7 @@ const { KeybindingContribution } = require('@theia/core/lib/browser/keybinding')
 const { CommandContribution } = require('@theia/core/lib/common/command') as { CommandContribution: symbol }
 const { MenuContribution } = require('@theia/core/lib/common/menu/menu-model-registry') as { MenuContribution: symbol }
 const { OpenHandler } = require('@theia/core/lib/browser/opener-service') as { OpenHandler: symbol }
+const { WidgetFactory } = require('@theia/core/lib/browser/widget-manager') as { WidgetFactory: symbol }
 /* eslint-enable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment */
 
 export default new ContainerModule((bind) => {
@@ -102,6 +104,13 @@ export default new ContainerModule((bind) => {
 
   // ── LoomChat ──────────────────────────────────────────────────────────────
   // Custom chat panel replacing Theia's built-in AI chat
+  // Per Theia docs: bind widget to self, then register WidgetFactory
+  bind(LoomChatWidget).toSelf().inSingletonScope()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(bind as any)(WidgetFactory).toDynamicValue((ctx: { container: { get: <T>(s: unknown) => T } }) => ({
+    id: CHAT_WIDGET_ID,
+    createWidget: () => ctx.container.get(LoomChatWidget),
+  })).inSingletonScope()
   bind(LoomChatContribution).toSelf().inSingletonScope()
   ;(bind as any)(FrontendApplicationContribution).toService(LoomChatContribution)
 

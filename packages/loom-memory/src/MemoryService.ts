@@ -1,8 +1,6 @@
 import { injectable, inject, optional } from 'inversify'
 import { LoomMsgHub, Channel } from '@loom/graph'
 import { SessionStore } from './tier1/SessionStore'
-import { MemPalaceService } from './mempalace/MemPalaceService'
-import { Tier2MemoryStore } from './tier2/Tier2MemoryStore'
 import { MEMORY_TYPES } from './loom-memory-module'
 
 // Avoid circular dependency with @loom/graph
@@ -11,26 +9,30 @@ interface GraphService {
 }
 
 /**
- * Phase 6 — Three-Tier Memory System
+ * Two-Tier Memory System
  *
  * Architecture:
- * - Tier 1: Session/ephemeral (SessionStore)
- * - Tier 2: User memory (SQLite with FTS search)
- * - Tier 3: Project memory (Kuzu graph with relationships)
+ * - Tier 1: Session/ephemeral (SessionStore) - raw events, temporary
+ * - Tier 2: Working Graph (Kuzu) - entities, relationships, summaries
+ *
+ * At session end, Tier 1 events are walked and meaningful nodes
+ * (files modified, functions created, errors fixed) are upserted into the graph.
+ *
+ * Tier 2 answers richer queries:
+ * - "what files does this feature depend on?"
+ * - "which agent has touched this module before?"
  */
 
 export interface Memory {
   id: string
   key: string
   content: string
-  tier: 2 | 3
   source: 'explicit' | 'extracted' | 'decision'
   createdAt: Date
   updatedAt: Date
   useCount: number
   sessionId?: string
   agentName?: string
-  embedding?: number[]
 }
 
 export interface MemorySearchResult {
@@ -38,290 +40,52 @@ export interface MemorySearchResult {
   relevance: number
 }
 
+export interface FileNode {
+  path: string
+  lastModified: Date
+  agentName?: string
+  changeCount: number
+}
+
+export interface SymbolNode {
+  name: string
+  type: 'function' | 'class' | 'variable' | 'other'
+  filePath: string
+  line?: number
+  agentName?: string
+}
+
 @injectable()
 export class MemoryService {
-  private tier2Ready = false
-  private tier2Store: Tier2MemoryStore
+  private graphReady = false
 
   constructor(
     @inject('GraphService') @optional() private readonly graphService: GraphService,
     @inject(LoomMsgHub) @optional() private hub: LoomMsgHub,
     @inject(MEMORY_TYPES.SessionStore) @optional() private sessionStore: SessionStore,
-    @inject(MEMORY_TYPES.MemPalaceService) @optional() private memPalaceService: MemPalaceService,
-  ) {
-    this.tier2Store = new Tier2MemoryStore()
-  }
+  ) {}
 
   async initialize(): Promise<void> {
-    // Initialize Tier 2 SQLite
-    await this.tier2Store.initialize()
-    this.tier2Ready = true
-    
-    // Tier 3 ready when graph service is available
-    const tier3Ready = !!this.graphService
-    
-    console.log(`[MemoryService] Initialized - Tier 2 (SQLite): ${this.tier2Ready}, Tier 3 (Graph): ${tier3Ready}`)
+    this.graphReady = !!this.graphService
+
+    if (this.graphReady) {
+      await this.initializeGraphSchema()
+    }
+
+    console.log(`[MemoryService] Initialized - Tier 1 (SessionStore): ${!!this.sessionStore}, Tier 2 (Kuzu Graph): ${this.graphReady}`)
   }
 
   /**
-   * Store a memory (explicit or extracted)
+   * Initialize the Working Graph schema
    */
-  async remember(
-    content: string,
-    options: {
-      key?: string
-      tier?: 2 | 3
-      source?: 'explicit' | 'extracted' | 'decision'
-      sessionId?: string
-      agentName?: string
-    } = {}
-  ): Promise<Memory> {
-    const {
-      key = this.generateKey(content),
-      tier = 2,
-      source = 'explicit',
-      sessionId,
-      agentName,
-    } = options
+  private async initializeGraphSchema(): Promise<void> {
+    if (!this.graphService) return
 
-    const memory: Memory = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-      key,
-      content,
-      tier,
-      source,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      useCount: 0,
-      sessionId,
-      agentName,
-    }
-
-    if (tier === 2) {
-      await this.storeTier2(memory)
-    } else {
-      await this.storeTier3(memory)
-    }
-
-    // Also store in vector DB for semantic search if available
-    if (this.memPalaceService) {
-      try {
-        await this.memPalaceService.storeMemory(memory)
-      } catch {
-        // Vector DB optional
-      }
-    }
-
-    await this.hub.publish(
-      LoomMsgHub.msg(Channel.MEMORY_STORED, {
-        memoryId: memory.id,
-        key: memory.key,
-        tier: memory.tier,
-      })
-    )
-
-    return memory
-  }
-
-  /**
-   * Delete a memory by key
-   */
-  async forget(key: string): Promise<boolean> {
-    // Try Tier 2 first
-    const deletedFromTier2 = await this.deleteTier2(key)
-    if (deletedFromTier2) return true
-
-    // Try Tier 3
-    const deletedFromTier3 = await this.deleteTier3(key)
-    if (deletedFromTier3) return true
-
-    return false
-  }
-
-  /**
-   * Get a memory by key
-   */
-  async get(key: string): Promise<Memory | null> {
-    // Check Tier 2 first (fast)
-    const tier2 = await this.getTier2(key)
-    if (tier2) {
-      await this.tier2Store.incrementUseCount(tier2.id)
-      return tier2
-    }
-
-    // Check Tier 3 (graph)
-    const tier3 = await this.getTier3(key)
-    if (tier3) {
-      await this.incrementUseCountGraph(tier3.id)
-      return tier3
-    }
-
-    return null
-  }
-
-  /**
-   * Get all memories
-   */
-  async getAll(options: {
-    tier?: 2 | 3
-    source?: 'explicit' | 'extracted' | 'decision'
-    limit?: number
-  } = {}): Promise<Memory[]> {
-    const { tier, source, limit = 100 } = options
-
-    let memories: Memory[] = []
-
-    if (!tier || tier === 2) {
-      const tier2 = await this.getAllTier2({ source, limit })
-      memories = memories.concat(tier2)
-    }
-
-    if (!tier || tier === 3) {
-      const tier3 = await this.getAllTier3({ source, limit })
-      memories = memories.concat(tier3)
-    }
-
-    // Sort by use count (most used first)
-    return memories.sort((a, b) => b.useCount - a.useCount).slice(0, limit)
-  }
-
-  /**
-   * Search memories by relevance
-   * Tier 2: Full-text search via SQLite FTS
-   * Tier 3: MemPalace vector search (or keyword fallback)
-   */
-  async searchRelevant(
-    query: string,
-    options: {
-      limit?: number
-      tier?: 2 | 3
-    } = {}
-  ): Promise<MemorySearchResult[]> {
-    const { limit = 5, tier } = options
-
-    let results: MemorySearchResult[] = []
-
-    if (!tier || tier === 2) {
-      const tier2Results = await this.searchTier2(query, limit)
-      results = results.concat(tier2Results)
-    }
-
-    if (!tier || tier === 3) {
-      const tier3Results = await this.searchTier3(query, limit)
-      results = results.concat(tier3Results)
-    }
-
-    // Sort by relevance
-    return results.sort((a, b) => b.relevance - a.relevance).slice(0, limit)
-  }
-
-  /**
-   * Format memories for agent context injection.
-   * Always starts with Tier 1 (current session summary) for zero-latency context.
-   * Then appends Tier 2/3 relevant long-term memories if available.
-   */
-  async formatForContext(
-    taskDescription: string,
-    _budget: number
-  ): Promise<string> {
-    const parts: string[] = []
-
-    // ── Tier 1: current session context (synchronous, always fast) ───────────
-    if (this.sessionStore) {
-      const activeSession = this.sessionStore.getActiveSession()
-      if (activeSession) {
-        const t1 = this.sessionStore.formatContextForLLM(activeSession.sessionId)
-        if (t1) parts.push(t1)
-      }
-    }
-
-    // ── Tier 2/3: relevant long-term memories (async, may be unavailable) ────
-    // Try MemPalace first (vector semantic search), fall back to Tier 2 search
-    let memPalaceContext = ''
-    if (this.memPalaceService) {
-      try {
-        memPalaceContext = await this.memPalaceService.queryForContext(taskDescription)
-      } catch {
-        // MemPalace unavailable — continue to fallback
-      }
-    }
-    
-    if (memPalaceContext) {
-      parts.push(memPalaceContext)
-    } else if (this.tier2Ready) {
-      // Fallback to Tier 2 full-text search
-      try {
-        const relevant = await this.searchRelevant(taskDescription, { limit: 4 })
-        if (relevant.length > 0) {
-          const memLines = relevant.map(({ memory }) => {
-            const age = this.formatAge(memory.createdAt)
-            return `- ${memory.key}: ${memory.content.slice(0, 100)}${memory.content.length > 100 ? '...' : ''} (${age})`
-          })
-          parts.push(`[MEMORY]\n${memLines.join('\n')}`)
-        }
-      } catch {
-        // Tier 2 unavailable — skip gracefully
-      }
-    }
-
-    return parts.join('\n\n')
-  }
-
-  // Tier 2: SQLite Implementation
-
-  private async storeTier2(memory: Memory): Promise<void> {
-    await this.tier2Store.store({
-      id: memory.id,
-      key: memory.key,
-      content: memory.content,
-      tier: memory.tier,
-      source: memory.source,
-      createdAt: memory.createdAt,
-      updatedAt: memory.updatedAt,
-      useCount: memory.useCount,
-      sessionId: memory.sessionId,
-      agentName: memory.agentName,
-      embedding: memory.embedding,
-    })
-  }
-
-  private async getTier2(key: string): Promise<Memory | null> {
-    const row = await this.tier2Store.getByKey(key, 2)
-    if (!row) return null
-    return this.parseMemoryRow(row)
-  }
-
-  private async getAllTier2(options: { source?: string; limit: number }): Promise<Memory[]> {
-    const rows = await this.tier2Store.getAll({ tier: 2, source: options.source, limit: options.limit })
-    return rows.map(r => this.parseMemoryRow(r))
-  }
-
-  private async searchTier2(query: string, limit: number): Promise<MemorySearchResult[]> {
-    const rows = await this.tier2Store.search(query, limit)
-    return rows.map((row, index) => ({
-      memory: this.parseMemoryRow(row),
-      relevance: 1.0 - (index * 0.1),
-    }))
-  }
-
-  private async deleteTier2(key: string): Promise<boolean> {
-    return await this.tier2Store.delete(key, 2)
-  }
-
-  // Tier 3: Kuzu Graph Implementation
-
-  private async storeTier3(memory: Memory): Promise<void> {
-    if (!this.graphService) {
-      await this.storeTier2(memory)
-      return
-    }
-
-    await this.graphService.query(`
-      CREATE NODE TABLE IF NOT EXISTS Memory (
+    const schemas = [
+      `CREATE NODE TABLE IF NOT EXISTS Memory (
         id STRING,
         key STRING,
         content STRING,
-        tier INT64,
         source STRING,
         createdAt TIMESTAMP,
         updatedAt TIMESTAMP,
@@ -329,15 +93,125 @@ export class MemoryService {
         sessionId STRING,
         agentName STRING,
         PRIMARY KEY (id)
-      )
+      )`,
+      `CREATE NODE TABLE IF NOT EXISTS File (
+        path STRING,
+        lastModified TIMESTAMP,
+        agentName STRING,
+        changeCount INT64,
+        PRIMARY KEY (path)
+      )`,
+      `CREATE NODE TABLE IF NOT EXISTS Symbol (
+        name STRING,
+        type STRING,
+        filePath STRING,
+        line INT64,
+        agentName STRING,
+        PRIMARY KEY (name)
+      )`,
+      `CREATE NODE TABLE IF NOT EXISTS Session (
+        id STRING,
+        agentName STRING,
+        task STRING,
+        startedAt TIMESTAMP,
+        endedAt TIMESTAMP,
+        PRIMARY KEY (id)
+      )`,
+    ]
+
+    for (const schema of schemas) {
+      try {
+        await this.graphService.query(schema)
+      } catch (e) {
+        console.warn('[MemoryService] Schema warning:', e)
+      }
+    }
+
+    const relSchemas = [
+      `CREATE REL TABLE IF NOT EXISTS RELATES_TO (FROM File TO Memory, type STRING, MANY_MANY)`,
+      `CREATE REL TABLE IF NOT EXISTS DEFINED_IN (FROM Symbol TO File, MANY_MANY)`,
+      `CREATE REL TABLE IF NOT EXISTS EXTRACTED_FROM (FROM Memory TO Session, MANY_MANY)`,
+      `CREATE REL TABLE IF NOT EXISTS MODIFIED_IN (FROM File TO Session, changeType STRING, MANY_MANY)`,
+    ]
+
+    for (const schema of relSchemas) {
+      try {
+        await this.graphService.query(schema)
+      } catch (e) {
+        console.warn('[MemoryService] Rel schema warning:', e)
+      }
+    }
+  }
+
+  /**
+   * Get all memories from the Working Graph
+   */
+  async getAll(options: { limit?: number } = {}): Promise<Memory[]> {
+    if (!this.graphReady || !this.graphService) return []
+
+    const limit = options.limit || 100
+    const result = await this.graphService.query(`
+      MATCH (m:Memory)
+      RETURN m
+      ORDER BY m.updatedAt DESC
+      LIMIT ${limit}
     `)
+
+    return result.map((r: { m: any }) => this.parseMemoryNode(r.m))
+  }
+
+  /**
+   * Delete a memory by key
+   */
+  async forget(key: string): Promise<boolean> {
+    if (!this.graphReady || !this.graphService) return false
+
+    const escaped = (s: string) => s.replace(/'/g, "''")
+
+    await this.graphService.query(`
+      MATCH (m:Memory)
+      WHERE m.key = '${escaped(key)}'
+      DETACH DELETE m
+    `)
+    return true
+  }
+
+  /**
+   * Store a memory extracted from sessions or explicitly added
+   */
+  async remember(memory: Omit<Memory, 'id' | 'createdAt' | 'updatedAt' | 'useCount'>): Promise<Memory> {
+    const fullMemory: Memory = {
+      ...memory,
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      useCount: 0,
+    }
+
+    if (this.graphReady) {
+      await this.storeInGraph(fullMemory)
+    }
+
+    await this.hub?.publish(
+      LoomMsgHub.msg(Channel.MEMORY_STORED, {
+        memoryId: fullMemory.id,
+        key: fullMemory.key,
+      })
+    )
+
+    return fullMemory
+  }
+
+  private async storeInGraph(memory: Memory): Promise<void> {
+    if (!this.graphService) return
+
+    const escaped = (s: string) => s.replace(/'/g, "''")
 
     await this.graphService.query(`
       CREATE (m:Memory {
         id: '${memory.id}',
-        key: '${this.escape(memory.key)}',
-        content: '${this.escape(memory.content)}',
-        tier: ${memory.tier},
+        key: '${escaped(memory.key)}',
+        content: '${escaped(memory.content)}',
         source: '${memory.source}',
         createdAt: timestamp('${memory.createdAt.toISOString()}'),
         updatedAt: timestamp('${memory.updatedAt.toISOString()}'),
@@ -347,175 +221,246 @@ export class MemoryService {
       })
     `)
 
-    await this.createMemoryRelationships(memory)
+    // Create relationships to files mentioned in content
+    const fileRefs = this.extractFileReferences(memory.content)
+    for (const filePath of fileRefs) {
+      try {
+        await this.upsertFile(filePath, memory.agentName)
+        await this.graphService.query(`
+          MATCH (m:Memory {id: '${memory.id}'}), (f:File {path: '${escaped(filePath)}'})
+          CREATE (f)-[:RELATES_TO {type: 'memory_source'}]->(m)
+        `)
+      } catch {}
+    }
   }
 
-  private async createMemoryRelationships(memory: Memory): Promise<void> {
+  /**
+   * Upsert a file node when it's been modified
+   */
+  async upsertFile(path: string, agentName?: string): Promise<void> {
     if (!this.graphService) return
 
-    const fileRefs = this.extractFileReferences(memory.content)
-    const moduleRefs = this.extractModuleReferences(memory.content)
+    const escaped = (s: string) => s.replace(/'/g, "''")
 
-    for (const fileRef of fileRefs) {
-      try {
-        await this.graphService.query(`
-          MATCH (m:Memory {id: '${memory.id}'}), (f:File {path: '${this.escape(fileRef)}'})
-          CREATE (m)-[:RELATES_TO {type: 'file_reference'}]->(f)
-        `)
-      } catch {}
-    }
-
-    for (const moduleRef of moduleRefs) {
-      try {
-        await this.graphService.query(`
-          MATCH (m:Memory {id: '${memory.id}'}), (mod:Module {name: '${this.escape(moduleRef)}'})
-          CREATE (m)-[:RELATES_TO {type: 'module_reference'}]->(mod)
-        `)
-      } catch {}
-    }
-
-    if (memory.sessionId) {
-      try {
-        await this.graphService.query(`
-          MATCH (m:Memory {id: '${memory.id}'}), (s:Session {id: '${memory.sessionId}'})
-          CREATE (m)-[:SESSION_SOURCE]->(s)
-        `)
-      } catch {}
-    }
-  }
-
-  private extractFileReferences(content: string): string[] {
-    const matches = content.match(/(?:\/?[\w.-]+\/)+[\w.-]+\.[\w]+/g) || []
-    return [...new Set(matches)]
-  }
-
-  private extractModuleReferences(content: string): string[] {
-    const importMatches = content.match(/from ['"]([@\w/-]+)['"]/g) || []
-    const requireMatches = content.match(/require\(['"]([@\w/-]+)['"]\)/g) || []
-    
-    const modules = new Set<string>()
-    
-    for (const match of importMatches) {
-      const mod = match.match(/from ['"]([@\w/-]+)['"]/)?.[1]
-      if (mod) modules.add(mod)
-    }
-    
-    for (const match of requireMatches) {
-      const mod = match.match(/require\(['"]([@\w/-]+)['"]\)/)?.[1]
-      if (mod) modules.add(mod)
-    }
-    
-    return [...modules]
-  }
-
-  private escape(str: string): string {
-    return str.replace(/'/g, "''")
-  }
-
-  private async getTier3(key: string): Promise<Memory | null> {
-    if (!this.graphService) return null
-
-    const result = await this.graphService.query(`
-      MATCH (m:Memory)
-      WHERE m.key = '${this.escape(key)}' AND m.tier = 3
-      RETURN m
-      LIMIT 1
+    // Try to update existing
+    const existing = await this.graphService.query(`
+      MATCH (f:File {path: '${escaped(path)}'})
+      RETURN f
     `)
 
-    if (result.length === 0) return null
-    return this.parseMemoryNode(result[0].m)
+    if (existing.length > 0) {
+      await this.graphService.query(`
+        MATCH (f:File {path: '${escaped(path)}'})
+        SET f.lastModified = timestamp('${new Date().toISOString()}'),
+            f.changeCount = f.changeCount + 1
+      `)
+    } else {
+      await this.graphService.query(`
+        CREATE (f:File {
+          path: '${escaped(path)}',
+          lastModified: timestamp('${new Date().toISOString()}'),
+          agentName: '${agentName || ''}',
+          changeCount: 1
+        })
+      `)
+    }
   }
 
-  private async getAllTier3(options: { source?: string; limit: number }): Promise<Memory[]> {
-    if (!this.graphService) return []
+  /**
+   * Record a session in the graph
+   */
+  async recordSession(sessionId: string, agentName: string, task: string): Promise<void> {
+    if (!this.graphService) return
 
-    const whereClause = options.source ? `AND m.source = '${options.source}'` : ''
-    
+    const escaped = (s: string) => s.replace(/'/g, "''")
+
+    await this.graphService.query(`
+      CREATE (s:Session {
+        id: '${escaped(sessionId)}',
+        agentName: '${escaped(agentName)}',
+        task: '${escaped(task)}',
+        startedAt: timestamp('${new Date().toISOString()}')
+      })
+    `)
+  }
+
+  /**
+   * Promote session events to the Working Graph (Tier 1 -> Tier 2)
+   * Called at session end to extract meaningful nodes.
+   */
+  async promoteSession(sessionId: string, agentName: string): Promise<void> {
+    if (!this.graphService || !this.sessionStore) return
+
+    const events = this.sessionStore.getSessionJournal(sessionId)
+    if (events.length === 0) return
+
+    console.log(`[MemoryService] Promoting ${events.length} events from session ${sessionId}`)
+
+    // Record the session itself
+    const firstEventPayload = events[0]?.payload as { task?: string } | undefined
+    await this.recordSession(sessionId, agentName, firstEventPayload?.task || 'unknown')
+
+    // Extract meaningful entities from events
+    for (const event of events) {
+      await this.processEventForGraph(sessionId, event)
+    }
+
+    // Update session end time
+    const escaped = (s: string) => s.replace(/'/g, "''")
+    await this.graphService.query(`
+      MATCH (s:Session {id: '${escaped(sessionId)}'})
+      SET s.endedAt = timestamp('${new Date().toISOString()}')
+    `)
+
+    console.log(`[MemoryService] Promoted session ${sessionId} to Working Graph`)
+  }
+
+  private async processEventForGraph(sessionId: string, event: { kind: string; payload: any }): Promise<void> {
+    if (!this.graphService) return
+
+    const escaped = (s: string) => s.replace(/'/g, "''")
+
+    switch (event.kind) {
+      case 'file_write':
+      case 'file_edit': {
+        const filePath = event.payload?.filePath || event.payload?.path
+        if (filePath) {
+          await this.upsertFile(filePath, event.payload?.agentName)
+          await this.graphService.query(`
+            MATCH (f:File {path: '${escaped(filePath)}'}), (s:Session {id: '${escaped(sessionId)}'})
+            CREATE (f)-[:MODIFIED_IN {changeType: '${event.kind}'}]->(s)
+          `)
+        }
+        break
+      }
+
+      case 'tool_call': {
+        // Extract memory from tool results
+        if (event.payload?.toolName === 'FileReadTool' && event.payload?.result) {
+          const content = typeof event.payload.result === 'string'
+            ? event.payload.result.slice(0, 500)
+            : JSON.stringify(event.payload.result).slice(0, 500)
+
+          await this.remember({
+            key: `file-read-${Date.now()}`,
+            content,
+            source: 'extracted',
+            sessionId,
+            agentName: event.payload?.agentName,
+          })
+        }
+        break
+      }
+
+      case 'memory_approved': {
+        // User-approved memory gets stored explicitly
+        await this.remember({
+          key: event.payload?.key || `memory-${Date.now()}`,
+          content: event.payload?.content || '',
+          source: 'explicit',
+          sessionId,
+          agentName: event.payload?.agentName,
+        })
+        break
+      }
+    }
+  }
+
+  /**
+   * Search for relevant memories
+   */
+  async searchRelevant(query: string, limit: number = 5): Promise<MemorySearchResult[]> {
+    if (!this.graphReady || !this.graphService) return []
+
+    const escaped = (s: string) => s.replace(/'/g, "''")
+    const keywords = query.toLowerCase().split(/\s+/).filter(k => k.length > 3)
+
+    if (keywords.length === 0) return []
+
+    const pattern = keywords.join('|')
+
     const result = await this.graphService.query(`
       MATCH (m:Memory)
-      WHERE m.tier = 3 ${whereClause}
+      WHERE m.content =~ '(?i).*(${escaped(pattern)}).*' OR m.key =~ '(?i).*(${escaped(pattern)}).*'
       RETURN m
       ORDER BY m.useCount DESC
-      LIMIT ${options.limit}
+      LIMIT ${limit}
     `)
 
-    return result.map((r: any) => this.parseMemoryNode(r.m))
+    return result.map((r: { m: any }, index: number) => ({
+      memory: this.parseMemoryNode(r.m),
+      relevance: 1.0 - (index * 0.1),
+    }))
   }
 
-  private async searchTier3(query: string, limit: number): Promise<MemorySearchResult[]> {
-    // Try MemPalace vector search first
-    if (this.memPalaceService) {
-      try {
-        const results = await this.memPalaceService.search(query, { limit })
-        return results.map(r => ({
-          memory: {
-            id: r.id,
-            key: String(r.metadata?.key || 'memory'),
-            content: r.content,
-            tier: 3,
-            source: String(r.metadata?.source || 'extracted') as 'explicit' | 'extracted' | 'decision',
-            createdAt: new Date(r.timestamp),
-            updatedAt: new Date(r.timestamp),
-            useCount: 0,
-            agentName: String(r.wing || ''),
-            sessionId: r.metadata?.session_id as string | undefined,
-          },
-          relevance: r.score,
-        }))
-      } catch {
-        // Fall back to keyword search
+  /**
+   * Get memories by file
+   */
+  async getMemoriesForFile(filePath: string): Promise<Memory[]> {
+    if (!this.graphReady || !this.graphService) return []
+
+    const escaped = (s: string) => s.replace(/'/g, "''")
+
+    const result = await this.graphService.query(`
+      MATCH (f:File {path: '${escaped(filePath)}'})-[:RELATES_TO]->(m:Memory)
+      RETURN m
+      ORDER BY m.updatedAt DESC
+    `)
+
+    return result.map((r: { m: any }) => this.parseMemoryNode(r.m))
+  }
+
+  /**
+   * Get files touched by an agent
+   */
+  async getFilesByAgent(agentName: string): Promise<FileNode[]> {
+    if (!this.graphReady || !this.graphService) return []
+
+    const escaped = (s: string) => s.replace(/'/g, "''")
+
+    const result = await this.graphService.query(`
+      MATCH (f:File)
+      WHERE f.agentName = '${escaped(agentName)}'
+      RETURN f
+      ORDER BY f.lastModified DESC
+    `)
+
+    return result.map((r: { f: any }) => ({
+      path: r.f.path,
+      lastModified: new Date(r.f.lastModified),
+      agentName: r.f.agentName,
+      changeCount: r.f.changeCount,
+    }))
+  }
+
+  /**
+   * Format memories for agent context
+   */
+  async formatForContext(taskDescription: string, _budget: number): Promise<string> {
+    const parts: string[] = []
+
+    // Tier 1: Current session
+    if (this.sessionStore) {
+      const activeSession = this.sessionStore.getActiveSession()
+      if (activeSession) {
+        const t1 = this.sessionStore.formatContextForLLM(activeSession.sessionId)
+        if (t1) parts.push(t1)
       }
     }
 
-    // Fallback: keyword search via graph
-    if (this.graphService) {
-      const keywords = query.toLowerCase().split(/\s+/).filter(k => k.length > 2)
-      if (keywords.length === 0) return []
-
-      const pattern = keywords.join('|')
-      const result = await this.graphService.query(`
-        MATCH (m:Memory)
-        WHERE m.tier = 3 AND (m.content =~ '(?i).*(${pattern}).*' OR m.key =~ '(?i).*(${pattern}).*')
-        RETURN m
-        LIMIT ${limit}
-      `)
-
-      return result.map((r: any, index: number) => ({
-        memory: this.parseMemoryNode(r.m),
-        relevance: 0.7 - (index * 0.1),
-      }))
+    // Tier 2: Relevant from Working Graph
+    if (this.graphReady) {
+      const relevant = await this.searchRelevant(taskDescription, 4)
+      if (relevant.length > 0) {
+        const lines = relevant.map(({ memory }) => {
+          const age = this.formatAge(memory.createdAt)
+          return `- ${memory.key}: ${memory.content.slice(0, 100)}${memory.content.length > 100 ? '...' : ''} (${age})`
+        })
+        parts.push(`[WORKING GRAPH]\n${lines.join('\n')}`)
+      }
     }
 
-    return []
-  }
-
-  private async deleteTier3(key: string): Promise<boolean> {
-    if (!this.graphService) return false
-
-    await this.graphService.query(`
-      MATCH (m:Memory)
-      WHERE m.key = '${this.escape(key)}' AND m.tier = 3
-      DETACH DELETE m
-    `)
-    return true
-  }
-
-  // Helpers
-
-  private parseMemoryRow(row: any): Memory {
-    return {
-      id: row.id,
-      key: row.key,
-      content: row.content,
-      tier: row.tier as 2 | 3,
-      source: row.source as 'explicit' | 'extracted' | 'decision',
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-      useCount: row.use_count,
-      sessionId: row.session_id || undefined,
-      agentName: row.agent_name || undefined,
-      embedding: row.embedding ? JSON.parse(row.embedding) : undefined,
-    }
+    return parts.join('\n\n')
   }
 
   private parseMemoryNode(node: any): Memory {
@@ -523,7 +468,6 @@ export class MemoryService {
       id: node.id,
       key: node.key,
       content: node.content,
-      tier: node.tier,
       source: node.source,
       createdAt: new Date(node.createdAt),
       updatedAt: new Date(node.updatedAt),
@@ -533,21 +477,9 @@ export class MemoryService {
     }
   }
 
-  private async incrementUseCountGraph(memoryId: string): Promise<void> {
-    if (!this.graphService) return
-    
-    await this.graphService.query(`
-      MATCH (m:Memory {id: '${memoryId}'})
-      SET m.useCount = m.useCount + 1
-    `)
-  }
-
-  // Helpers
-
-  private generateKey(content: string): string {
-    // Generate a short key from content
-    const words = content.toLowerCase().split(/\s+/).slice(0, 5)
-    return words.join('-').replace(/[^a-z0-9-]/g, '').slice(0, 50)
+  private extractFileReferences(content: string): string[] {
+    const matches = content.match(/(?:\/?[\w.-]+\/)+[\w.-]+\.[\w]+/g) || []
+    return [...new Set(matches)]
   }
 
   private formatAge(date: Date): string {

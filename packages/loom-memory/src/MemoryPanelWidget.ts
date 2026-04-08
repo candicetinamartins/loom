@@ -2,17 +2,15 @@ import { Widget } from '@lumino/widgets'
 import { MemoryService, Memory } from './MemoryService'
 
 /**
- * Phase 6 — MemoryPanelWidget
- * 
- * Lumino widget for browsing and managing memories.
- * Shows Tier 2 and Tier 3 memories with search/filter.
+ * MemoryPanelWidget — Browse and manage Working Graph memories
+ *
+ * Shows memories from the Kuzu graph (Tier 2) with search/filter.
  */
 
 export class MemoryPanelWidget extends Widget {
   private memoryService: MemoryService
   private memories: Memory[] = []
   private filter: string = ''
-  private selectedTier: 2 | 3 | 'all' = 'all'
 
   constructor(memoryService: MemoryService) {
     super()
@@ -39,45 +37,32 @@ export class MemoryPanelWidget extends Widget {
 
   private getFilteredMemories(): Memory[] {
     return this.memories.filter(m => {
-      // Tier filter
-      if (this.selectedTier !== 'all' && m.tier !== this.selectedTier) {
-        return false
-      }
-      
-      // Text filter
+      // Text filter only (no tier filter in new architecture)
       if (this.filter) {
         const filterLower = this.filter.toLowerCase()
         return m.key.toLowerCase().includes(filterLower) ||
                m.content.toLowerCase().includes(filterLower)
       }
-      
       return true
     })
   }
 
   private render(memories: Memory[]): string {
-    const tier2Count = this.memories.filter(m => m.tier === 2).length
-    const tier3Count = this.memories.filter(m => m.tier === 3).length
+    const memoryCount = this.memories.length
 
     return `
       <div class="memory-panel-header">
-        <h3>💭 Memory Store</h3>
+        <h3>💭 Working Graph</h3>
         <div class="memory-stats">
-          <span class="tier2-badge">Tier 2: ${tier2Count}</span>
-          <span class="tier3-badge">Tier 3: ${tier3Count}</span>
+          <span class="memory-count">${memoryCount} memories</span>
         </div>
       </div>
-      
+
       <div class="memory-filters">
-        <input type="text" 
-               class="memory-search" 
+        <input type="text"
+               class="memory-search"
                placeholder="Search memories..."
                value="${this.filter}" />
-        <select class="tier-filter">
-          <option value="all" ${this.selectedTier === 'all' ? 'selected' : ''}>All Tiers</option>
-          <option value="2" ${this.selectedTier === 2 ? 'selected' : ''}>Tier 2 (User)</option>
-          <option value="3" ${this.selectedTier === 3 ? 'selected' : ''}>Tier 3 (Project)</option>
-        </select>
         <button class="refresh-btn">↻ Refresh</button>
       </div>
       
@@ -94,14 +79,12 @@ export class MemoryPanelWidget extends Widget {
 
   private renderMemory(memory: Memory): string {
     const age = this.formatAge(memory.createdAt)
-    const tierLabel = memory.tier === 2 ? 'T2' : 'T3'
-    const sourceIcon = memory.source === 'explicit' ? '✏️' : 
+    const sourceIcon = memory.source === 'explicit' ? '✏️' :
                        memory.source === 'decision' ? '🎯' : '🔍'
-    
+
     return `
       <div class="memory-item" data-id="${memory.id}">
         <div class="memory-header">
-          <span class="memory-tier tier-${memory.tier}">${tierLabel}</span>
           <span class="memory-source">${sourceIcon}</span>
           <span class="memory-key">${memory.key}</span>
           <span class="memory-age">${age}</span>
@@ -135,15 +118,6 @@ export class MemoryPanelWidget extends Widget {
       })
     }
 
-    // Tier filter
-    const tierSelect = this.node.querySelector('.tier-filter') as HTMLSelectElement
-    if (tierSelect) {
-      tierSelect.addEventListener('change', (e) => {
-        const value = (e.target as HTMLSelectElement).value
-        this.selectedTier = value === 'all' ? 'all' : parseInt(value) as 2 | 3
-        this.update()
-      })
-    }
 
     // Refresh button
     const refreshBtn = this.node.querySelector('.refresh-btn')

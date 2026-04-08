@@ -26,20 +26,20 @@ export class RememberCommand {
       return 'Usage: /remember <content>\nExample: /remember Always use TypeScript strict mode'
     }
 
-    const memory = await this.memoryService.remember(args.trim(), {
+    const memory = await this.memoryService.remember({
+      key: args.trim().slice(0, 50),
+      content: args.trim(),
       source: 'explicit',
-      tier: 2,
     })
 
     await this.hub.publish(
       LoomMsgHub.msg(Channel.MEMORY_STORED, {
         memoryId: memory.id,
         key: memory.key,
-        tier: memory.tier,
       })
     )
 
-    return `✅ Memory stored: "${memory.key}" (Tier ${memory.tier})`
+    return `✅ Memory stored: "${memory.key}" (Working Graph)`
   }
 }
 

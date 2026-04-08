@@ -1,18 +1,18 @@
 import { injectable, inject, optional } from 'inversify'
 import { MemoryService, type Memory } from './MemoryService'
 import { SessionStore } from './tier1/SessionStore'
-import { MemPalaceService } from './mempalace/MemPalaceService'
 import { MEMORY_TYPES } from './loom-memory-module'
 
 /**
- * MemoryIsolationService — session boundary management for long-term memory.
+ * MemoryIsolationService — session boundary management for Working Graph (Tier 2).
  *
- * Session tracking is delegated to SessionStore (Tier 1 SQLite journal).
+ * Session tracking is delegated to SessionStore (Tier 1 ephemeral journal).
  * This service handles the promotion lifecycle:
- *   session end (approved) → walk Tier 2 memories for this session → promote to Tier 3
+ *   session end (approved) → walk Tier 1 events → upsert to Tier 2 Working Graph
  *
- * Replaces the old in-memory Map<string, SessionMemory> approach that was
- * tightly coupled to OpenCode's session model. See TIER1_REPLACEMENT.md.
+ * Tier 2 holds entities, relationships, and summaries extracted from Tier 1 events.
+ * It answers richer queries: "what files does this feature depend on?",
+ * "which agent has touched this module before?"
  */
 
 export interface SessionMemory {
@@ -42,7 +42,6 @@ export class MemoryIsolationService {
   constructor(
     @inject(MEMORY_TYPES.MemoryService) @optional() private memoryService: MemoryService,
     @inject(MEMORY_TYPES.SessionStore) @optional() private sessionStore: SessionStore,
-    @inject(MEMORY_TYPES.MemPalaceService) @optional() private memPalaceService: MemPalaceService,
   ) {}
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -69,43 +68,33 @@ export class MemoryIsolationService {
     return this.sessionStore.startSession(agentName, task)
   }
 
-  /** Store memory within a session scope (Tier 2, not yet promoted to Tier 3) */
+  /** Store memory within a session scope (Tier 2 Working Graph) */
   async storeSessionMemory(
     sessionId: string,
     content: string,
     options: { key?: string; agentName?: string } = {}
   ): Promise<Memory | null> {
     if (!this.memoryService) return null
-    return this.memoryService.remember(content, {
-      key: options.key,
-      tier: 2,
+    return await this.memoryService.remember({
+      key: options.key || `extracted-${Date.now()}`,
+      content,
       source: 'extracted',
       sessionId,
       agentName: options.agentName,
     })
   }
 
-  /** Approve a session — promote all its Tier 2 memories to Tier 3 */
-  async approveSession(sessionId: string): Promise<void> {
+  /** Approve a session — promote Tier 1 events to Tier 2 Working Graph */
+  async approveSession(sessionId: string, agentName?: string): Promise<void> {
     this.pendingApproval.delete(sessionId)
     this.approvedSessions.add(sessionId)
     if (!this.memoryService || !this.sessionStore) return
 
-    const all = await this.memoryService.getAll({ tier: 2, limit: 500 })
-    const sessionMems = all.filter(m => m.sessionId === sessionId)
-
-    for (const memory of sessionMems) {
-      await this.memoryService.remember(memory.content, {
-        key: memory.key,
-        tier: 3,
-        source: memory.source,
-        sessionId,
-        agentName: memory.agentName,
-      })
-    }
+    // Use the new promoteSession method to upsert events to Working Graph
+    await this.memoryService.promoteSession(sessionId, agentName || 'unknown')
 
     this.sessionStore.endSession(sessionId, true)
-    console.log(`[MemoryIsolationService] Session ${sessionId} approved — ${sessionMems.length} memories promoted`)
+    console.log(`[MemoryIsolationService] Session ${sessionId} approved — promoted to Working Graph`)
   }
 
   /** Discard a session without promoting its memories */
@@ -168,14 +157,6 @@ export class MemoryIsolationService {
         memoriesExtracted: extracted.length,
         endedAt: Date.now(),
       })
-    }
-
-    // ── Mine session to MemPalace Tier 2 (async, non-blocking) ─────────────────
-    if (this.sessionStore) {
-      const session = this.sessionStore.getActiveSession()
-      if (session && session.sessionId === sessionId) {
-        void this.memPalaceService?.mineSession(sessionId, agentName, session.task)
-      }
     }
 
     return extracted

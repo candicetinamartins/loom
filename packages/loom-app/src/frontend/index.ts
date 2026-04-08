@@ -16,6 +16,7 @@ import { LoomStatusBarContribution } from './loom-status-bar'
 import { LoomStatusBarService, LOOM_STATUSBAR_SYMBOL } from './loom-status-bar-service'
 import { LoomThemeContribution } from './loom-theme-contribution'
 import { LoomKeybindingContribution, LoomCommandContribution, LoomMenuContribution } from './loom-keybindings'
+import { LoomFileMenuCommandContribution, LoomFileMenuContribution } from './loom-file-menu-contribution'
 import { LoomAgentPanelContribution } from './loom-agent-panel-contribution'
 import { LoomOpenHandler } from './loom-open-handler'
 import { LoomOnboardingWizard } from './loom-onboarding'
@@ -107,6 +108,11 @@ export default new ContainerModule((bind) => {
   // ── MenuContribution ───────────────────────────────────────────────────────
   // Registers Loom menu structure in Theia's menu bar.
   bindTo(MenuContribution, LoomMenuContribution)
+
+  // ── File Menu (Standard Open/Close/Save/Save As) ───────────────────────────
+  // Ensures standard File menu items are visible
+  bindTo(CommandContribution, LoomFileMenuCommandContribution)
+  bindTo(MenuContribution, LoomFileMenuContribution)
 
   // ── KeybindingContribution ────────────────────────────────────────────────
   // Theia's KeybindingRegistry calls registerKeybindings() on every bound instance.

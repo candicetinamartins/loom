@@ -1,4 +1,5 @@
 import { injectable, inject } from 'inversify'
+import type { FrontendApplicationContribution } from '@theia/core/lib/browser/frontend-application-contribution'
 import { ThemeService } from '@theia/core/lib/browser/theming'
 
 // Import Loom design system CSS
@@ -6,7 +7,7 @@ import '@loom/ui/src/design/tokens.css'
 import '@loom/ui/src/design/components.css'
 
 @injectable()
-export class LoomThemeContribution {
+export class LoomThemeContribution implements FrontendApplicationContribution {
   constructor(@inject(ThemeService) private themeService: ThemeService) {}
 
   async onStart(): Promise<void> {

@@ -1,37 +1,124 @@
 import { injectable, inject } from 'inversify'
-import { FrontendApplicationContribution, WidgetManager } from '@theia/core/lib/browser'
+import { Widget } from '@lumino/widgets'
+import { Message } from '@lumino/messaging'
+import type { FrontendApplicationContribution } from '@theia/core/lib/browser/frontend-application-contribution'
 import { EditorManager } from '@theia/editor/lib/browser/editor-manager'
 
-// Avoid circular dependency with @loom/ui and @loom/core
-interface FlowTimelineWidget {
+interface FlowEvent {
   id: string
-  title: { label: string }
-  node: HTMLElement
-  addEvent(event: any): void
-  setIntent(intent: string, confidence: number): void
+  type: string
+  timestamp: number
+  color: string
+  label: string
 }
 
 interface FlowTrackingService {
-  subscribe(callback: (event: any) => void): void
+  subscribe(callback: (event: { id: string; type: string; timestamp: number; filePath?: string }) => void): void
   inferIntent(): { intent: string; confidence: number }
 }
 
-// Constructor workaround for interface
-const FlowTimelineWidget = function() {} as unknown as { new (): FlowTimelineWidget }
+/**
+ * FlowTimelineWidget — Lumino widget showing real-time flow events above editors
+ */
+class FlowTimelineWidget extends Widget {
+  static readonly ID = 'loom-flow-timeline'
+  private events: FlowEvent[] = []
+  private intentLabel: HTMLElement
+
+  constructor() {
+    super()
+    this.id = FlowTimelineWidget.ID
+    this.addClass('loom-flow-timeline')
+    this._applyContainerStyles()
+
+    // Create intent label
+    this.intentLabel = document.createElement('div')
+    this.intentLabel.className = 'loom-flow-intent'
+    this.intentLabel.style.cssText = [
+      'padding:4px 12px',
+      'font-size:11px',
+      'font-weight:600',
+      'color:var(--theia-foreground,#cdd6f4)',
+      'background:var(--theia-editor-background,#1e1e2e)',
+      'border-bottom:1px solid var(--theia-widget-border,#333)',
+      'display:flex',
+      'align-items:center',
+      'gap:8px',
+    ].join(';')
+    this.node.appendChild(this.intentLabel)
+  }
+
+  addEvent(event: FlowEvent): void {
+    this.events.unshift(event)
+    if (this.events.length > 50) this.events.pop()
+    this.update()
+  }
+
+  setIntent(intent: string, confidence: number): void {
+    const confidencePercent = Math.round(confidence * 100)
+    this.intentLabel.innerHTML = `◈ ${intent} <span style="opacity:0.6;font-weight:400">${confidencePercent}%</span>`
+  }
+
+  protected onUpdateRequest(_msg: Message): void {
+    // Keep intent label, update event list
+    const existingList = this.node.querySelector('.loom-flow-events')
+    if (existingList) existingList.remove()
+
+    if (this.events.length === 0) {
+      this.intentLabel.textContent = '◈ Flow — waiting for activity...'
+      return
+    }
+
+    const list = document.createElement('div')
+    list.className = 'loom-flow-events'
+    list.style.cssText = [
+      'display:flex',
+      'flex-wrap:wrap',
+      'gap:4px',
+      'padding:6px 12px',
+      'background:var(--theia-editor-background,#1e1e2e)',
+    ].join(';')
+
+    // Show last 8 events as chips
+    for (const event of this.events.slice(0, 8)) {
+      const chip = document.createElement('span')
+      chip.style.cssText = [
+        'padding:2px 8px',
+        'border-radius:3px',
+        'font-size:10px',
+        'font-family:monospace',
+        'background:' + event.color + '20',
+        'color:' + event.color,
+        'border:1px solid ' + event.color + '40',
+      ].join(';')
+      chip.textContent = event.label
+      chip.title = `${event.type} — ${new Date(event.timestamp).toLocaleTimeString()}`
+      list.appendChild(chip)
+    }
+
+    this.node.appendChild(list)
+  }
+
+  private _applyContainerStyles(): void {
+    this.node.style.cssText = [
+      'width:100%',
+      'flex-shrink:0',
+    ].join(';')
+  }
+}
 
 @injectable()
 export class LoomFlowTimelineContribution implements FrontendApplicationContribution {
   private timelineWidget: FlowTimelineWidget | null = null
 
   constructor(
-    @inject(WidgetManager) private widgetManager: WidgetManager,
     @inject(EditorManager) private editorManager: EditorManager,
     @inject('FlowTrackingService') private flowService: FlowTrackingService
   ) {}
 
   async onStart(): Promise<void> {
-    // Subscribe to flow events to update timeline
-    this.flowService.subscribe((event: { id: string; type: string; timestamp: number; [key: string]: any }) => {
+    // Subscribe to flow events
+    this.flowService.subscribe((event) => {
       if (this.timelineWidget) {
         const color = this.getEventColor(event.type)
         const label = this.formatEventLabel(event)
@@ -43,7 +130,6 @@ export class LoomFlowTimelineContribution implements FrontendApplicationContribu
           label,
         })
 
-        // Update intent label
         const context = this.flowService.inferIntent()
         this.timelineWidget.setIntent(context.intent, context.confidence)
       }
@@ -55,24 +141,15 @@ export class LoomFlowTimelineContribution implements FrontendApplicationContribu
     })
   }
 
-  private positionTimelineAboveEditor(editorWidget: unknown): void {
-    // Create timeline widget if not exists
+  private positionTimelineAboveEditor(editorWidget: { node: HTMLElement }): void {
     if (!this.timelineWidget) {
       this.timelineWidget = new FlowTimelineWidget()
-      this.timelineWidget.id = 'loom-flow-timeline'
-      this.timelineWidget.title.label = 'Flow'
     }
 
-    // Theia's editor widget structure:
-    // MainAreaWidget -> EditorWidget -> Monaco editor
-    // We need to inject our widget between the toolbar and editor
-
-    const widget = editorWidget as { node: HTMLElement; toolbar?: HTMLElement }
+    const widget = editorWidget as { node: HTMLElement }
     if (widget.node) {
-      // Check if timeline already inserted
       const existing = widget.node.querySelector('#loom-flow-timeline')
       if (!existing) {
-        // Insert as first child before the editor content
         const content = widget.node.querySelector('.monaco-editor')?.parentElement
         if (content && content.parentElement) {
           content.parentElement.insertBefore(this.timelineWidget.node, content)

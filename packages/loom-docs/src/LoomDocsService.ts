@@ -93,7 +93,7 @@ export class LoomDocsService {
           package: '${page.package}'
         })
       `
-      // Would execute through GraphService
+      await this.graphService.query(query)
     } catch (error) {
       console.warn(`[LoomDocsService] Failed to create DocPage node:`, error)
     }
@@ -110,7 +110,7 @@ export class LoomDocsService {
         })
         CREATE (d)-[:HAS_SECTION]->(s)
       `
-      // Would execute through GraphService
+      await this.graphService.query(query)
     } catch (error) {
       console.warn(`[LoomDocsService] Failed to create DocSection node:`, error)
     }
@@ -127,7 +127,7 @@ export class LoomDocsService {
         })
         CREATE (d)-[:HAS_EXAMPLE]->(e)
       `
-      // Would execute through GraphService
+      await this.graphService.query(query)
     } catch (error) {
       console.warn(`[LoomDocsService] Failed to create DocExample node:`, error)
     }

@@ -11,6 +11,7 @@ export * from './LspCrossReferenceIndexer'
 export * from './CrossLayerLinker'
 export * from './EmbeddingService'
 export * from './BM25Search'
+export * from './KAGSearchService'
 export * from './context/GraphContextFormatter'
 export * from './LoomMsgHub'
 

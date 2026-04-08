@@ -80,6 +80,11 @@ export class LoomChatContribution extends AbstractViewContribution<LoomChatWidge
       this.handleUserMessage(text, modes)
     })
 
+    // Set up checkpoint restore handler
+    widget.setRestoreCheckpointHandler((checkpointId: string) => {
+      this.restoreCheckpoint(checkpointId)
+    })
+
     // Load any existing messages from service
     const history = this.chatService.getHistory()
     history.forEach((msg: ChatMessage) => widget.addMessage(msg))
@@ -265,6 +270,12 @@ export class LoomChatContribution extends AbstractViewContribution<LoomChatWidge
   private createCheckpoint(): void {
     // Create checkpoint
     console.log('[LoomChat] Creating checkpoint...')
+  }
+
+  private restoreCheckpoint(checkpointId: string): void {
+    console.log('[LoomChat] Restoring checkpoint:', checkpointId)
+    // TODO: Call backend CheckpointService.restoreCheckpoint(checkpointId)
+    // This would revert all files to the checkpoint state
   }
 
   // Public API for other contributions

@@ -30,6 +30,20 @@ import { SaiaContribution } from './saia-contribution'
 import { LoomChatContribution, CHAT_WIDGET_ID } from './loom-chat-contribution'
 import { LoomChatWidget } from './loom-chat-widget'
 
+// Import widget IDs from contributions
+import { AGENT_PANEL_WIDGET_ID } from './loom-agent-panel-contribution'
+import { AgentPanelWidget } from '@loom/ui'
+import { CODEMAP_WIDGET_ID } from './loom-codemap-contribution'
+import { CodemapWidget } from '@loom/ui'
+import { COMPONENT_BROWSER_WIDGET_ID } from './loom-component-browser-contribution'
+import { ComponentBrowserWidget } from '@loom/ui'
+import { GHOST_TEXT_WIDGET_ID } from './loom-ghost-text-contribution'
+import { GhostTextWidget } from '@loom/ui'
+import { GRAPH_STATS_WIDGET_ID } from './loom-graph-stats-contribution'
+import { GraphStatsBarWidget } from '@loom/ui'
+import { VERIFIER_STATUS_WIDGET_ID } from './loom-verifier-status-contribution'
+import { VerifierStatusBarWidget } from '@loom/ui'
+
 // Runtime-only: get the actual Theia DI symbols from their definitive file paths.
 // These are unique symbols (not Symbol.for) so they must be obtained via require().
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment */
@@ -113,6 +127,55 @@ export default new ContainerModule((bind) => {
   })).inSingletonScope()
   bind(LoomChatContribution).toSelf().inSingletonScope()
   ;(bind as any)(FrontendApplicationContribution).toService(LoomChatContribution)
+
+  // ── View Widget Factories ───────────────────────────────────────────────────
+  // Required for AbstractViewContribution to work - each view needs a factory
+
+  // Agent Panel
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(bind as any)(WidgetFactory).toDynamicValue(() => ({
+    id: AGENT_PANEL_WIDGET_ID,
+    createWidget: () => new AgentPanelWidget({ agents: [] }),
+  })).inSingletonScope()
+
+  // Codemap
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(bind as any)(WidgetFactory).toDynamicValue(() => ({
+    id: CODEMAP_WIDGET_ID,
+    createWidget: () => new CodemapWidget({ query: async () => [] }),
+  })).inSingletonScope()
+
+  // Component Browser
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(bind as any)(WidgetFactory).toDynamicValue(() => ({
+    id: COMPONENT_BROWSER_WIDGET_ID,
+    createWidget: () => new ComponentBrowserWidget(),
+  })).inSingletonScope()
+
+  // Ghost Text
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(bind as any)(WidgetFactory).toDynamicValue(() => ({
+    id: GHOST_TEXT_WIDGET_ID,
+    createWidget: () => new GhostTextWidget({ text: '', visible: false, position: { line: 0, column: 0 } }),
+  })).inSingletonScope()
+
+  // Graph Stats
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(bind as any)(WidgetFactory).toDynamicValue(() => ({
+    id: GRAPH_STATS_WIDGET_ID,
+    createWidget: () => new GraphStatsBarWidget({
+      functionCount: 0, docCoverage: 0, churnPath: '', memoryCount: 0, docsIndexed: false
+    }),
+  })).inSingletonScope()
+
+  // Verifier Status
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(bind as any)(WidgetFactory).toDynamicValue(() => ({
+    id: VERIFIER_STATUS_WIDGET_ID,
+    createWidget: () => new VerifierStatusBarWidget({
+      passed: 0, quarantined: 0, retried: 0
+    }),
+  })).inSingletonScope()
 
   // ── Services ──────────────────────────────────────────────────────────────
   bind(LoomStatusBarService).toSelf().inSingletonScope()

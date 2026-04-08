@@ -9,6 +9,15 @@ export interface ChatMessage {
   context?: ContextPill[]
   agentDispatches?: AgentDispatch[]
   actions?: MessageAction[]
+  checkpoint?: CheckpointCard
+}
+
+export interface CheckpointCard {
+  id: string
+  agentName: string
+  label: string
+  timestamp: number
+  files: Array<{ path: string; hasContent: boolean }>
 }
 
 export interface ContextPill {
@@ -58,6 +67,7 @@ export class LoomChatWidget extends Widget {
     { id: 'docs', label: '@docs', active: false },
   ]
   private onSendMessage: ((text: string, modes: string[]) => void) | null = null
+  private onRestoreCheckpoint: ((checkpointId: string) => void) | null = null
   private typingIndicator = false
 
   constructor() {
@@ -73,6 +83,10 @@ export class LoomChatWidget extends Widget {
 
   setSendHandler(handler: (text: string, modes: string[]) => void): void {
     this.onSendMessage = handler
+  }
+
+  setRestoreCheckpointHandler(handler: (checkpointId: string) => void): void {
+    this.onRestoreCheckpoint = handler
   }
 
   addMessage(message: ChatMessage): void {
@@ -372,6 +386,11 @@ export class LoomChatWidget extends Widget {
       msgEl.appendChild(this._renderAgentDispatch(msg.agentDispatches))
     }
 
+    // Checkpoint card (Windsurf-style)
+    if (msg.checkpoint) {
+      msgEl.appendChild(this._renderCheckpointCard(msg.checkpoint))
+    }
+
     // Action buttons
     if (msg.actions && msg.actions.length > 0) {
       const actionsRow = document.createElement('div')
@@ -430,6 +449,69 @@ export class LoomChatWidget extends Widget {
       `
       card.appendChild(row)
     })
+
+    return card
+  }
+
+  private _renderCheckpointCard(checkpoint: CheckpointCard): HTMLElement {
+    const card = document.createElement('div')
+    card.style.cssText = [
+      'margin-top:6px',
+      'margin-left:26px',
+      'background:#2a1e3e',
+      'border:1px solid rgba(124,134,240,0.3)',
+      'border-radius:6px',
+      'padding:8px 10px',
+      'display:flex',
+      'align-items:center',
+      'gap:8px',
+    ].join(';')
+
+    // Agent avatar/name
+    const agentInfo = document.createElement('div')
+    agentInfo.style.cssText = 'display:flex;align-items:center;gap:6px;'
+    agentInfo.innerHTML = `
+      <span style="width:18px;height:18px;border-radius:50%;background:rgba(124,134,240,0.2);display:flex;align-items:center;justify-content:center;font-size:9px;color:#7c86f0;">${checkpoint.agentName.charAt(0).toUpperCase()}</span>
+      <span style="font-size:11px;color:#7c86f0;font-weight:500;">${checkpoint.agentName}</span>
+    `
+    card.appendChild(agentInfo)
+
+    // Label
+    const label = document.createElement('span')
+    label.style.cssText = 'font-size:11px;color:var(--theia-foreground,#d4d4d4);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'
+    label.textContent = checkpoint.label
+    card.appendChild(label)
+
+    // File count
+    const fileCount = document.createElement('span')
+    fileCount.style.cssText = 'font-size:10px;color:var(--theia-descriptionForeground,#6c7086);'
+    fileCount.textContent = `${checkpoint.files.length} file${checkpoint.files.length !== 1 ? 's' : ''}`
+    card.appendChild(fileCount)
+
+    // Time
+    const time = document.createElement('span')
+    time.style.cssText = 'font-size:10px;color:var(--theia-disabledForeground,#464646);'
+    time.textContent = this._relTime(checkpoint.timestamp)
+    card.appendChild(time)
+
+    // Restore button
+    const restoreBtn = document.createElement('button')
+    restoreBtn.textContent = 'Restore'
+    restoreBtn.style.cssText = [
+      'padding:2px 8px',
+      'border-radius:4px',
+      'font-size:10px',
+      'cursor:pointer',
+      'border:1px solid rgba(124,134,240,0.4)',
+      'background:rgba(124,134,240,0.12)',
+      'color:#7c86f0',
+    ].join(';')
+    restoreBtn.addEventListener('click', () => {
+      if (this.onRestoreCheckpoint) {
+        this.onRestoreCheckpoint(checkpoint.id)
+      }
+    })
+    card.appendChild(restoreBtn)
 
     return card
   }

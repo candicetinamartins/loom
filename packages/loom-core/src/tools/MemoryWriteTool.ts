@@ -1,5 +1,15 @@
 import { injectable, inject, optional } from 'inversify'
-import { MemoryService } from '@loom/memory'
+
+// Local interface to avoid circular dependency with @loom/memory
+interface MemoryEntry {
+  key: string
+  content: string
+  source: string
+}
+
+interface MemoryServiceInterface {
+  remember(entry: MemoryEntry): Promise<void>
+}
 
 export interface MemoryWriteInput {
   key: string
@@ -19,7 +29,7 @@ export class MemoryWriteTool {
   readonly description = 'Write to Loom memory'
 
   constructor(
-    @inject(MemoryService) @optional() private memoryService?: MemoryService,
+    @inject('MemoryService') @optional() private memoryService?: MemoryServiceInterface,
   ) {}
 
   async execute(input: MemoryWriteInput): Promise<MemoryWriteOutput> {

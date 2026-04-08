@@ -3,6 +3,7 @@ import { CoreMessage } from 'ai'
 import { LoomMsgHub, Channel } from '@loom/graph'
 import { TokenUsageTracker } from './TokenUsageTracker'
 import { ContextCompactor } from '../context/ContextCompactor'
+import { WasmFastPathFilter } from '../utils/wasmFastPath'
 import {
   AgentResult,
   AgentCompletePayload,
@@ -52,6 +53,7 @@ export class AgentSession {
   private hasNarration = false
   private wastedNarrationChars = 0
   private resultExtracted = false
+  private wasmFilter: WasmFastPathFilter
 
   constructor(
     @inject('AgentDefinition') private agentDef: AgentDefinition,
@@ -59,7 +61,14 @@ export class AgentSession {
     @inject(LoomMsgHub) private hub: LoomMsgHub,
     @inject(TokenUsageTracker) private tracker: TokenUsageTracker,
     @inject(ContextCompactor) private compactor: ContextCompactor,
-  ) {}
+  ) {
+    // Initialize wasmFastPath for optimized text filtering
+    this.wasmFilter = new WasmFastPathFilter({
+      enableWasm: true,
+      narrationThreshold: 50,
+      maxBufferSize: 10000,
+    })
+  }
 
   /**
    * Main LLM execution method with stream filtering
@@ -136,6 +145,14 @@ export class AgentSession {
 
       case 'text-delta':
         if (!chunk.textDelta) break
+        
+        // wasmFastPath: Quick filter for narration suppression
+        const filterResult = this.wasmFilter.processChunk(chunk.textDelta)
+        if (filterResult.shouldSuppress && !filterResult.hasResultBlock) {
+          // Count wasted characters
+          this.wastedNarrationChars += chunk.textDelta.length
+          break // Skip forwarding this chunk
+        }
         
         this.accumulated += chunk.textDelta
 

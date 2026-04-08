@@ -1,5 +1,16 @@
 import { injectable, inject, optional } from 'inversify'
-import { MemoryService } from '@loom/memory'
+
+// Local interface to avoid circular dependency with @loom/memory
+interface MemorySearchResult {
+  memory: {
+    key: string
+    content: unknown
+  }
+}
+
+interface MemoryServiceInterface {
+  searchRelevant(query: string, limit: number): Promise<MemorySearchResult[]>
+}
 
 export interface MemoryReadInput {
   key: string
@@ -18,7 +29,7 @@ export class MemoryReadTool {
   readonly description = 'Read from Loom memory by key'
 
   constructor(
-    @inject(MemoryService) @optional() private memoryService?: MemoryService,
+    @inject('MemoryService') @optional() private memoryService?: MemoryServiceInterface,
   ) {}
 
   async execute(input: MemoryReadInput): Promise<MemoryReadOutput> {
@@ -32,7 +43,7 @@ export class MemoryReadTool {
 
     // Search for memory by key using the Working Graph
     const results = await this.memoryService.searchRelevant(input.key, 5)
-    const match = results.find(r => r.memory.key === input.key)
+    const match = results.find((r: MemorySearchResult) => r.memory.key === input.key)
 
     if (match) {
       return {

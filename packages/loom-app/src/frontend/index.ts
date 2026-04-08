@@ -33,6 +33,9 @@ import { LoomChatWidget } from './loom-chat-widget'
 import { LoomMemoryPanelContribution, MEMORY_PANEL_WIDGET_ID } from './loom-memory-panel-contribution'
 import { MemoryPanelWidget } from '@loom/ui'
 import { MemoryService } from '@loom/memory'
+import { TokenDashboardContribution, TOKEN_DASHBOARD_WIDGET_ID } from './loom-token-dashboard-contribution'
+import { TokenDashboardWidget } from '@loom/ui'
+import { TokenUsageTracker } from '@loom/core'
 
 // Import widget IDs from contributions
 import { AGENT_PANEL_WIDGET_ID } from './loom-agent-panel-contribution'
@@ -194,6 +197,15 @@ export default new ContainerModule((bind) => {
   })).inSingletonScope()
   bind(LoomMemoryPanelContribution).toSelf().inSingletonScope()
   ;(bind as any)(FrontendApplicationContribution).toService(LoomMemoryPanelContribution)
+
+  // Token Dashboard
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(bind as any)(WidgetFactory).toDynamicValue(() => ({
+    id: TOKEN_DASHBOARD_WIDGET_ID,
+    createWidget: () => new TokenDashboardWidget(),
+  })).inSingletonScope()
+  bind(TokenDashboardContribution).toSelf().inSingletonScope()
+  ;(bind as any)(FrontendApplicationContribution).toService(TokenDashboardContribution)
 
   // ── Services ──────────────────────────────────────────────────────────────
   bind(LoomStatusBarService).toSelf().inSingletonScope()

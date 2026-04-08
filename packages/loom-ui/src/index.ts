@@ -6,6 +6,8 @@ export type { CheckpointCard, CheckpointRestoreHandler } from './widgets/Checkpo
 export { CodemapWidget } from './widgets/CodemapWidget'
 export { DiffGutterWidget } from './widgets/DiffGutterWidget'
 export type { DiffHunk, DiffHunkAction } from './widgets/DiffGutterWidget'
+export { TokenDashboardWidget } from './widgets/TokenDashboardWidget'
+export type { TokenDashboardOptions } from './widgets/TokenDashboardWidget'
 
 // Memory Panel (re-exported from loom-memory)
 export { MemoryPanelWidget } from '@loom/memory'

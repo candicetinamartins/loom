@@ -1,6 +1,7 @@
 import { injectable, inject, optional } from 'inversify'
 import { MemoryService, type Memory } from './MemoryService'
 import { SessionStore } from './tier1/SessionStore'
+import { Tier3LongTermStore } from './tier3/Tier3LongTermStore'
 import { MEMORY_TYPES } from './loom-memory-module'
 
 /**
@@ -9,10 +10,10 @@ import { MEMORY_TYPES } from './loom-memory-module'
  * Session tracking is delegated to SessionStore (Tier 1 ephemeral journal).
  * This service handles the promotion lifecycle:
  *   session end (approved) → walk Tier 1 events → upsert to Tier 2 Working Graph
+ *   session approved → strengthen edges, prune orphans, consolidate (Tier 3)
  *
  * Tier 2 holds entities, relationships, and summaries extracted from Tier 1 events.
- * It answers richer queries: "what files does this feature depend on?",
- * "which agent has touched this module before?"
+ * Tier 3 adds long-term persistence via weighted edges and cross-session consolidation.
  */
 
 export interface SessionMemory {
@@ -42,6 +43,7 @@ export class MemoryIsolationService {
   constructor(
     @inject(MEMORY_TYPES.MemoryService) @optional() private memoryService: MemoryService,
     @inject(MEMORY_TYPES.SessionStore) @optional() private sessionStore: SessionStore,
+    @inject(MEMORY_TYPES.Tier3LongTermStore) @optional() private tier3Store: Tier3LongTermStore,
   ) {}
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -84,17 +86,37 @@ export class MemoryIsolationService {
     })
   }
 
-  /** Approve a session — promote Tier 1 events to Tier 2 Working Graph */
-  async approveSession(sessionId: string, agentName?: string): Promise<void> {
+  /** Approve a session — promote Tier 1 events to Tier 2, then Tier 3 long-term */
+  async approveSession(sessionId: string, agentName?: string): Promise<{
+    tier2Promoted: boolean
+    tier3Result: {
+      memoriesPromoted: number
+      edgesStrengthened: number
+      orphansPruned: number
+      consolidated: number
+    }
+  }> {
     this.pendingApproval.delete(sessionId)
     this.approvedSessions.add(sessionId)
-    if (!this.memoryService || !this.sessionStore) return
 
-    // Use the new promoteSession method to upsert events to Working Graph
-    await this.memoryService.promoteSession(sessionId, agentName || 'unknown')
+    let tier2Promoted = false
+    let tier3Result = { memoriesPromoted: 0, edgesStrengthened: 0, orphansPruned: 0, consolidated: 0 }
 
-    this.sessionStore.endSession(sessionId, true)
-    console.log(`[MemoryIsolationService] Session ${sessionId} approved — promoted to Working Graph`)
+    // Tier 1 → Tier 2 promotion (Working Graph)
+    if (this.memoryService && this.sessionStore) {
+      await this.memoryService.promoteSession(sessionId, agentName || 'unknown')
+      this.sessionStore.endSession(sessionId, true)
+      tier2Promoted = true
+      console.log(`[MemoryIsolationService] Session ${sessionId} approved — promoted to Tier 2 Working Graph`)
+    }
+
+    // Tier 2 → Tier 3 promotion (Long-term consolidation)
+    if (this.tier3Store) {
+      tier3Result = await this.tier3Store.promoteSessionToLongTerm(sessionId)
+      console.log(`[MemoryIsolationService] Session ${sessionId} promoted to Tier 3 Long-Term: ${tier3Result.memoriesPromoted} memories, ${tier3Result.edgesStrengthened} edges strengthened`)
+    }
+
+    return { tier2Promoted, tier3Result }
   }
 
   /** Discard a session without promoting its memories */

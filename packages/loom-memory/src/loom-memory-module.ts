@@ -4,6 +4,7 @@ import { MemoryIsolationService } from './MemoryIsolationService'
 import { SessionStore } from './tier1/SessionStore'
 import { CheckpointStore } from './checkpoints/CheckpointStore'
 import { CheckpointService } from './checkpoints/CheckpointService'
+import { Tier3LongTermStore } from './tier3/Tier3LongTermStore'
 
 export const MEMORY_TYPES = {
   MemoryService: 'MemoryService',
@@ -11,6 +12,7 @@ export const MEMORY_TYPES = {
   SessionStore: 'SessionStore',
   CheckpointStore: 'CheckpointStore',
   CheckpointService: 'CheckpointService',
+  Tier3LongTermStore: 'Tier3LongTermStore',
 } as const
 
 export default new ContainerModule((bind) => {
@@ -24,4 +26,5 @@ export default new ContainerModule((bind) => {
   bind(MEMORY_TYPES.CheckpointService).to(CheckpointService).inSingletonScope()
   bind(MEMORY_TYPES.MemoryService).to(MemoryService).inSingletonScope()
   bind(MEMORY_TYPES.MemoryIsolationService).to(MemoryIsolationService).inSingletonScope()
+  bind(MEMORY_TYPES.Tier3LongTermStore).to(Tier3LongTermStore).inSingletonScope()
 })

@@ -12,6 +12,9 @@ export * from './tier1/session-events.schema'
 
 // Tier 2 — Working Graph (Kuzu) - entities, relationships, summaries
 
+// Tier 3 — Long-Term Memory (weighted edges, consolidation, orphan pruning)
+export * from './tier3/Tier3LongTermStore'
+
 // Checkpoints
 export * from './checkpoints/CheckpointStore'
 export * from './checkpoints/CheckpointService'

@@ -1,5 +1,4 @@
 import { injectable, inject, optional } from 'inversify'
-import { SkillService } from '@loom/agents'
 
 export interface SkillLoadInput {
   skillName: string
@@ -12,13 +11,18 @@ export interface SkillLoadOutput {
   tools: string[]
 }
 
+// Interface to avoid circular dependency with @loom/agents
+interface SkillService {
+  getSkill(name: string): { tools?: string[] } | undefined
+}
+
 @injectable()
 export class SkillLoadTool {
   readonly name = 'skill_load'
   readonly description = 'Load a VoltAgent skill'
 
   constructor(
-    @inject(SkillService) @optional() private skillService?: SkillService,
+    @inject('SkillService') @optional() private skillService?: SkillService,
   ) {}
 
   async execute(input: SkillLoadInput): Promise<SkillLoadOutput> {

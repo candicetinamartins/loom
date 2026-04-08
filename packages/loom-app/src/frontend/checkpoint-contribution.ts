@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import type { FrontendApplicationContribution } from '@theia/core/lib/browser/frontend-application-contribution'
+import { FrontendApplicationContribution } from '@theia/core/lib/browser/frontend-application-contribution'
 import { CommandRegistry, CommandContribution } from '@theia/core/lib/common/command'
 import { PreferenceService } from '@theia/core/lib/browser'
 import { CheckpointTimelineWidget, type CheckpointCard } from '@loom/ui/src/widgets/CheckpointTimelineWidget'

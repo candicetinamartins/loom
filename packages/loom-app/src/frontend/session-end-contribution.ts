@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import type { FrontendApplicationContribution } from '@theia/core/lib/browser/frontend-application-contribution'
+import { FrontendApplicationContribution } from '@theia/core/lib/browser/frontend-application-contribution'
 import { MessageService } from '@theia/core/lib/common/message-service'
 
 /**

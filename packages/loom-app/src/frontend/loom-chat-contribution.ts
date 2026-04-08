@@ -272,10 +272,34 @@ export class LoomChatContribution extends AbstractViewContribution<LoomChatWidge
     console.log('[LoomChat] Creating checkpoint...')
   }
 
-  private restoreCheckpoint(checkpointId: string): void {
+  private async restoreCheckpoint(checkpointId: string): Promise<void> {
     console.log('[LoomChat] Restoring checkpoint:', checkpointId)
-    // TODO: Call backend CheckpointService.restoreCheckpoint(checkpointId)
-    // This would revert all files to the checkpoint state
+    try {
+      const response = await fetch('/loom/checkpoint/restore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ checkpointId }),
+      })
+      if (response.ok) {
+        const result = await response.json() as { success: boolean; message?: string }
+        if (result.success) {
+          console.log('[LoomChat] Checkpoint restored successfully')
+          // Refresh UI to reflect restored state
+          this._chatWidget?.addMessage({
+            id: `restore-${Date.now()}`,
+            role: 'loom',
+            content: `✓ Restored checkpoint ${checkpointId}`,
+            timestamp: Date.now(),
+          })
+        } else {
+          console.error('[LoomChat] Failed to restore checkpoint:', result.message)
+        }
+      } else {
+        console.error('[LoomChat] Failed to restore checkpoint:', response.statusText)
+      }
+    } catch (error) {
+      console.error('[LoomChat] Error restoring checkpoint:', error)
+    }
   }
 
   // Public API for other contributions

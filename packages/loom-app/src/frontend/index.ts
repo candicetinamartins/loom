@@ -30,6 +30,9 @@ import { SessionEndContribution } from './session-end-contribution'
 import { SaiaContribution } from './saia-contribution'
 import { LoomChatContribution, CHAT_WIDGET_ID } from './loom-chat-contribution'
 import { LoomChatWidget } from './loom-chat-widget'
+import { LoomMemoryPanelContribution, MEMORY_PANEL_WIDGET_ID } from './loom-memory-panel-contribution'
+import { MemoryPanelWidget } from '@loom/ui'
+import { MemoryService } from '@loom/memory'
 
 // Import widget IDs from contributions
 import { AGENT_PANEL_WIDGET_ID } from './loom-agent-panel-contribution'
@@ -182,6 +185,15 @@ export default new ContainerModule((bind) => {
       passed: 0, quarantined: 0, retried: 0
     }),
   })).inSingletonScope()
+
+  // Memory Panel
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(bind as any)(WidgetFactory).toDynamicValue((ctx: { container: { get: <T>(s: unknown) => T } }) => ({
+    id: MEMORY_PANEL_WIDGET_ID,
+    createWidget: () => new MemoryPanelWidget(ctx.container.get(MemoryService)),
+  })).inSingletonScope()
+  bind(LoomMemoryPanelContribution).toSelf().inSingletonScope()
+  ;(bind as any)(FrontendApplicationContribution).toService(LoomMemoryPanelContribution)
 
   // ── Services ──────────────────────────────────────────────────────────────
   bind(LoomStatusBarService).toSelf().inSingletonScope()

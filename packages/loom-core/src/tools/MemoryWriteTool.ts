@@ -1,3 +1,6 @@
+import { injectable, inject, optional } from 'inversify'
+import { MemoryService } from '@loom/memory'
+
 export interface MemoryWriteInput {
   key: string
   value: unknown
@@ -10,15 +13,43 @@ export interface MemoryWriteOutput {
   success: boolean
 }
 
+@injectable()
 export class MemoryWriteTool {
   readonly name = 'memory_write'
   readonly description = 'Write to Loom memory'
 
+  constructor(
+    @inject(MemoryService) @optional() private memoryService?: MemoryService,
+  ) {}
+
   async execute(input: MemoryWriteInput): Promise<MemoryWriteOutput> {
-    // Phase 2: Integrate with MemoryService
-    return {
-      key: input.key,
-      success: true,
+    if (!this.memoryService) {
+      return {
+        key: input.key,
+        success: false,
+      }
+    }
+
+    try {
+      const content = typeof input.value === 'string'
+        ? input.value
+        : JSON.stringify(input.value)
+
+      await this.memoryService.remember({
+        key: input.key,
+        content,
+        source: 'explicit',
+      })
+
+      return {
+        key: input.key,
+        success: true,
+      }
+    } catch {
+      return {
+        key: input.key,
+        success: false,
+      }
     }
   }
 }

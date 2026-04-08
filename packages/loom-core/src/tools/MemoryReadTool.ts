@@ -1,3 +1,6 @@
+import { injectable, inject, optional } from 'inversify'
+import { MemoryService } from '@loom/memory'
+
 export interface MemoryReadInput {
   key: string
   scope?: 'session' | 'project' | 'global'
@@ -9,12 +12,36 @@ export interface MemoryReadOutput {
   found: boolean
 }
 
+@injectable()
 export class MemoryReadTool {
   readonly name = 'memory_read'
-  readonly description = 'Read from Loom memory'
+  readonly description = 'Read from Loom memory by key'
+
+  constructor(
+    @inject(MemoryService) @optional() private memoryService?: MemoryService,
+  ) {}
 
   async execute(input: MemoryReadInput): Promise<MemoryReadOutput> {
-    // Phase 2: Integrate with MemoryService
+    if (!this.memoryService) {
+      return {
+        key: input.key,
+        value: null,
+        found: false,
+      }
+    }
+
+    // Search for memory by key using the Working Graph
+    const results = await this.memoryService.searchRelevant(input.key, 5)
+    const match = results.find(r => r.memory.key === input.key)
+
+    if (match) {
+      return {
+        key: input.key,
+        value: match.memory.content,
+        found: true,
+      }
+    }
+
     return {
       key: input.key,
       value: null,

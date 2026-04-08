@@ -41,55 +41,57 @@ export const LOOM_MENU_BAR_VIEW: MenuPath = ['loom_menu_bar', 'view']
 @injectable()
 export class LoomKeybindingContribution implements KeybindingContribution {
   registerKeybindings(keybindings: KeybindingRegistry): void {
-    // Agent orchestration
+    // Agent orchestration - global context
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.ORCHESTRATE.id,
       keybinding: 'ctrl+shift+o',
     })
 
-    // Ask specific agent
+    // Ask specific agent - global context
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.ASK_AGENT.id,
       keybinding: 'ctrl+shift+a',
     })
 
-    // New chat
+    // New chat - global context
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.NEW_CHAT.id,
       keybinding: 'ctrl+shift+n',
     })
 
-    // Clear chat
+    // Clear chat - only when chat is focused
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.CLEAR_CHAT.id,
       keybinding: 'ctrl+shift+delete',
+      when: 'loomChatFocus',
     })
 
-    // Add context
+    // Add context - when editor is open
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.ADD_CONTEXT.id,
       keybinding: 'ctrl+shift+plus',
+      when: 'editorIsOpen',
     })
 
-    // Toggle CODE/ASK mode
+    // Toggle CODE/ASK mode - global context
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.TOGGLE_MODE.id,
       keybinding: 'ctrl+shift+m',
     })
 
-    // Toggle flow timeline
+    // Toggle flow timeline - global context
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.TOGGLE_TIMELINE.id,
       keybinding: 'ctrl+shift+t',
     })
 
-    // Toggle agent panel
+    // Toggle agent panel - global context
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.TOGGLE_AGENT_PANEL.id,
       keybinding: 'ctrl+shift+p',
     })
 
-    // Open Checkpoint Timeline
+    // Open Checkpoint Timeline - global context
     keybindings.registerKeybinding({
       command: LOOM_COMMANDS.OPEN_CHECKPOINT_TIMELINE.id,
       keybinding: 'ctrl+shift+z',

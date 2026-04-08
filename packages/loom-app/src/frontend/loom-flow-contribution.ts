@@ -135,8 +135,10 @@ export class LoomFlowContribution implements FrontendApplicationContribution {
     if (!this.gitContribution) return
 
     // Track git commits via command execution
-    const originalExecute = this.commandRegistry.executeCommand.bind(this.commandRegistry)
-    this.commandRegistry.executeCommand = async (commandId: string, ...args: unknown[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const registry = this.commandRegistry as any
+    const originalExecute = registry.executeCommand.bind(registry)
+    registry.executeCommand = async (commandId: string, ...args: unknown[]) => {
       if (commandId === 'git.commit' || commandId === 'git.commit.amend') {
         this.flowService.trackEvent('git_commit', {
           command: commandId,
@@ -164,8 +166,10 @@ export class LoomFlowContribution implements FrontendApplicationContribution {
     // Track Loom-specific commands
     const loomCommands = ['loom.orchestrate', 'loom.multi', 'loom.index', 'loom.remember']
 
-    const originalExecute = this.commandRegistry.executeCommand.bind(this.commandRegistry)
-    this.commandRegistry.executeCommand = async (commandId: string, ...args: unknown[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const registry = this.commandRegistry as any
+    const originalExecute = registry.executeCommand.bind(registry)
+    registry.executeCommand = async (commandId: string, ...args: unknown[]) => {
       if (loomCommands.some(c => commandId.startsWith(c))) {
         this.flowService.trackEvent('command_run', {
           command: commandId,

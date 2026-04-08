@@ -5,7 +5,6 @@ import type { SessionStore } from '@loom/memory/src/tier1/SessionStore'
 import type { MemoryService } from '@loom/memory/src/MemoryService'
 import type { MemoryIsolationService } from '@loom/memory/src/MemoryIsolationService'
 import type { CheckpointService } from '@loom/memory/src/checkpoints/CheckpointService'
-import type { MemPalaceService } from '@loom/memory/src/mempalace/MemPalaceService'
 import { TYPES as CORE_TYPES } from '@loom/core/src/loom-core-module'
 import { SAIA_BASE_URL } from '@loom/core/src/services/SAIAProvider'
 import type { SAIAProvider } from '@loom/core/src/services/SAIAProvider'
@@ -20,7 +19,6 @@ export class LoomBackendContribution implements BackendApplicationContribution {
     @inject(MEMORY_TYPES.MemoryService) @optional() private memoryService: MemoryService,
     @inject(MEMORY_TYPES.MemoryIsolationService) @optional() private isolationService: MemoryIsolationService,
     @inject(MEMORY_TYPES.CheckpointService) @optional() private checkpointService: CheckpointService,
-    @inject(MEMORY_TYPES.MemPalaceService) @optional() private memPalaceService: MemPalaceService,
     @inject(CORE_TYPES.SAIAProvider) @optional() private saiaProvider: SAIAProvider,
   ) {}
 
@@ -151,58 +149,6 @@ export class LoomBackendContribution implements BackendApplicationContribution {
     })
 
     console.log('[Loom] Session approval HTTP endpoints registered')
-
-    // ── MemPalace Tier 2 memory endpoints ────────────────────────────────────
-    // POST /loom/memory/search — semantic search across memories
-    app.post('/loom/memory/search', (req: Request, res: Response) => {
-      void (async () => {
-        try {
-          const { query, wing, room, limit = 5 } = req.body as {
-            query?: string
-            wing?: string
-            room?: string
-            limit?: number
-          }
-          if (!query) { res.status(400).json({ error: 'query required' }); return }
-          if (!this.memPalaceService) { res.json({ results: [] }); return }
-          
-          const results = await this.memPalaceService.search(query, { wing, room, limit })
-          res.json({ results })
-        } catch (e) {
-          res.status(500).json({ error: e instanceof Error ? e.message : String(e) })
-        }
-      })()
-    })
-
-    // GET /loom/memory/status — MemPalace service health
-    app.get('/loom/memory/status', (_req: Request, res: Response) => {
-      void (async () => {
-        if (!this.memPalaceService) {
-          res.json({ available: false })
-          return
-        }
-        const status = await this.memPalaceService.getStatus()
-        res.json(status ?? { available: false })
-      })()
-    })
-
-    // POST /loom/memory/query — query with context formatting for LLM
-    app.post('/loom/memory/query', (req: Request, res: Response) => {
-      void (async () => {
-        try {
-          const { query } = req.body as { query?: string }
-          if (!query) { res.status(400).json({ error: 'query required' }); return }
-          if (!this.memPalaceService) { res.json({ context: '', results: [] }); return }
-          
-          const result = await this.memPalaceService.queryForContext(query)
-          res.json({ context: result })
-        } catch (e) {
-          res.status(500).json({ error: e instanceof Error ? e.message : String(e) })
-        }
-      })()
-    })
-
-    console.log('[Loom] MemPalace memory HTTP endpoints registered')
 
     // ── SAIA (Academic Cloud LLM) endpoints ─────────────────────────────────
     // These backend routes proxy SAIA requests so the API key never touches the

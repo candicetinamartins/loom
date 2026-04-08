@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify'
 import { Widget } from '@lumino/widgets'
 import { Message } from '@lumino/messaging'
-import type { FrontendApplicationContribution } from '@theia/core/lib/browser/frontend-application-contribution'
+import { FrontendApplicationContribution } from '@theia/core/lib/browser/frontend-application-contribution'
 import { EditorManager } from '@theia/editor/lib/browser/editor-manager'
 
 interface FlowEvent {
